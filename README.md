@@ -9,7 +9,7 @@ The team members are Shuang Wu and Minqi Wang.
 ## Project Description
 
 ### Introduction
-This project is all about a social networking app. Unlike the mainstream social networking apps/sites such as Facebook, Wechat and Twitter which focus on connecting you to a bigger world, the intended purpose of this app is to provide convenience for your daily communication&interaction with the people close to you. With app "GG", you and your homies will be able to easily share each other's everyday life by providing information in each of your "GG timetable". Another powerful feature of GG is group event scheduling. The "GG map" will provide information of places to help you choose the location of events. You will also be benefited by functionalities like popular places, conflict avoidance etc.
+This project is all about a social networking app. Unlike the mainstream social networking apps/sites such as Facebook, Wechat and Twitter which focus on connecting you to a bigger world, the intended purpose of this app is to provide convenience for your daily communication and interaction with the people close to you. With app "GG", you and your homies will be able to easily share each other's everyday life by providing information in each of your "GG timetable". Another powerful feature of GG is group event scheduling. The "GG map" will provide information of places to help you choose the location of events. You will also be benefited by functionalities like popular places, conflict avoidance etc.
 
 ### Key Features
 
@@ -41,10 +41,10 @@ Complete fundamental functionalities
 * Basic map functionalities: 2 (a), 2 (b), 2 (d) in Key Features.
 
 ### Final Version
-Extend the basic functionalities and optionaly implement other features
+Extend the basic functionalities and optionally implement other features
 * Add conflict avoidance, option (e.g. time, people etc.) suggester to help user schedule events.
 * Add 1 (d) and 2 (c).
-* Within the time limit, optionaly complete part of 2 (e), 3 (a), 3 (b).
+* Within the time limit, optionally complete part of 2 (e), 3 (a), 3 (b).
 
 ## Technologies
 

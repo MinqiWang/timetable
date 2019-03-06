@@ -1,49 +1,62 @@
 import React, { Component } from 'react'
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
-import NavDropdown from 'react-bootstrap/NavDropdown';
-import Form from 'react-bootstrap/Form';
-import FormControl from 'react-bootstrap/FormControl';
-import Button from 'react-bootstrap/Button';
-
-import Container from 'react-bootstrap/Container'
-import Row from 'react-bootstrap/Row'
-import Col from 'react-bootstrap/Col'
 import UserImage from './UserImage';
+import Dropdown from 'react-bootstrap/Dropdown'
+import UserMenu from './UserMenu';
+import logo from '../logo.svg';
 
-
+/* This is the component responsible for Main Nav like User Home, Info, Control SignIn/Out UX (not Display Nav)*/
 export class Header extends Component {
+
+  itemSelectionHandler(key, e) {
+    switch (key) {
+      case "1":
+        return console.log("do userinfo")
+      case "2":
+        return console.log("do sign out")
+      default:
+        return alert("I do not know what you want me to do")
+    }
+  }
+
   render() {
     return (
       <>
         <Navbar bg="light" expand="lg">
-            <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
+            <Navbar.Brand href="#home">
+              <img
+              alt=""
+              src={logo}
+              width="48"
+              height="48"
+              className="d-inline-block align-top"
+              />
+              {' Go? Go!'}
+            </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                <Nav.Link href="#home">Home</Nav.Link>
-                <Nav.Link href="#link">Link</Nav.Link>
-                <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-                    <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-                    <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
-                    <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-                    <NavDropdown.Divider />
-                    <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
-                </NavDropdown>
+                  {/* <Nav.Link href="#home">Home</Nav.Link>
+                  <Nav.Link href="#link">Link</Nav.Link>
+                  <NavDropdown title="Dropdown" id="basic-nav-dropdown">
+                      <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
+                      <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
+                      <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
+                      <NavDropdown.Divider />
+                      <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
+                  </NavDropdown> */}
                 </Nav>
-                {/* <Form inline>
-                <FormControl type="text" placeholder="Search" className="mr-sm-2" />
-                <Button variant="outline-success">Search</Button>
-                </Form> */}
                 
-                <UserImage/>
-
-                {/* <Container>
-                    <Row>
-                        <Col>
-                        </Col>
-                    </Row>
-                </Container> */}
+                <Dropdown onSelect={(key, e) => this.itemSelectionHandler(key, e)}>
+                  <Dropdown.Toggle alignright as={UserImage} id="dropdown-custom-components">
+                    Custom toggle
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="dropdown-menu-right" as={UserMenu}>
+                    <Dropdown.Item eventKey="1" active>User Info</Dropdown.Item>
+                    <Dropdown.Item eventKey="2">Sign Out</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
             </Navbar.Collapse>
         </Navbar>
       </>

@@ -4,7 +4,8 @@ import Nav from 'react-bootstrap/Nav';
 import UserImage from './UserImage';
 import Dropdown from 'react-bootstrap/Dropdown'
 import UserMenu from './UserMenu';
-import logo from '../logo.svg';
+import logo from '../../logo.svg';
+import {loginIn} from '../../configs/ajax'
 
 /* This is the component responsible for Main Nav like User Home, Info, Control SignIn/Out UX (not Display Nav)*/
 export class Header extends Component {
@@ -20,10 +21,18 @@ export class Header extends Component {
     }
   }
 
+  doSuccess = (res) => {
+    // console.log(res.data);
+  }
+
+  componentDidMount() {
+    loginIn(this.doSuccess)
+  }
+
   render() {
     return (
       <>
-        <Navbar bg="light" expand="lg">
+        <Navbar bg="light" expand="sm">
             <Navbar.Brand href="#home">
               <img
               alt=""

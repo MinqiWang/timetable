@@ -1,4 +1,4 @@
-.App {
+/* .App {
   text-align: center;
 }
 
@@ -30,4 +30,38 @@
   to {
     transform: rotate(360deg);
   }
+} */
+
+.App {
+  margin: 0;
+  display: flex;
+  flex-flow: column nowrap;
+  height: 100%;
+}
+
+.App-main {
+  display: flex;
+  flex-flow: row nowrap;
+  flex-grow: 1;
+  min-width: 300px;
+  flex: 2;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.App-sidemenu {
+  display: flex;
+  min-width: 200px;
+  min-height: 200px;
+}
+
+.App-display {
+  display: flex;
+  flex: 1 1 auto;
+  position: relative;
+  overflow: hidden;
+}
+
+.App-footer {
+  color: white;
 }

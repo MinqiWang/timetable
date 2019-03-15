@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import './App.css';
-import Header from './components/Header';
-import Display from './components/Display';
-import SideMenu from './components/SideMenu';
-import Footer from './components/Footer';
+import Header from './components/header/Header';
+import Display from './components/display/Display';
+import SideMenu from './components/side-menu/SideMenu';
+import Footer from './components/footer/Footer';
 
 
 class App extends Component {
@@ -11,9 +11,17 @@ class App extends Component {
     return (
       <div className="App">
         <Header/>
-        <Display/>
-        <SideMenu/>
-        <Footer/>
+        <div className="App-main">
+          <div className="App-sidemenu">
+            <SideMenu/>
+          </div>
+          <div className="App-display">
+            <Display/>
+          </div>
+        </div>
+        <div className="App-footer">
+          <Footer/>
+        </div>
         {/* <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <p>

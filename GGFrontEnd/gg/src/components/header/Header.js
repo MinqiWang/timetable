@@ -21,12 +21,7 @@ export class Header extends Component {
     }
   }
 
-  doSuccess = (res) => {
-    // console.log(res.data);
-  }
-
   componentDidMount() {
-    loginIn(this.doSuccess)
   }
 
   render() {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import Advertisement from './Advertisement';
 import Timetable from './Timetable';
+import SignInUp from './SignInUp';
 
 /* This is the component responsible for switching Advertisement, SignInUp, Map, Timetable 
   in different condition: If signed in, the user sees Map/Timetable, if loged out, he sees
@@ -11,8 +12,9 @@ export class Display extends Component {
     return (
       <>
         {/* <Advertisement/> */}
-        <Timetable>
-        </Timetable>
+        <SignInUp></SignInUp>
+        {/* <Timetable>
+        </Timetable> */}
       </>
     )
   }

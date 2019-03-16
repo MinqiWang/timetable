@@ -9,17 +9,15 @@ export class SignInUp extends Component {
     console.log(res);
   }
 
-  fblogin = loginIn(this.doSuccess)
+  fblogin = () => {loginIn(this.doSuccess)}
 
   render() {
     return (
       <div className="SignInUp">
-      <div className="buttons">
-      <div className="fb-button login-button" onClick={this.fblogin}>
-
-      </div>
-      </div>
-       
+        <div className="buttons">
+          <div className="fb-button login-button" onClick={this.fblogin}>
+          </div>
+        </div>
       </div>
     )
   }

@@ -19,9 +19,6 @@ class App extends Component {
             <Display/>
           </div>
         </div>
-        <div className="App-footer">
-          <Footer/>
-        </div>
         {/* <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
           <p>

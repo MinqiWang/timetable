@@ -52,6 +52,7 @@
     position: -webkit-sticky;
     position: sticky;
     left: 0;
+    z-index: 1;
 }
 
 li {
@@ -69,20 +70,51 @@ li {
     min-height: 100%;
 }
 
-/* .scroll-slots-cols {
-    display: flex;
-    flex-flow: row nowrap;
-    align-items: stretch;
-    height: 100%;
-} */
-
 .scroll-slots-col {
+    display: flex;
+    flex-direction: column;
+    position: relative;
     flex: 1 0 auto;
     width: 80px;
     min-width: 80px;
+    height: 100%;
     border-style: solid;
     border-width: 0px 0px 0px 1px;
     border-color: rgb(200, 200, 200);
+}
+
+.slot {
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    width: 100%;
+}
+
+.event {
+    height: 40px;
+    width: 90%;
+    background: #0277BD;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    border-radius: 5px;
+}
+
+.draggable {
+    min-height: 5px;
+    flex: 1 0 auto;
+    width: 100%;
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.resizer {
+    height: 5px;
+    width: 100%;
+    cursor: s-resize;
 }
 
 .scroll-slots-col1 {

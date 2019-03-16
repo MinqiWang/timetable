@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
+import DayColumn from './DayColumn';
 
 export class Timetable extends Component {
   constructor(props) {
@@ -32,19 +33,26 @@ export class Timetable extends Component {
           title
         </div>
         <div className="Timetable-scroll">
-            <ul className="time-tag">
-              {time_tag.map(time_obj =>
-                <li key={time_obj.ID}>{time_obj.time}</li>)}
-            </ul>
+          <ul className="time-tag">
+            {time_tag.map(time_obj =>
+              <li key={time_obj.ID}>{time_obj.time}</li>)}
+          </ul>
           <div className="scroll-slots">
               <div className="scroll-slots-col1"></div>
-              <div id="col2" className="scroll-slots-col"><button>adfada</button></div>
-              <div id="col3" className="scroll-slots-col">Mon</div>
+                <DayColumn id="0"></DayColumn>
+                <DayColumn id="1"></DayColumn>
+
+                <DayColumn id="2"></DayColumn>
+                <DayColumn id="3"></DayColumn>
+                <DayColumn id="4"></DayColumn>
+                <DayColumn id="5"></DayColumn>
+                <DayColumn id="6"></DayColumn>
+              {/* <div id="col3" className="scroll-slots-col">Mon</div>
               <div id="col4" className="scroll-slots-col">Tue</div>
               <div id="col5" className="scroll-slots-col">Wed</div>
               <div id="col6" className="scroll-slots-col">Thu</div>
               <div id="col7" className="scroll-slots-col">Fri</div>
-              <div id="col8" className="scroll-slots-col">Sat</div>
+              <div id="col8" className="scroll-slots-col">Sat</div> */}
               <div className="scroll-slots-col scroll-slots-col1"></div>
           </div>
         </div>

@@ -103,7 +103,7 @@ app.get('/auth/facebook/callback', passport.authenticate('facebook'), function(r
 			res.status(500).end(err);
 		}
 		else {
-			if (results === []) {
+			if (results.length === 0) {
 				// Create a new user
 				pool.query("insert into user values(?,?)", [null, req.user.id], function (error2, results2, fields2){
 					if (error) {
@@ -111,17 +111,26 @@ app.get('/auth/facebook/callback', passport.authenticate('facebook'), function(r
 						res.status(500).end(err);
 					}
 					else {
-						req.user.inAppId = results2[0].id; // The user id in our app
-						res.end("(Facebook Authentication) user " + req.user.displayName + " with id " + results2[0].id + " has been registered");
+						pool.query("select id from user where facebook_id=?", [req.user.id], function (error3, results3, fields3){
+							if (error) {
+								logAPIerror("/auth/facebook/callback");
+								res.status(500).end(err);
+							}
+							else {
+								req.session.inAppId = results3[0].id; // The user id in our app
+								res.end("(Facebook Authentication) user " + req.user.displayName + " with id " + results3[0].id + " has been registered");
+							}
+						});
 					}
 				});
 			}
 			else {
-				req.user.inAppId = results[0].id; // The user id in our app
+				req.session.inAppId = results[0].id; // The user id in our app
 				res.end("(Facebook Authentication) user " + req.user.displayName + " with id " + results[0].id + " has been signed in");
 			}
 		}
 	});
+	next();
     /* { id: '815763312109831',
   username: undefined,
   displayName: 'Minqi Wang',
@@ -139,7 +148,7 @@ app.get('/auth/facebook/callback', passport.authenticate('facebook'), function(r
 // curl -b cookie.txt http://localhost:3000/private/
 // Test authentication
 app.get('/private/', isAuthenticated, function (req, res, next) {
-     return res.end("This is private");
+     return res.end("This is private; User id: " + req.session.inAppId);
 });
 
 /* ---- Authentication and User Management Done ---- */
@@ -151,7 +160,7 @@ app.get('/private/', isAuthenticated, function (req, res, next) {
  */
 app.get('/friend/invite/:user_id', function (req, res, next){
 	let your_id = req.user.inAppId;
-	let user_id = req.params.user_id;
+	let user_id = req.session.user_id;
 
 	if (user_id === your_id) {
 		res.json("This is yourself");
@@ -189,7 +198,7 @@ app.get('/friend/invite/:user_id', function (req, res, next){
  */
 app.get('/friend/invite/accept/:user_id', function (req, res, next){
 	let your_id = req.user.inAppId;
-	let user_id = req.params.user_id;
+	let user_id = req.session.user_id;
 
 	if (user_id === your_id) {
 		res.json("This is yourself!");
@@ -226,7 +235,7 @@ app.get('/friend/invite/accept/:user_id', function (req, res, next){
  * Retrieve the friendlist
  */
 app.get("/friend/retrieveAll", function (req, res, next){
-	let your_id = req.user.inAppId;
+	let your_id = req.session.inAppId;
 
 	pool.query("select * from friendship where (id_from=? or id_to=?) and has_accepted=?", [your_id, your_id, true], function (error, results, fields){
 		if (error) {
@@ -253,21 +262,7 @@ app.get("/friend/retrieveAll", function (req, res, next){
 
 /* ---- User friends APIs done ---- */
 
-/*
- * Request LOG
- */
-app.use(function (req, res, next){
-    console.log("HTTP request", req.method, req.url, req.body);
-    next();
-});
-
 /* ---- Personal Event APIs ---- */
-const logAPIerror = function(API_route){
-	console.log(EYE_CATCHER);
-	console.log("Error in " + API_route + ":");
-	console.log(error);
-	console.log(EYE_CATCHER);
-};
 
 /*
  * Create an event and its timetable slots.
@@ -275,7 +270,7 @@ const logAPIerror = function(API_route){
 app.post('/event/create', function(req, res, next){
 	let event_detail = req.body.detail;
 	let timetable_slots = req.body.timetable_slots; // Does not contain an event id
-	let author_id = req.user.inAppId;
+	let author_id = req.session.inAppId;
 
 	let num_slots = timetable_slots.length;
 	let num_finished = 0;
@@ -324,7 +319,7 @@ app.post('/event/create', function(req, res, next){
  	let timetable_slot = req.body.timetable_slot; // Does not contain an event id
  	let event_id = req.body.event_id;
  	let obscure_id = req.body.obscure; // Slot id
- 	let author_id = req.user.inAppId;
+ 	let author_id = req.session.inAppId;
 
 	// Verify event ownership first
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
@@ -367,7 +362,7 @@ app.post('/event/create', function(req, res, next){
 app.patch('/event/update', function (req, res, next){
 	let event_detail = req.body.detail;
  	let event_id = req.body.event_id;
-	let author_id = req.user.inAppId;
+	let author_id = req.session.inAppId;
 
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
@@ -399,7 +394,7 @@ app.patch('/event/update', function (req, res, next){
 app.patch('/event/timetable_slot/update', function (req, res, next){
 	let timetable_slot = req.body.timetable_slot;
  	let event_id = req.body.event_id;
- 	let author_id = req.user.inAppId;
+ 	let author_id = req.session.inAppId;
 	let slot_id = req.body.id;
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
@@ -432,7 +427,7 @@ app.patch('/event/timetable_slot/update', function (req, res, next){
 app.delete('/event/timetable_slot/delete', function (req, res, next){
 	let slot_id = req.body.id;
 	let event_id = req.body.event_id;
-	let author_id = req.user.inAppId;
+	let author_id = req.session.inAppId;
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -485,7 +480,7 @@ app.delete('/event/timetable_slot/delete', function (req, res, next){
  */
 app.delete("/event/delete", function (req, res, next){
 	let event_id = req.body.id;
-	let author_id = req.user.inAppId;
+	let author_id = req.session.inAppId;
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -524,7 +519,7 @@ app.delete("/event/delete", function (req, res, next){
  */
 app.get("/event/timetable_slot/retrieveAll:week_of", function (req, res, next){
 	let week_of = req.params.week_of;
-	let author_id = req.user.inAppId;
+	let author_id = req.session.inAppId;
 
 	pool.query("select * from timetable_event where week_of=? and author_id=?", [week_of, author_id], function (error, results, fields){
 		if (error) {
@@ -543,7 +538,7 @@ app.get("/event/timetable_slot/retrieveAll:week_of", function (req, res, next){
  */
 app.get("/event/retrieve:id", function (req, res, next){
 	let event_id = req.params.id;
-	let author_id = req.user.inAppId;
+	let author_id = req.session.inAppId;
 
 	pool.query("select * from event_detail where event=? and author_id=?", [event_id, author_id], function (error, results, fields){
 		if (error) {
@@ -567,8 +562,8 @@ app.get("/event/retrieve:id", function (req, res, next){
  */
 app.post("/event/group/create", function (req, res, next){
 	let event_id = req.body.id;
-	let author_id = req.user.inAppId;
-	let invitees = req.user.invitees;
+	let author_id = req.session.inAppId;
+	let invitees = req.body.invitees;
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -597,7 +592,7 @@ app.post("/event/group/create", function (req, res, next){
 				});
 			}
 		}
-	}):
+	});
 	next(); // Correct?
 });
 
@@ -606,7 +601,7 @@ app.post("/event/group/create", function (req, res, next){
  */
 app.post("/event/group/accept", function (req, res, next){
 	let event_id = req.body.id;
-	let user_id = req.user.inAppId;
+	let user_id = req.session.inAppId;
 
 	pool.query("update group_event_invitation set has_accepted=? where event_id=? and Invitee=?", [true, event_id, user_id], function (error, results, fields){
 		if (error) {
@@ -621,6 +616,21 @@ app.post("/event/group/accept", function (req, res, next){
 });
 
 /* ---- Group Event APIs done ---- */
+
+/*
+ * Request LOG
+ */
+app.use(function (req, res, next){
+    console.log("HTTP request", req.method, req.url, req.body);
+    next();
+});
+
+const logAPIerror = function(API_route){
+	console.log(EYE_CATCHER);
+	console.log("Error in " + API_route + ":");
+	console.log(error);
+	console.log(EYE_CATCHER);
+};
 
 /*
  * DEBUG

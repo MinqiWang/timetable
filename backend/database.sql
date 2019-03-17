@@ -24,6 +24,9 @@ create table timetable_event ( id int not null primary key auto_increment,
 create table user ( id int not null primary key auto_increment,
 	facebook_id VARCHAR(20) not null);
 
+create table user_info ( id int not null primary key references user(id), name VARCHAR(30) not null,
+	avatarURL VARCHAR(100) not null);
+
 create table event_ownership ( event_id int not null auto_increment,
 	author_id int not null references user(id),
 	primary key (event_id, author_id) );
@@ -42,6 +45,7 @@ drop table group_event_invitation;
 drop table comment;
 drop table timetable_event;
 drop table user;
+drop table user_info;
 drop table event_ownership;
 drop table friendship;
 
@@ -52,5 +56,6 @@ describe group_event_invitation;
 describe comment;
 describe timetable_event;
 describe user;
+describe user_info;
 describe event_ownership;
 describe friendship;

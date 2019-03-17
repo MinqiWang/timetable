@@ -15,6 +15,70 @@ const pool = mysql.createPool({
 	database: 'CSCC09'
 });  // TODO: Change user and password on deployment
 
+/* ---- LOGGING ---- */
+
+/*
+ * Request LOG
+ */
+app.use(function (req, res, next){
+    console.log("HTTP request", req.method, req.url, req.body);
+    next();
+});
+
+const logAPIerror = function(API_route){
+	console.log(EYE_CATCHER);
+	console.log("Error in " + API_route + ":");
+	console.log(error);
+	console.log(EYE_CATCHER);
+};
+
+/*
+ * DEBUG
+ */
+app.get('/debug', function (req, res, next){
+	/*pool.query('select ?', ["test query with placeholder"], function (error, results, fields){
+		// results hold the result -- array of RowDataPacket; e.g. results[0].id, results[0].author
+		// fields hold the result set metadata
+		if (error) throw error;
+		res.json(results);
+	});*/
+	/*pool.query('select * from event', function (error, results, fields){
+		if (error) throw error;
+		res.json(results);
+	});*/
+	let data = [null, "test_event1", "test_user1", "test_content1", "", "some place", false, false];
+	pool.query('insert into event values (?,?,?,?,?,?,?,?)', data, function (error, results, fields){
+		if (error) throw error;
+		res.json(results); // {"fieldCount":0,"affectedRows":1,"insertId":2,"serverStatus":2,"warningCount":0,"message":"","protocol41":true,"changedRows":0}
+	});
+	next();
+});
+
+/*
+ * Enable CORS for our react server
+ */
+/*const cors = require('cors');
+let corsOptions = {
+	origin: function (origin, callback) {
+		console.log("CORS -- from domain: " + origin);
+		callback(null, true);
+		if (origin === "http://localhost:3000") {
+			callback(null, true);
+		}
+		else {
+			callback(new Error("Not allowed by CORS"));
+		}
+	}
+}
+app.use(cors(corsOptions));*/
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+/* ---- LOGGING done ---- */
+
 /* ---- Authentication and User Management ---- */
 
 const session = require('express-session');
@@ -618,46 +682,6 @@ app.post("/event/group/accept", function (req, res, next){
 /* ---- Group Event APIs done ---- */
 
 /*
- * Request LOG
- */
-app.use(function (req, res, next){
-    console.log("HTTP request", req.method, req.url, req.body);
-    next();
-});
-
-const logAPIerror = function(API_route){
-	console.log(EYE_CATCHER);
-	console.log("Error in " + API_route + ":");
-	console.log(error);
-	console.log(EYE_CATCHER);
-};
-
-/*
- * DEBUG
- */
-app.get('/debug', function (req, res, next){
-	/*pool.query('select ?', ["test query with placeholder"], function (error, results, fields){
-		// results hold the result -- array of RowDataPacket; e.g. results[0].id, results[0].author
-		// fields hold the result set metadata
-		if (error) throw error;
-		res.json(results);
-	});*/
-	/*pool.query('select * from event', function (error, results, fields){
-		if (error) throw error;
-		res.json(results);
-	});*/
-	let data = [null, "test_event1", "test_user1", "test_content1", "", "some place", false, false];
-	pool.query('insert into event values (?,?,?,?,?,?,?,?)', data, function (error, results, fields){
-		if (error) throw error;
-		res.json(results); // {"fieldCount":0,"affectedRows":1,"insertId":2,"serverStatus":2,"warningCount":0,"message":"","protocol41":true,"changedRows":0}
-	});
-	next();
-});
-
-// TODO: How to insert NULL?
-
-
-/*
  * Response LOG
  */
 app.use(function (req, res, next){
@@ -665,7 +689,7 @@ app.use(function (req, res, next){
 });
 
 const https = require('https');
-const PORT = 3000;
+const PORT = 8000;
 
 let privateKey = fs.readFileSync( 'server.key.test' ); // TODO: Change this on deployment
 let certificate = fs.readFileSync( 'server.crt.test' ); // TODO: Change this on deployment

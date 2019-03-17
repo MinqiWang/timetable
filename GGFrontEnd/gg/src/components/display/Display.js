@@ -12,9 +12,8 @@ export class Display extends Component {
     return (
       <>
         {/* <Advertisement/> */}
-        <SignInUp></SignInUp>
-        {/* <Timetable>
-        </Timetable> */}
+        {/* <SignInUp></SignInUp> */}
+        <Timetable></Timetable>
       </>
     )
   }

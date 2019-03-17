@@ -3,7 +3,6 @@ import './App.css';
 import Header from './components/header/Header';
 import Display from './components/display/Display';
 import SideMenu from './components/side-menu/SideMenu';
-import Footer from './components/footer/Footer';
 
 
 class App extends Component {

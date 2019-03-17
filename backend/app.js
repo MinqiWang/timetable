@@ -178,20 +178,28 @@ app.get('/auth/facebook/callback', passport.authenticate('facebook'), function(r
 			if (results.length === 0) {
 				// Create a new user
 				pool.query("insert into user values(?,?)", [null, req.user.id], function (error2, results2, fields2){
-					if (error) {
+					if (error2) {
 						logAPIerror("/auth/facebook/callback", error2);
 						res.status(500).end(error2);
 					}
 					else {
 						pool.query("select id from user where facebook_id=?", [req.user.id], function (error3, results3, fields3){
-							if (error) {
+							if (error3) {
 								logAPIerror("/auth/facebook/callback", error3);
 								res.status(500).end(error3);
 							}
 							else {
-								req.session.inAppId = results3[0].id; // The user id in our app
-								//res.end("(Facebook Authentication) user " + req.user.displayName + " with id " + results3[0].id + " has been registered");
-								res.redirect(REACT_HOMEPAGE);
+								let avatarURL = "https://graph.facebook.com/" + req.user.id + "/picture";
+								pool.query("insert into user_info values (?,?,?)", [results3[0].id, req.user.displayName, avatarURL], function (error4, results4, fields4){
+									if (error4) {
+										logAPIerror("/auth/facebook/callback", error4);
+										res.status(500).end(error4);
+									}
+									else {
+										req.session.inAppId = results3[0].id; // The user id in our app
+										res.redirect(REACT_HOMEPAGE);
+									}
+								});
 							}
 						});
 					}
@@ -199,7 +207,6 @@ app.get('/auth/facebook/callback', passport.authenticate('facebook'), function(r
 			}
 			else {
 				req.session.inAppId = results[0].id; // The user id in our app
-				//res.end("(Facebook Authentication) user " + req.user.displayName + " with id " + results[0].id + " has been signed in");
 				res.redirect(REACT_HOMEPAGE);
 			}
 		}
@@ -226,17 +233,13 @@ app.get('/private/', isAuthenticated, function (req, res, next) {
 });
 
 /*
- * Retrieve the authenticated user info
- */
-app.get('/auth/retrieveUserInfo', function (req, res, next){
-	return res.json({"user_id": req.session.inAppId});
-});
-
-/*
  * Retrieve user info 
  */
-app.get('/auth/retrieveUserInfo/:id', function (req, res, next){
+app.get('/auth/retrieveUserInfo/:id?', function (req, res, next){
 	let user_id = req.params.id;
+	if (!user_id) {
+		user_id = req.session.inAppId;
+	}
 
 	pool.query("select name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
 		if (error) {
@@ -388,7 +391,7 @@ app.post('/event/create', function(req, res, next){
 		else {
 			// Create event details
 			pool.query("insert into event_detail values (?,?,?,?)", [results[0].event_id].concat(event_detail), function (error2, results2, fields2){
-				if (error) {
+				if (error2) {
 					logAPIerror("/event/create", error2);
 					res.status(500).end(error2);
 				}
@@ -396,7 +399,7 @@ app.post('/event/create', function(req, res, next){
 					// Create the timetable slots
 					for (let i = 0; i < num_slots; i++) {
 						pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?,?,?,?,?)", [null, results[0].event_id].concat(timetable_slots[i]), function (error3, results3, fields3) {
-							if (error2) {
+							if (error3) {
 								logAPIerror("/event/create", error3);
 								res.status(500).end(error3);
 							}
@@ -436,7 +439,7 @@ app.post('/event/create', function(req, res, next){
 		}
 		else {
 		 	pool.query("insert into timetable_event values(?,?,?,?,?,?,?,?,?,?,?)", [null, event_id].concat(timetable_slot), function (error2, results2, fields2){
-		 		if (error) {
+		 		if (error2) {
 		 			logAPIerror("/event/timetable_slot/create", error2);
 		 			res.status(500).end(error2);
 		 		}
@@ -444,7 +447,7 @@ app.post('/event/create', function(req, res, next){
 		 			// Update the slot that is obscured
 		 			if (obscure_id !== null) {
 		 				pool.query("update timetable_event set obscured_by=? where id=?", [results2[0].id, obscure_id], function(error3, results3, fields3){
-		 					if (error2) {
+		 					if (error3) {
 		 						logAPIerror("/event/timetable_slot/create", error3);
 		 						res.status(500).end(error3);
 		 					}
@@ -479,7 +482,7 @@ app.patch('/event/update', function (req, res, next){
 		}
 		else {
 			pool.query("update event_detail set text_content=?, media_content_urls=?, place=? where id=?", event_detail.concat(event_id), function (error2, results2, fields2){
-				if (error) {
+				if (error2) {
 					logAPIerror("/event/update", error2);
 					res.status(500).end(error2);
 				}
@@ -511,7 +514,7 @@ app.patch('/event/timetable_slot/update', function (req, res, next){
 		}
 		else {
 			pool.query("update timetable_event set start_time=?, length=?, day_of_the_week=? where id=?", timetable_slot.concat(event_id), function (error2, results2, fields2){
-				if (error) {
+				if (error2) {
 					logAPIerror("/event/timetable_slot/update", error2);
 					res.status(500).end(error2);
 				}

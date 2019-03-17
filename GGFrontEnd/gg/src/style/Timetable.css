@@ -1,0 +1,150 @@
+.Timetable-wrapper{
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    outline: none;
+}
+
+.Timetable {
+    display: flex;
+    flex-flow: column nowrap;
+    flex-grow: 1;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.Timetable-header {
+    background-color: red;
+}
+
+.Timetable-scroll {
+    background-color: white;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: scroll;
+    align-items: flex-start;
+    flex: 1 1 auto;
+}
+
+.scroll-slots-wrapper {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: scroll;
+    align-items: flex-start;
+    flex: 1 1 auto;
+}
+
+.time-tag {
+    display: flex;
+    justify-content: space-around;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 12px;
+    height: 960px;
+    width: 100px;
+    min-width: 100px;
+    background-color: white;
+    padding: 0;
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+li {
+    padding-right: 5px;
+    margin: 0;
+    color: rgb(100, 100, 100);
+}
+
+.scroll-slots {
+    background-image: url(../assets/images/line.svg);
+    height: 970px;
+    display: inline-flex;
+    vertical-align: top;
+    flex: 1 1 auto;
+    min-height: 100%;
+}
+
+.scroll-slots-col {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    flex: 1 0 auto;
+    width: 80px;
+    min-width: 80px;
+    height: 100%;
+    border-style: solid;
+    border-width: 0px 0px 0px 1px;
+    border-color: rgb(200, 200, 200);
+}
+
+.slot {
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    width: 100%;
+}
+
+.event {
+    height: 40px;
+    width: 90%;
+    background: #0277BD;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    border-radius: 5px;
+}
+
+.draggable {
+    min-height: 5px;
+    flex: 1 0 auto;
+    width: 100%;
+    cursor: -webkit-grab;
+    cursor: grab;
+}
+
+.resizer {
+    height: 5px;
+    width: 100%;
+    cursor: s-resize;
+}
+
+.scroll-slots-col1 {
+    width: 10px;
+    flex: 0 0 auto;
+    min-width: 10px;
+}
+
+/* width */
+::-webkit-scrollbar {
+    width: 8px;
+}
+  
+/* Track
+::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 4px;
+} */
+  
+::-webkit-scrollbar-corner {
+    background: white;
+}
+   
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background:rgb(200, 200, 200); 
+    border-radius: 4px;
+}
+  
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(100, 100, 100); 
+}

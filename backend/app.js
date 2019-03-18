@@ -107,6 +107,9 @@ let isAuthenticated = function(req, res, next) {
     else next();
 };
 
+/*
+ * User logout; Redirect to react homepage
+ */
 app.get('/logout', isAuthenticated, function(req, res, next){
 	req.logout();
 	res.redirect(REACT_HOMEPAGE);
@@ -164,7 +167,9 @@ passport.deserializeUser(function(user, done) {
 	done(null, JSON.parse(user));
 });
                                      
-// signin
+/* 
+ * User signin / signup; Redirect to react homepage if succeed
+ */
 app.get('/auth/facebook/', passport.authenticate('facebook'));
 
 // signin callback
@@ -234,6 +239,10 @@ app.get('/private/', isAuthenticated, function (req, res, next) {
 
 /*
  * Retrieve user info 
+ *
+ * URL params: id -- the user id (if id is not given then retrieve the authenticated user's info)
+ * Request body:
+ * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
 app.get('/auth/retrieveUserInfo/:id?', function (req, res, next){
 	let user_id = req.params.id;
@@ -264,6 +273,10 @@ app.get('/auth/retrieveUserInfo/:id?', function (req, res, next){
 
 /*
  * Send friend invitation
+ *
+ * URL params: user_id -- the user id
+ * Request body:
+ * Response body: Success/Failure messages 
  */
 app.get('/friend/invite/:user_id', function (req, res, next){
 	let your_id = req.session.inAppId;
@@ -302,6 +315,10 @@ app.get('/friend/invite/:user_id', function (req, res, next){
 
 /*
  * Accept friend invitation
+ * 
+ * URL params: user_id -- the user id
+ * Request body:
+ * Response body: Success/Failure messages 
  */
 app.get('/friend/invite/accept/:user_id', function (req, res, next){
 	let your_id = req.session.inAppId;
@@ -340,6 +357,10 @@ app.get('/friend/invite/accept/:user_id', function (req, res, next){
 
 /*
  * Retrieve the friendlist
+ *
+ * URL params:
+ * Request body:
+ * Response body: [1, 2, 3, 4, 5] (where 1, 2, 3, 4, 5 are all user ids)
  */
 app.get("/friend/retrieveAll", function (req, res, next){
 	let your_id = req.session.inAppId;
@@ -373,6 +394,13 @@ app.get("/friend/retrieveAll", function (req, res, next){
 
 /*
  * Create an event and its timetable slots.
+ *
+ * URL params:
+ * Request body: {detail: [TEXT_CONTENT, MEDIA_CONTENT_URLS, PLACE_NAME], timetable_slots: [[EVENT_NAME, EVENT_HAS_DETAIL, 
+ * START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING, OBSCURED_BY, IS_EMPTY_OBSCURE], [...] ...]}
+ * Request body example: {detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], timetable_slots: 
+ * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...] ...]}
+ * Response body: Success/Failure messages 
  */
 app.post('/event/create', function(req, res, next){
 	let event_detail = req.body.detail;
@@ -420,7 +448,13 @@ app.post('/event/create', function(req, res, next){
 
 /*
  * Add a timetable slot for an event.
- * If any slot is obscured by this slot, update the database accordingly.
+ * If any slot is obscured by this slot (specified by req.body.obscure), update the database accordingly.
+ *
+ * URL params:
+ * Request body: {"event_id": EVENT_ID, "obscure_id": OBSCURE_ID, "timetable_slot": [EVENT_NAME, EVENT_HAS_DETAIL, 
+ * START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING, OBSCURED_BY, IS_EMPTY_OBSCURE]}
+ * Request body example: {"event_id": 1, "obscure_id": 2, "timetable_slot": ["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null]}
+ * Response body: Success/Failure messages 
  */
  app.post('/event/timetable_slot/create', function (req, res, next){
  	let timetable_slot = req.body.timetable_slot; // Does not contain an event id
@@ -465,10 +499,16 @@ app.post('/event/create', function(req, res, next){
 
 /*
  * Update an event.
+ *
+ * URL params:
+ * Request body: {"event_id": EVENT_ID, event_detail: [TEXT_CONTENT, MEDIA_CONTENT_URLS, PLACE_NAME], event_name: EVENT_NAME}
+ * Request body example: {"event_id": 1, event_detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], event_name: "event1"}
+ * Response body: Success/Failure messages 
  */
 app.patch('/event/update', function (req, res, next){
 	let event_detail = req.body.detail;
  	let event_id = req.body.event_id;
+ 	let event_name = req.body.event_name;
 	let author_id = req.session.inAppId;
 
 
@@ -487,7 +527,16 @@ app.patch('/event/update', function (req, res, next){
 					res.status(500).end(error2);
 				}
 				else {
-					res.json("Event is updated!");
+					// Update event name
+					pool.query("update timetable_event set event_name=? where event_id=?", [event_name, event_id], function (error3, results3, fields3){
+						if (error3) {
+							logAPIerror("/event/update", error3);
+							res.status(500).end(error3);
+						}
+						else {
+							res.json("Event is updated!");
+						}
+					});
 				}
 			});
 		}
@@ -497,6 +546,11 @@ app.patch('/event/update', function (req, res, next){
 
 /*
  * Update a timetable slot
+ *
+ * URL params:
+ * Request body; {"event_id": EVENT_ID, "id": "slot_id": TIMETABLE_SLOT_ID, "timetable_slot": [START_TIME, LENGTH, DAY_OF_THE_WEEK]}
+ * Request body example: {"event_id": 1, "id": 1, "timetable_slot": ["8:45:00", "15", 1]}
+ * Response body: Success/Failure messages 
  */
 app.patch('/event/timetable_slot/update', function (req, res, next){
 	let timetable_slot = req.body.timetable_slot;
@@ -530,10 +584,14 @@ app.patch('/event/timetable_slot/update', function (req, res, next){
 /*
  * Delete a timetable slot.
  * If this is actually a slot which obscures another slot, do not delete it but set all fields to null.
+ *
+ * URL params: slot_id -- The id of the timetable slot to delete; event_id -- The id the corresponding event
+ * Request body:
+ * Response body: Success/Failure messages
  */
-app.delete('/event/timetable_slot/delete', function (req, res, next){
-	let slot_id = req.body.id;
-	let event_id = req.body.event_id;
+app.delete('/event/timetable_slot/delete/:id/:event_id', function (req, res, next){
+	let slot_id = req.params.id;
+	let event_id = req.params.event_id;
 	let author_id = req.session.inAppId;
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
@@ -584,9 +642,13 @@ app.delete('/event/timetable_slot/delete', function (req, res, next){
 
 /*
  * Delete an event and its timetable slots.
+ *
+ * URL params: id -- The id of the event to delete
+ * Reqeust body:
+ * Response body: Success/Failure messages
  */
-app.delete("/event/delete", function (req, res, next){
-	let event_id = req.body.id;
+app.delete("/event/delete/:id", function (req, res, next){
+	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
@@ -623,6 +685,12 @@ app.delete("/event/delete", function (req, res, next){
 
 /* 
  * Retrieve all timetable slots for a given week.
+ *
+ * URL params: week_of -- The "week-of" day
+ * Reqeust body:
+ * Response body: [[SLOT_ID, EVENT_ID, EVENT_NAME, EVENT_HAS_DETAIL, START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING, 
+ * OBSCURED_BY, IS_EMPTY_OBSCURE], [...], ...]
+ * Response body example: [["1", 1", "event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...], ...]
  */
 app.get("/event/timetable_slot/retrieveAll:week_of", function (req, res, next){
 	let week_of = req.params.week_of;
@@ -642,6 +710,11 @@ app.get("/event/timetable_slot/retrieveAll:week_of", function (req, res, next){
 
 /*
  * Retrieve the detailed information for a given event.
+ *
+ * URL params: id -- The id of the event
+ * Request body:
+ * Response body: [EVENT_ID, TEXT_CONTENT, MEDIA_CONTENT_URLS, PLACE]
+ * Response body example: ["1", "Hello World", "", "UTSC"]
  */
 app.get("/event/retrieve:id", function (req, res, next){
 	let event_id = req.params.id;
@@ -666,6 +739,10 @@ app.get("/event/retrieve:id", function (req, res, next){
 
 /*
  * Create a group event. (Add a list of invitees)
+ *
+ * URL params:
+ * Reqeust body: {id: EVENT_ID, invitees: [USER_ID1, USER_ID2, ...]}
+ * Response body: Success/Failure messages
  */
 app.post("/event/group/create", function (req, res, next){
 	let event_id = req.body.id;
@@ -705,6 +782,10 @@ app.post("/event/group/create", function (req, res, next){
 
 /*
  * Accept a group event.
+ *
+ * URL params:
+ * Request body: {id: EVENT_ID} 
+ * Response body: Success/Failure messages
  */
 app.post("/event/group/accept", function (req, res, next){
 	let event_id = req.body.id;

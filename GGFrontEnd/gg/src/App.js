@@ -4,7 +4,7 @@ import './App.css';
 import Header from './components/header/Header';
 import Display from './components/display/Display';
 import SideMenu from './components/side-menu/SideMenu';
-import { setLogState } from './redux/actions';
+import { setLogState, setDisplay } from './redux/actions';
 import { getLogState, getDisplay } from './redux/selecter';
 
 
@@ -13,6 +13,7 @@ class App extends Component {
   componentDidMount() {
     // call the auto login
     this.props.setLogState(true);
+    this.props.setDisplay("Timetable");
   }
 
   render() {
@@ -43,4 +44,4 @@ const mapStateToProps = state => {
   return { isLogIn, display };
 };
 
-export default connect(mapStateToProps, { setLogState })(App);
+export default connect(mapStateToProps, { setLogState, setDisplay })(App);

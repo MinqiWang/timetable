@@ -6,7 +6,8 @@ export class Timetable extends Component {
   constructor(props) {
     super(props)
     this.state = {
-       time_tag: []
+       time_tag: [],
+       days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
     }
   }
 
@@ -25,7 +26,7 @@ export class Timetable extends Component {
   }
   
   render() {
-    const {time_tag} = this.state;
+    const {time_tag, days} = this.state;
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
@@ -40,14 +41,7 @@ export class Timetable extends Component {
           </ul>
           <div className="scroll-slots">
               <div className="scroll-slots-col1"></div>
-                <DayColumn id="0"></DayColumn>
-                <DayColumn id="1"></DayColumn>
-
-                <DayColumn id="2"></DayColumn>
-                <DayColumn id="3"></DayColumn>
-                <DayColumn id="4"></DayColumn>
-                <DayColumn id="5"></DayColumn>
-                <DayColumn id="6"></DayColumn>
+                {days.map(day => <DayColumn key={day} col_id={day}></DayColumn>)}
               {/* <div id="col3" className="scroll-slots-col">Mon</div>
               <div id="col4" className="scroll-slots-col">Tue</div>
               <div id="col5" className="scroll-slots-col">Wed</div>

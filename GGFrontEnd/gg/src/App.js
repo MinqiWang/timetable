@@ -5,7 +5,8 @@ import Header from './components/header/Header';
 import Display from './components/display/Display';
 import SideMenu from './components/side-menu/SideMenu';
 import { setLogState, setDisplay } from './redux/actions';
-import { getLogState, getDisplay } from './redux/selecter';
+import { getLogState, getDisplay, getRightMenu } from './redux/selecter';
+import RightMenu from './components/side-menu/RightMenu';
 
 
 
@@ -17,11 +18,12 @@ class App extends Component {
   }
 
   render() {
-    const { isLogIn, display } = this.props;
+    const { isLogIn, display, rightMenu } = this.props;
 
-    const sidemenu = isLogIn? (<div className="App-sidemenu">
+    const sidemenu = isLogIn? (
+    <div className="App-sidemenu">
       <SideMenu/>
-      </div>) : null;
+    </div>) : null;
 
     return (
       <div className="App">
@@ -31,6 +33,7 @@ class App extends Component {
           <div className="App-display">
             <Display display={display} isLogIn={isLogIn}/>
           </div>
+          <RightMenu rightMenu={rightMenu}/>
         </div>
       </div>
     );
@@ -40,8 +43,8 @@ class App extends Component {
 const mapStateToProps = state => {
   const isLogIn = getLogState(state);
   const display = getDisplay(state);
-
-  return { isLogIn, display };
+  const rightMenu = getRightMenu(state);
+  return { isLogIn, display, rightMenu };
 };
 
 export default connect(mapStateToProps, { setLogState, setDisplay })(App);

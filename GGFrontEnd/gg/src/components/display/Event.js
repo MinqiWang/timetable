@@ -1,4 +1,7 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import {setCurrEvent, setRightMenu} from '../../redux/actions'
+import { connect } from 'react-redux';
+import { getCurrentEvent } from '../../redux/selecter';
 
 export class Event extends Component {
 
@@ -9,11 +12,18 @@ constructor(props) {
 }
 
 componentDidMount() {
-    const {event, col_id} = this.props;
-    this.makeEventListener(event.id, col_id);
+    let {event, col_id, setCurrEvent, setRightMenu, curr_event} = this.props;
+    console.log("didmount"+event.id+curr_event);
+    this.makeEventListener(event.id, col_id, event, curr_event, setCurrEvent, setRightMenu);
 }
 
-makeEventListener(id, col_id) {
+componentDidUpdate() {
+    let {event, col_id, setCurrEvent, setRightMenu, curr_event} = this.props;
+    console.log("didmount"+event.id+curr_event);
+    this.makeEventListener(event.id, col_id, event, curr_event, setCurrEvent, setRightMenu);
+}
+
+makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
     const element = document.querySelector('#' + id);
     const resizer = document.querySelector('#resizer' + id);
     const container = document.querySelector('#' + col_id);
@@ -41,6 +51,20 @@ makeEventListener(id, col_id) {
         container.addEventListener('mousemove', adjust);
         container.addEventListener('mouseup', stopAdjust);
         container.addEventListener('mouseleave', stopAdjust);
+    })
+
+    drager.addEventListener('dblclick', function(e) {
+        e.preventDefault();
+        console.log("!!!!!!"+curr_event);
+        if (curr_event) {
+            console.log("!!!!!!"+curr_event);
+            undecorate(document.querySelector('#' + curr_event.id));
+        }
+        container.removeEventListener('mouseleave', stopAdjust);
+        decorate(element);
+        //set the elmt to be the current focused event for the right menu
+        setCurrEvent(event);
+        setRightMenu("Info");
     })
       
     function adjust(e) {
@@ -75,7 +99,6 @@ makeEventListener(id, col_id) {
         element.style.zIndex = "0";
     }
 
-    
     function stopAdjust() {
         container.removeEventListener('mousemove', adjust);
         undecorate(element);
@@ -114,7 +137,6 @@ makeEventListener(id, col_id) {
 
   render() {
     const {event} = this.props;
-    console.log(event);
     const eventStyle = {
         top: event.top,
         height: event.height,
@@ -128,4 +150,10 @@ makeEventListener(id, col_id) {
   }
 }
 
-export default Event
+const mapStateToProps = state => {
+    const curr_event = getCurrentEvent(state);
+    return {curr_event};
+};
+
+
+export default connect(mapStateToProps, {setCurrEvent, setRightMenu})(Event);

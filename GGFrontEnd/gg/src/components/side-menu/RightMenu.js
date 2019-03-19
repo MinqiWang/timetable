@@ -1,4 +1,6 @@
 import React, { Component } from 'react'
+import EditMode from './EditMode';
+import InfoMode from './InfoMode';
 
 export class RightMenu extends Component {
 
@@ -7,10 +9,10 @@ export class RightMenu extends Component {
     let rightmenu_page;
     switch (rightMenu) {
       case "Edit":
-        rightmenu_page = (<div className="App-sidemenu">edit</div>);
+        rightmenu_page = (<EditMode/>);
         break;
       case "Info":
-        rightmenu_page = (<div className="App-sidemenu">info</div>);
+        rightmenu_page = (<InfoMode/>);
         break;
       case "Close":
         rightmenu_page = null;

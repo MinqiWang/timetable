@@ -1,7 +1,8 @@
-import {SET_RIGHT_MENU} from '../actionTypes';
+import {SET_RIGHT_MENU, SET_CURR_EVENT} from '../actionTypes';
 
 const initialState = {
-    rightMenu: "Close"
+    rightMenu: "Close",
+    currentEvent: null
 }
 
 export default function(state = initialState, action) {
@@ -11,6 +12,13 @@ export default function(state = initialState, action) {
             return {
                 ...state,
                 rightMenu
+            }
+        }
+        case SET_CURR_EVENT: {
+            const {currentEvent} = action.payload;
+            return {
+                ...state,
+                currentEvent
             }
         }
         default:

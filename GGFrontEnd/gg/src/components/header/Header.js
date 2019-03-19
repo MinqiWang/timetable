@@ -1,4 +1,5 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import UserImage from './UserImage';
@@ -6,6 +7,7 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import UserMenu from './UserMenu';
 import logo from '../../logo.svg';
 import {loginIn} from '../../configs/ajax'
+import { setLogState, setDisplay } from '../../redux/actions'
 
 /* This is the component responsible for Main Nav like User Home, Info, Control SignIn/Out UX (not Display Nav)*/
 export class Header extends Component {
@@ -15,7 +17,9 @@ export class Header extends Component {
       case "1":
         return console.log("do userinfo")
       case "2":
-        return console.log("do sign out")
+        this.props.setLogState(false);
+        this.props.setDisplay("SignInUp");
+        return
       default:
         return alert("I do not know what you want me to do")
     }
@@ -41,8 +45,8 @@ export class Header extends Component {
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
                 <Nav className="mr-auto">
-                  <Nav.Link href="#timetable">Timetable</Nav.Link>
-                  <Nav.Link href="#map">Map</Nav.Link>
+                  <Nav.Link onSelect={() => this.props.setDisplay("Timetable")}>Timetable</Nav.Link>
+                  <Nav.Link onSelect={() => this.props.setDisplay("Map")}>Map</Nav.Link>
                   {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
                       <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
                       <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
@@ -68,4 +72,9 @@ export class Header extends Component {
   }
 }
 
-export default Header
+const mapStateToProps = state => {
+  
+  return { };
+};
+
+export default connect(mapStateToProps, { setLogState, setDisplay })(Header);

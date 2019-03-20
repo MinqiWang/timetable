@@ -1,8 +1,11 @@
-import {SET_RIGHT_MENU, SET_CURR_EVENT} from '../actionTypes';
+import {SET_RIGHT_MENU, SET_CURR_EVENT, SET_DEFAULT_EVENT} from '../actionTypes';
 
 const initialState = {
     rightMenu: "Close",
-    currentEvent: null
+    currentEvent: null,
+    defaultEvent: {detail:[],
+        timetable_slots: {"Sun": [], "Mon": [], 
+    "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}}
 }
 
 export default function(state = initialState, action) {
@@ -19,6 +22,13 @@ export default function(state = initialState, action) {
             return {
                 ...state,
                 currentEvent
+            }
+        }
+        case SET_DEFAULT_EVENT: {
+            const {defaultEvent} = action.payload;
+            return {
+                ...state,
+                defaultEvent
             }
         }
         default:

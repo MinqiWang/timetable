@@ -1,4 +1,4 @@
-import {SETLOG, SET_DISPLAY, SET_CURR_EVENT, SET_RIGHT_MENU} from './actionTypes';
+import {SETLOG, SET_DISPLAY, SET_CURR_EVENT, SET_RIGHT_MENU, SET_DEFAULT_EVENT} from './actionTypes';
 import rightMenu from './reducers/rightMenu';
 
 export const setLogState = isLogIn => ({
@@ -28,3 +28,11 @@ export const setRightMenu = rightMenu => ({
         rightMenu
     }
 });
+
+export const setDefaultEvent = defaultEvent => ({
+    type: SET_DEFAULT_EVENT,
+    payload: {
+        defaultEvent
+    }
+});
+

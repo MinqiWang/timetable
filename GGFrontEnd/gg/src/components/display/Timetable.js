@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
+import {setCurrEvent, setRightMenu, setDefaultEvent} from '../../redux/actions'
+import { connect } from 'react-redux';
+import { getDefaultEvent } from '../../redux/selecter';
 
 export class Timetable extends Component {
   constructor(props) {
@@ -8,6 +11,9 @@ export class Timetable extends Component {
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+       slots: {"Sun": [{SLOT_ID: "slot_a", EVENT_ID: "a", EVENT_NAME: "hello world", EVENT_HAS_DETAIL: false, START_TIME: "18:45:00", LENGTH: "120", WEEK_OF: "2019-03-17", DAY_OF_THE_WEEK: 0, IS_REPEATING: false, 
+       OBSCURED_BY: null, IS_EMPTY_OBSCURE: null}], "Mon": [], 
+       "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}
     }
   }
 
@@ -26,13 +32,18 @@ export class Timetable extends Component {
   }
   
   render() {
-    const {time_tag, days} = this.state;
+    const {time_tag, days, slots} = this.state;
+    const {default_event} = this.props;
+    console.log(slots["Sun"]);
+    console.log(default_event);
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
       <div className="Timetable">
         <div className="Timetable-header">
-          title
+          <button>prev week</button>
+          <button>next week</button>
+          <div>this week</div>
         </div>
         <div className="Timetable-scroll">
           <ul className="time-tag">
@@ -41,7 +52,7 @@ export class Timetable extends Component {
           </ul>
           <div className="scroll-slots">
               <div className="scroll-slots-col1"></div>
-                {days.map(day => <DayColumn key={day} col_id={day}></DayColumn>)}
+                {days.map(day => <DayColumn key={day} col_id={day} slots={slots[day]} default_slots={default_event.timetable_slots[day]}></DayColumn>)}
               {/* <div id="col3" className="scroll-slots-col">Mon</div>
               <div id="col4" className="scroll-slots-col">Tue</div>
               <div id="col5" className="scroll-slots-col">Wed</div>
@@ -58,4 +69,10 @@ export class Timetable extends Component {
   }
 }
 
-export default Timetable
+const mapStateToProps = state => {
+  const default_event = getDefaultEvent(state);
+  console.log(default_event);
+  return {default_event};
+};
+
+export default connect(mapStateToProps, {})(Timetable);

@@ -24,6 +24,8 @@
 }
 
 .Timetable-header {
+    display: flex;
+    flex: 1 1 auto;
     background-color: red;
 }
 

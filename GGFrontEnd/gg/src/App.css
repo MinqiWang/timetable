@@ -55,6 +55,13 @@
   min-height: 200px;
 }
 
+.App-rightmenu {
+  display: flex;
+  flex-flow: column nowrap;
+  min-width: 250px;
+  min-height: 250px;
+}
+
 .App-display {
   display: flex;
   flex: 1 1 auto;

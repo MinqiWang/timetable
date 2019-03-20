@@ -13,14 +13,12 @@ constructor(props) {
 
 componentDidMount() {
     let {event, col_id, setCurrEvent, setRightMenu, curr_event} = this.props;
-    console.log("didmount"+event.id+curr_event);
-    this.makeEventListener(event.id, col_id, event, curr_event, setCurrEvent, setRightMenu);
+    this.makeEventListener(event.SLOT_ID, col_id, event, curr_event, setCurrEvent, setRightMenu);
 }
 
 componentDidUpdate() {
     let {event, col_id, setCurrEvent, setRightMenu, curr_event} = this.props;
-    console.log("didmount"+event.id+curr_event);
-    this.makeEventListener(event.id, col_id, event, curr_event, setCurrEvent, setRightMenu);
+    this.makeEventListener(event.SLOT_ID, col_id, event, curr_event, setCurrEvent, setRightMenu);
 }
 
 makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
@@ -44,7 +42,6 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
 
     drager.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        decorate(element);
         original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
         original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
         difference_y = e.y - original_y;
@@ -55,20 +52,22 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
 
     drager.addEventListener('dblclick', function(e) {
         e.preventDefault();
-        console.log("!!!!!!"+curr_event);
+        e.stopPropagation();
         if (curr_event) {
-            console.log("!!!!!!"+curr_event);
-            undecorate(document.querySelector('#' + curr_event.id));
+            console.log(curr_event);
+            undecorate(Array.from(document.querySelectorAll('.' + curr_event.EVENT_ID)));
         }
         container.removeEventListener('mouseleave', stopAdjust);
-        decorate(element);
+        decorate(Array.from(document.querySelectorAll('.' + event.EVENT_ID)));
         //set the elmt to be the current focused event for the right menu
+        // axios get detail, make the structual for current event
         setCurrEvent(event);
         setRightMenu("Info");
     })
       
     function adjust(e) {
         e.preventDefault();
+        decorate([element]);
         let temp_top = (e.y - difference_y);
         let max_top = Math.ceil(temp_top/10)*10;
         let min_top = Math.floor(temp_top/10)*10;
@@ -87,27 +86,32 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
         }
     }
 
-    function decorate(element) {
-        element.style.width = "95%";
-        element.style.boxShadow = "2px 2px 2px 2px #00000055";
-        element.style.zIndex = "1";
+    function decorate(elements) {
+        console.log(element);
+        elements.map(element => {
+            element.style.width = "95%";
+            element.style.boxShadow = "2px 2px 2px 2px #00000055";
+            element.style.zIndex = "1";
+        })
     }
 
-    function undecorate(element) {
-        element.style.width = "90%";
-        element.style.boxShadow = "";
-        element.style.zIndex = "0";
+    function undecorate(elements) {
+        elements.map(element=>{
+            element.style.width = "90%";
+            element.style.boxShadow = "";
+            element.style.zIndex = "0";
+        })
     }
 
     function stopAdjust() {
         container.removeEventListener('mousemove', adjust);
-        undecorate(element);
+        undecorate([element]);
     // do save
     }
 
     resizer.addEventListener('mousedown', function(e) {
         e.preventDefault()
-        decorate(element);
+        decorate([element]);
         original_height_resizer = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
         original_y_resizer = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
         height_in_progress = original_height_resizer;
@@ -130,21 +134,35 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
 
       function stopResize() {
         container.removeEventListener('mousemove', resize);
-        undecorate(element);
+        undecorate([element]);
         // do save
       }
   }
 
   render() {
-    const {event} = this.props;
+    const {event, shouldDecorate} = this.props;
+    let time_array = event.START_TIME.split(":");
+    let bar = parseInt(time_array[0]);
+    let index = parseInt(time_array[1]);
+    let top = bar*40 + (index/15)*10;
+
+    let height = parseInt(event.LENGTH)/15*10;
+
     const eventStyle = {
-        top: event.top,
-        height: event.height,
+        top: top + "px",
+        height: height + "px",
     };
+
+    if (shouldDecorate) {
+        eventStyle.width = "95%";
+        eventStyle.boxShadow = "2px 2px 2px 2px #00000055";
+        eventStyle.zIndex = "1";  
+    }
+
     return (
-    <div id={event.id} className="event" style={eventStyle}>
-        <div id={"draggable"+event.id} className="draggable"></div>
-        <div id={"resizer"+event.id} className="resizer"></div>
+    <div id={event.SLOT_ID} className={"event " + event.EVENT_ID} style={eventStyle}>
+        <div id={"draggable"+event.SLOT_ID} className="draggable"></div>
+        <div id={"resizer"+event.SLOT_ID} className="resizer"></div>
     </div>
     )
   }

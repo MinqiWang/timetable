@@ -4,6 +4,10 @@ const fs = require("fs");
 const express = require('express');
 const app = express();
 
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
 const mysql   = require('mysql');
 const pool = mysql.createPool({
 	connectionLimit: 10,
@@ -27,7 +31,7 @@ app.use(function (req, res, next){
     next();
 });
 
-const logAPIerror = function(API_route){
+const logAPIerror = function(API_route, error){
 	console.log(EYE_CATCHER);
 	console.log("Error in " + API_route + ":");
 	console.log(error);
@@ -244,7 +248,7 @@ app.get('/private/', isAuthenticated, function (req, res, next) {
  * Request body:
  * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
-app.get('/auth/retrieveUserInfo/:id?', function (req, res, next){
+app.get('/auth/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	if (!user_id) {
 		user_id = req.session.inAppId;
@@ -278,7 +282,7 @@ app.get('/auth/retrieveUserInfo/:id?', function (req, res, next){
  * Request body:
  * Response body: Success/Failure messages 
  */
-app.get('/friend/invite/:user_id', function (req, res, next){
+app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
@@ -320,7 +324,7 @@ app.get('/friend/invite/:user_id', function (req, res, next){
  * Request body:
  * Response body: Success/Failure messages 
  */
-app.get('/friend/invite/accept/:user_id', function (req, res, next){
+app.get('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
@@ -362,7 +366,7 @@ app.get('/friend/invite/accept/:user_id', function (req, res, next){
  * Request body:
  * Response body: [1, 2, 3, 4, 5] (where 1, 2, 3, 4, 5 are all user ids)
  */
-app.get("/friend/retrieveAll", function (req, res, next){
+app.get("/friend/retrieveAll", isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 
 	pool.query("select * from friendship where (id_from=? or id_to=?) and has_accepted=?", [your_id, your_id, true], function (error, results, fields){
@@ -397,12 +401,12 @@ app.get("/friend/retrieveAll", function (req, res, next){
  *
  * URL params:
  * Request body: {detail: [TEXT_CONTENT, MEDIA_CONTENT_URLS, PLACE_NAME], timetable_slots: [[EVENT_NAME, EVENT_HAS_DETAIL, 
- * START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING, OBSCURED_BY, IS_EMPTY_OBSCURE], [...] ...]}
+ * START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING], [...] ...]}
  * Request body example: {detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], timetable_slots: 
- * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...] ...]}
+ * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false], [...] ...]}
  * Response body: Success/Failure messages 
  */
-app.post('/event/create', function(req, res, next){
+app.post('/event/create', isAuthenticated, function(req, res, next){
 	let event_detail = req.body.detail;
 	let timetable_slots = req.body.timetable_slots; // Does not contain an event id
 	let author_id = req.session.inAppId;
@@ -418,7 +422,7 @@ app.post('/event/create', function(req, res, next){
 		}
 		else {
 			// Create event details
-			pool.query("insert into event_detail values (?,?,?,?)", [results[0].event_id].concat(event_detail), function (error2, results2, fields2){
+			pool.query("insert into event_detail values (?,?,?,?)", [results.insertId].concat(event_detail), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/create", error2);
 					res.status(500).end(error2);
@@ -426,7 +430,7 @@ app.post('/event/create', function(req, res, next){
 				else {
 					// Create the timetable slots
 					for (let i = 0; i < num_slots; i++) {
-						pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?,?,?,?,?)", [null, results[0].event_id].concat(timetable_slots[i]), function (error3, results3, fields3) {
+						pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, results.insertId].concat(timetable_slots[i]), function (error3, results3, fields3) {
 							if (error3) {
 								logAPIerror("/event/create", error3);
 								res.status(500).end(error3);
@@ -452,14 +456,15 @@ app.post('/event/create', function(req, res, next){
  *
  * URL params:
  * Request body: {"event_id": EVENT_ID, "obscure_id": OBSCURE_ID, "timetable_slot": [EVENT_NAME, EVENT_HAS_DETAIL, 
- * START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING, OBSCURED_BY, IS_EMPTY_OBSCURE]}
- * Request body example: {"event_id": 1, "obscure_id": 2, "timetable_slot": ["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null]}
+ * START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING]}
+ * Request body example: {"event_id": 1, "obscure_id": 2, "timetable_slot": ["event1", true, "8:45:00", "15", "2019-03-17", 1, false], "week_of": "2019-03-17"}
  * Response body: Success/Failure messages 
  */
- app.post('/event/timetable_slot/create', function (req, res, next){
+ app.post('/event/timetable_slot/create', isAuthenticated, function (req, res, next){
  	let timetable_slot = req.body.timetable_slot; // Does not contain an event id
  	let event_id = req.body.event_id;
  	let obscure_id = req.body.obscure; // Slot id
+ 	let week_of = req.body.week_of;
  	let author_id = req.session.inAppId;
 
 	// Verify event ownership first
@@ -472,7 +477,7 @@ app.post('/event/create', function(req, res, next){
 			res.status(401).end("Access Denied");
 		}
 		else {
-		 	pool.query("insert into timetable_event values(?,?,?,?,?,?,?,?,?,?,?)", [null, event_id].concat(timetable_slot), function (error2, results2, fields2){
+		 	pool.query("insert into timetable_event values(?,?,?,?,?,?,?,?,?)", [null, event_id].concat(timetable_slot), function (error2, results2, fields2){
 		 		if (error2) {
 		 			logAPIerror("/event/timetable_slot/create", error2);
 		 			res.status(500).end(error2);
@@ -480,7 +485,7 @@ app.post('/event/create', function(req, res, next){
 		 		else {
 		 			// Update the slot that is obscured
 		 			if (obscure_id !== null) {
-		 				pool.query("update timetable_event set obscured_by=? where id=?", [results2[0].id, obscure_id], function(error3, results3, fields3){
+		 				pool.query("insert into obscured_event values(?,?)", [obscure_id, week_of], function(error3, results3, fields3){
 		 					if (error3) {
 		 						logAPIerror("/event/timetable_slot/create", error3);
 		 						res.status(500).end(error3);
@@ -489,6 +494,9 @@ app.post('/event/create', function(req, res, next){
 		 						res.json("Timetable slot is created!");
 		 					}
 		 				});
+		 			}
+		 			else {
+		 				res.json("Timetable slot is created!");
 		 			}
 		 		}
 		 	});
@@ -505,7 +513,7 @@ app.post('/event/create', function(req, res, next){
  * Request body example: {"event_id": 1, event_detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], event_name: "event1"}
  * Response body: Success/Failure messages 
  */
-app.patch('/event/update', function (req, res, next){
+app.patch('/event/update', isAuthenticated, function (req, res, next){
 	let event_detail = req.body.detail;
  	let event_id = req.body.event_id;
  	let event_name = req.body.event_name;
@@ -552,7 +560,7 @@ app.patch('/event/update', function (req, res, next){
  * Request body example: {"event_id": 1, "id": 1, "timetable_slot": ["8:45:00", "15", 1]}
  * Response body: Success/Failure messages 
  */
-app.patch('/event/timetable_slot/update', function (req, res, next){
+app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, next){
 	let timetable_slot = req.body.timetable_slot;
  	let event_id = req.body.event_id;
  	let author_id = req.session.inAppId;
@@ -583,13 +591,12 @@ app.patch('/event/timetable_slot/update', function (req, res, next){
 
 /*
  * Delete a timetable slot.
- * If this is actually a slot which obscures another slot, do not delete it but set all fields to null.
  *
  * URL params: slot_id -- The id of the timetable slot to delete; event_id -- The id the corresponding event
  * Request body:
  * Response body: Success/Failure messages
  */
-app.delete('/event/timetable_slot/delete/:id/:event_id', function (req, res, next){
+app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, function (req, res, next){
 	let slot_id = req.params.id;
 	let event_id = req.params.event_id;
 	let author_id = req.session.inAppId;
@@ -603,36 +610,13 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', function (req, res, nex
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("select id from timetable_event where obscured_by=?", [slot_id], function (error2, results2, fields2){
-				if (error2) {
-					logAPIerror("/event/timetable_slot/delete", error2);
-					res.status(500).end(error2);
+			pool.query("delete from timetable_event where id=?", [slot_id], function (error, results, fields){
+				if (error) {
+					logAPIerror("/event/timetable_slot/delete", error);
+					res.status(500).end(error);
 				}
 				else {
-					if (results[0].length !== 0) {
-						// Set all fields to null
-						pool.query("update timetable_event set is_empty_obscure where id=?", [slot_id], function (error3, results3, fields3){
-							if (error3) {
-								logAPIerror("/event/timetable_slot/delete", error3);
-								res.status(500).end(error3);
-							}
-							else {
-								res.json("Timetable slot is deleted!");
-							}
-						});
-					}
-					else {
-						// Delete this slot
-						pool.query("delete from timetable_event where id=?", [slot_id], function (error3, results3, fields3){
-							if (error3) {
-								logAPIerror("/event/timetable_slot/delete", error3);
-								res.status(500).end(error3);
-							}
-							else {
-								res.json("Timetable slot is deleted!");
-							}
-						});
-					}
+					res.json("Timetable slot is deleted!");
 				}
 			});
 		}
@@ -647,7 +631,7 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', function (req, res, nex
  * Reqeust body:
  * Response body: Success/Failure messages
  */
-app.delete("/event/delete/:id", function (req, res, next){
+app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
@@ -660,13 +644,13 @@ app.delete("/event/delete/:id", function (req, res, next){
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("delete from event_detail where id=?", [event_id], function (error2, results2, fields2){
+			pool.query("delete from event_ownership where event_id=?", [event_id], function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/delete", error2);
 					res.status(500).end(error2);
 				}
 				else {
-					// Delete the timetable slots
+					/*// Delete the timetable slots
 					pool.query("delete from timetable_event where event_id=?", [event_id], function (error3 ,results3, fields3){
 						if (error3) {
 							logAPIerror("/event/delete", error3);
@@ -675,7 +659,8 @@ app.delete("/event/delete/:id", function (req, res, next){
 						else {
 							res.json("Event is deleted!");
 						}
-					});
+					});*/
+					res.json("Event is deleted!");
 				}
 			});
 		}
@@ -688,15 +673,39 @@ app.delete("/event/delete/:id", function (req, res, next){
  *
  * URL params: week_of -- The "week-of" day
  * Reqeust body:
- * Response body: [[SLOT_ID, EVENT_ID, EVENT_NAME, EVENT_HAS_DETAIL, START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING, 
- * OBSCURED_BY, IS_EMPTY_OBSCURE], [...], ...]
- * Response body example: [["1", 1", "event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...], ...]
+ * Response body: [[SLOT_ID, EVENT_ID, EVENT_NAME, EVENT_HAS_DETAIL, START_TIME, LENGTH, WEEK_OF, DAY_OF_THE_WEEK, IS_REPEATING], [...], ...]
+ * Response body example:
+ [
+    {
+        "id": 3,
+        "event_id": 2,
+        "event_name": "event1",
+        "event_has_detail": 1,
+        "start_time": "8:45:00",
+        "length": 15,
+        "week_of": "2019-03-17",
+        "day_of_the_week": 1,
+        "is_repeating": 0
+    },
+    {
+        "id": 4,
+        "event_id": 2,
+        "event_name": "event1",
+        "event_has_detail": 1,
+        "start_time": "9:45:00",
+        "length": 15,
+        "week_of": "2019-03-17",
+        "day_of_the_week": 1,
+        "is_repeating": 1
+    }
+]
  */
-app.get("/event/timetable_slot/retrieveAll:week_of", function (req, res, next){
+app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function (req, res, next){
 	let week_of = req.params.week_of;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event where week_of=? and author_id=?", [week_of, author_id], function (error, results, fields){
+	pool.query("select * from timetable_event where week_of=? and id not in (select slot_id from obscured_event where week_of=?) \
+		and event_id in (select event_id from event_ownership where author_id=?)", [week_of, week_of, author_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
 			res.status(500).end(error);
@@ -714,13 +723,21 @@ app.get("/event/timetable_slot/retrieveAll:week_of", function (req, res, next){
  * URL params: id -- The id of the event
  * Request body:
  * Response body: [EVENT_ID, TEXT_CONTENT, MEDIA_CONTENT_URLS, PLACE]
- * Response body example: ["1", "Hello World", "", "UTSC"]
+ * Response body example: 
+ [
+    {
+        "id": 2,
+        "text_content": "Hello world!",
+        "media_content_urls": "",
+        "place": "UTSC"
+    }
+ ]
  */
-app.get("/event/retrieve:id", function (req, res, next){
+app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from event_detail where event=? and author_id=?", [event_id, author_id], function (error, results, fields){
+	pool.query("select * from event_detail where id=?", [event_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/retrieve:id", error);
 			res.status(500).end(error);
@@ -744,7 +761,7 @@ app.get("/event/retrieve:id", function (req, res, next){
  * Reqeust body: {id: EVENT_ID, invitees: [USER_ID1, USER_ID2, ...]}
  * Response body: Success/Failure messages
  */
-app.post("/event/group/create", function (req, res, next){
+app.post("/event/group/create", isAuthenticated, function (req, res, next){
 	let event_id = req.body.id;
 	let author_id = req.session.inAppId;
 	let invitees = req.body.invitees;
@@ -787,7 +804,7 @@ app.post("/event/group/create", function (req, res, next){
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
-app.post("/event/group/accept", function (req, res, next){
+app.post("/event/group/accept", isAuthenticated, function (req, res, next){
 	let event_id = req.body.id;
 	let user_id = req.session.inAppId;
 

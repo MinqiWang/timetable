@@ -27,6 +27,7 @@ export class Timetable extends Component {
   render() {
     const {time_tag} = this.state;
     return (
+      <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
       <div className="Timetable">
         <div className="Timetable-header">
@@ -57,7 +58,8 @@ export class Timetable extends Component {
           </div>
         </div>
       </div>
-      </div>     
+      </div>
+      </div>   
     )
   }
 }

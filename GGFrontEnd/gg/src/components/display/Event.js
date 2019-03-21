@@ -73,12 +73,12 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
         let min_top = Math.floor(temp_top/10)*10;
 
         if ((temp_top % 10) > 5 
-        && (original_y != max_top) 
+        && (original_y !== max_top) 
         && (max_top + original_height) <= maximum_bound) {
             original_y = max_top;
             element.style.top = max_top + 'px';
         } else if ((temp_top % 10) <= 5 
-        && (original_y != min_top) 
+        && (original_y !== min_top) 
         && min_top >= minimum_bound 
         && (min_top + original_height) <= maximum_bound) {
             original_y = min_top;
@@ -124,7 +124,7 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
         let add_height = e.y - original_mouse_y;
         let right_add_height = Math.ceil(add_height/10)*10;
         let temp_height = original_height_resizer + right_add_height;
-        if ((temp_height != height_in_progress) 
+        if ((temp_height !== height_in_progress) 
         && (temp_height >= minimum_bound_resizer) 
         && ((original_y_resizer + temp_height) <= maximum_bound)) {
             height_in_progress = temp_height;

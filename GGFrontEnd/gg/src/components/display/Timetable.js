@@ -1,13 +1,20 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setCurrEvent, setRightMenu, setDefaultEvent} from '../../redux/actions'
+import {setCurrEvent, setRightMenu, setDefaultEvent, setSlots} from '../../redux/actions'
 import { connect } from 'react-redux';
 import { getDefaultEvent } from '../../redux/selecter';
+import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
 
 export class Timetable extends Component {
   constructor(props) {
     super(props)
+    let date = new Date();
+    let now = date.getTime();
+    let dayOfWeek = date.getDay();
+    let weekOfDate = new Date(now - 86400000*dayOfWeek);
+    let week_of = weekOfDate.toISOString().split('T')[0];
+    retrieveAllSlotsInAWeek(this.props.setSlots, week_of);
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],

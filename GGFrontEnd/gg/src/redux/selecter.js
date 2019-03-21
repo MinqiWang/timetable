@@ -5,6 +5,9 @@ export const getCurrentEvent = state => state.rightMenu.currentEvent;
 export const getDefaultEvent = state => state.rightMenu.defaultEvent;
 export const getDefaultEvent_Slots = state => state.rightMenu.defaultEvent.timetable_slots;
 export const getDefaultEvent_Slots_byDay = (state, day) => getDefaultEvent_Slots(state)[day];
+export const getUser = state => state.user.User;
+export const getFriends = state => state.user.Friends;
+
 
 
 

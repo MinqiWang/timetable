@@ -3,7 +3,8 @@ import {weekOfFromMilliSec} from '../actions'
 
 
 const initialState = {
-    slotsInAWeek: [],
+    slotsInAWeek: {"Sun": [], "Mon": [], 
+    "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
     eventDetail: [],
     weekOf: weekOfFromMilliSec()
 }

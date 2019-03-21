@@ -3,7 +3,7 @@ import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
 import {setCurrEvent, setRightMenu, setDefaultEvent, setSlots, setWeekOf, logOut} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf } from '../../redux/selecter';
+import { getDefaultEvent, getWeekOf, getSlots } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
 import {weekOfFromMilliSec} from '../../redux/actions'
 
@@ -61,8 +61,9 @@ export class Timetable extends Component {
   }
 
   render() {
-    const {time_tag, days, slots} = this.state;
-    const {default_event, week_of} = this.props;
+    const {time_tag, days} = this.state;
+    const {default_event, week_of, slots} = this.props;
+    console.log("!!!!!!!!"+slots);
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
@@ -105,7 +106,8 @@ const mapStateToProps = state => {
     console.log(state);
   const default_event = getDefaultEvent(state);
   const week_of = getWeekOf(state);
-  return {default_event, week_of};
+  const slots = getSlots(state);
+  return {default_event, week_of, slots};
 };
 
 export default connect(mapStateToProps, {setWeekOf, logOut, setSlots})(Timetable);

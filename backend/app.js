@@ -718,7 +718,34 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 			res.status(500).end(error);
 		}
 		else {
-			res.json(results);
+			// Format the data
+			let formatted_results = {Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: []};
+			for (let i = 0; i < results.length; i++) {
+				switch (results[i][8]) {
+					case 0:
+						formatted_results.Sun.push(results[i]);
+						break;
+					case 1:
+						formatted_results.Mon.push(results[i]);
+						break;
+					case 2:
+						formatted_results.Tue.push(results[i]);
+						break;
+					case 3:
+						formatted_results.Wed.push(results[i]);
+						break;
+					case 4:
+						formatted_results.Thu.push(results[i]);
+						break;
+					case 5:
+						formatted_results.Fri.push(results[i]);
+						break;
+					case 6:
+						formatted_results.Sat.push(results[i]);
+						break;
+				}
+			}
+			res.json(formatted_results);
 		}
 	});
 	next(); // Correct?

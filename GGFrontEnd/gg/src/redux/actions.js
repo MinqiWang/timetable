@@ -6,14 +6,18 @@ import {SETLOG,
     USER_INFO, 
     FRIEND_LIST,
     WEEK_OF,
-    LOGOUT} from './actionTypes';
+    LOGOUT,
+    SET_SLOTS} from './actionTypes';
 import rightMenu from './reducers/rightMenu';
 
-export const logOut = (err) => {console.log(err); return {
+// {console.log(err); return 
+export const logOut = (err) => ({
     type: LOGOUT,
     payload: {
+        err
     }
-}};
+});
+// }};
 
 export const setDisplay = display => ({
     type: SET_DISPLAY,
@@ -43,7 +47,7 @@ export const setDefaultEvent = defaultEvent => ({
     }
 });
 
-export const setUser = (User = null) => ({
+export const setUser = (User=null) => ({
     type: USER_INFO,
     payload: {
         User
@@ -58,7 +62,7 @@ export const setFriends = (Friends = []) => ({
 });
 
 export const setSlots = (slotsInAWeek = []) => ({
-    type: USER_INFO,
+    type: SET_SLOTS,
     payload: {
         slotsInAWeek
     }

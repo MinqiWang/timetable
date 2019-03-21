@@ -1,12 +1,13 @@
 
 import axios from 'axios'
 import baseURL from './config'
+import {config} from './config'
 
-// export const loginIn = (callback) => {
-//     axios.get(baseURL + "/auth/facebook/")
-//     .then(res => callback(res))
-//     .catch(err => console.log(err))
-// }
+export const logout = (callback) => {
+    axios.get(baseURL + "/logout", config)
+    .then(res => {callback(res)})
+    .catch(err => {callback(err); console.log(err)})
+}
 
 /*
  * Retrieve user info 
@@ -15,9 +16,9 @@ import baseURL from './config'
  * Request body:
  * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
-export const retrieveUserInfo = (callback, errcallback, id="") => {
-    axios.get(baseURL + "/auth/retrieveUserInfo/" + id)
-    .then(res => callback(res))
+export const retrieveUserInfo = (callback1, callback2, errcallback, id="") => {
+    axios.get(baseURL + "/auth/retrieveUserInfo/" + id, config)
+    .then(res => {callback1(res.data[0]); callback2("Timetable")})
     .catch(err => {errcallback(err); console.log(err)})
 }
 
@@ -71,7 +72,8 @@ export const retrieveFriendlist = (callback, errcallback) => {
  * Response body: Success/Failure messages 
  */
 export const createEvent = (callback, errcallback, data) => {
-    axios.post(baseURL + "/event/create", data)
+    console.log(JSON.stringify(data));
+    axios.post(baseURL + "/event/create", JSON.stringify(data), config)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
@@ -157,8 +159,8 @@ export const deleteEvent = (callback, errcallback, event_id) => {
  * Response body example: [["1", 1", "event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...], ...]
  */
 export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of) => {
-    axios.get(baseURL + "/event/timetable_slot/retrieveAll" + week_of)
-    .then(res => callback(res))
+    axios.get(baseURL + "/event/timetable_slot/retrieveAll/" + week_of, config)
+    .then(res => callback(res.data))
     .catch(err => {errcallback(err); console.log(err)})
 }
 

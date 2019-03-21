@@ -9,6 +9,7 @@ export default function(state = initialState, action) {
     switch (action.type) {
         case USER_INFO: {
             const {User} = action.payload;
+            console.log(action.payload);
             return {
                 ...state,
                 User
@@ -22,6 +23,7 @@ export default function(state = initialState, action) {
             }
         }
         case LOGOUT: {
+            console.log("why logout?");
             return initialState
         }
         default:

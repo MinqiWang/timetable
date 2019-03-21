@@ -1,16 +1,26 @@
 import React, { Component } from 'react';
-import {setCurrEvent, setRightMenu} from '../../redux/actions';
+import {setCurrEvent, setRightMenu, logOut} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getCurrentEvent, getDefaultEvent } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import Form from 'react-bootstrap/Form';
+import {createEvent} from '../../configs/ajax';
 
 export class EditMode extends Component {
 
     save = (ev) => {
         console.log("save");
+        let event_name = document.getElementById("edit-event-name").value;
+        let event_desc = document.getElementById("edit-event-text").value;
+
+        let place = "lalal";
+        let data = {detail: ["Hello World", "", "UTSC"], timetable_slots: 
+ [["event1", true, "8:45:00", "15", "2019-03-17", 1, false]]};
+        createEvent(this.props.setCurrEvent, this.props.logOut, data);
     }
     cancel = (ev) => {
+        // focusedEvent to null if it is default
+        // 
         this.props.setRightMenu("Info");
     }
 
@@ -18,10 +28,7 @@ export class EditMode extends Component {
     const {curr_event, default_event} = this.props;
     return (
         <div className="App-rightmenu">
-            <div className="Nav-Btns">
-                <button onClick={this.save}>save</button>
-                <button onClick={this.cancel}>cancel</button>
-            </div>
+            
             <Form>
                 <Form.Group controlId="formEventName">
                     <Form.Label>Event Name</Form.Label>
@@ -48,12 +55,18 @@ export class EditMode extends Component {
                 })} */}
                 
             </Form>
+            <div className="Nav-Btns">
+                <button onClick={this.save}>save</button>
+                <button onClick={this.cancel}>cancel</button>
+            </div>
         </div>
     )
   }
 }
 
 const mapStateToProps = state => {
+    console.log("Edit");
+    console.log(state);
     const curr_event = getCurrentEvent(state);
     const default_event = getDefaultEvent(state);
 
@@ -61,4 +74,4 @@ const mapStateToProps = state => {
 };
 
 
-export default connect(mapStateToProps, {setCurrEvent, setRightMenu})(EditMode);
+export default connect(mapStateToProps, {setCurrEvent, setRightMenu, logOut})(EditMode);

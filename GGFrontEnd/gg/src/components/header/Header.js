@@ -8,6 +8,7 @@ import UserMenu from './UserMenu';
 import logo from '../../logo.svg';
 import { logOut, setDisplay, setUser } from '../../redux/actions'
 import { getUser } from '../../redux/selecter';
+import {logout} from '../../configs/ajax'
 
 
 
@@ -19,9 +20,8 @@ export class Header extends Component {
       case "1":
         return console.log("do userinfo")
       case "2":
-        this.props.setUser();
-        this.props.logOut();
-        this.props.setDisplay("SignInUp");
+        console.log("2");
+        logout(this.props.logOut);
         return
       default:
         return alert("I do not know what you want me to do")
@@ -34,17 +34,21 @@ export class Header extends Component {
   render() {
     const {User} = this.props;
     let nav = User? (<>
-    <Nav.Link onClick={() => this.props.setDisplay("Timetable")}>Timetable</Nav.Link>
-    <Nav.Link onClick={() => this.props.setDisplay("Map")}>Map</Nav.Link>
-    <Dropdown onSelect={(key, e) => this.itemSelectionHandler(key, e)}>
-      <Dropdown.Toggle alignright as={UserImage} id="dropdown-custom-components">
-        Custom toggle
-      </Dropdown.Toggle>
-      <Dropdown.Menu className="dropdown-menu-right" as={UserMenu}>
-        <Dropdown.Item eventKey="1" active>User Info</Dropdown.Item>
-        <Dropdown.Item eventKey="2">Sign Out</Dropdown.Item>
-      </Dropdown.Menu>
-    </Dropdown>
+    <Navbar.Collapse id="basic-navbar-nav">
+      <Nav className="mr-auto">
+        <Nav.Link onClick={() => this.props.setDisplay("Timetable")}>Timetable</Nav.Link>
+        <Nav.Link onClick={() => this.props.setDisplay("Map")}>Map</Nav.Link>
+        <Dropdown onSelect={(key, e) => this.itemSelectionHandler(key, e)}>
+          <Dropdown.Toggle alignright as={UserImage} id="dropdown-custom-components">
+            Custom toggle
+          </Dropdown.Toggle>
+          <Dropdown.Menu className="dropdown-menu-right" as={UserMenu}>
+            <Dropdown.Item eventKey="1" active>User Info</Dropdown.Item>
+            <Dropdown.Item eventKey="2">Sign Out</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+      </Nav>
+    </Navbar.Collapse>
     </>) : null;
     return (
       <>
@@ -60,8 +64,7 @@ export class Header extends Component {
               {' Go? Go!'}
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-                <Nav className="mr-auto">
+            
                   {nav}
                   {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
                       <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
@@ -70,8 +73,7 @@ export class Header extends Component {
                       <NavDropdown.Divider />
                       <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
                   </NavDropdown> */}
-                </Nav>
-            </Navbar.Collapse>
+                
         </Navbar>
       </>
     )
@@ -79,7 +81,10 @@ export class Header extends Component {
 }
 
 const mapStateToProps = state => {
-  const User = getUser(state)
+  console.log("Header");
+  console.log(state);
+  const User = getUser(state);
+  console.log(User);
   return { User };
 };
 

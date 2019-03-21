@@ -69,6 +69,8 @@ export class DayColumn extends Component {
 }
 
 const mapStateToProps = state => {
+    console.log("DayCol");
+    console.log(state);
     const default_event = getDefaultEvent(state);
     return {default_event};
 };

@@ -21,6 +21,7 @@ export class UserImage extends Component {
 
   render() {
     const {User} = this.props;
+    console.log(User);
     return (
       <>
         <OverlayTrigger
@@ -45,6 +46,8 @@ export class UserImage extends Component {
 }
 
 const mapStateToProps = state => {
+  console.log("UserImage");
+    console.log(state);
   const User = getUser(state)
   return { User };
 };

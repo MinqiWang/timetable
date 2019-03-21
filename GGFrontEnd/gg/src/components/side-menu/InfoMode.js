@@ -52,6 +52,8 @@ export class InfoMode extends Component {
 }
 
 const mapStateToProps = state => {
+    console.log("Info");
+    console.log(state);
     const curr_event = getCurrentEvent(state);
     return {curr_event};
 };

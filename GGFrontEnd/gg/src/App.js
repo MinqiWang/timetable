@@ -11,22 +11,28 @@ import RightMenu from './components/side-menu/RightMenu';
 import {retrieveUserInfo} from './configs/ajax';
 
 class App extends Component {
+
   componentDidMount() {
     // call the auto login
-    this.props.setDisplay("Timetable");
+    // this.props.setDisplay("Timetable");
 
-    retrieveUserInfo(function(res) {
-      this.props.setUser(res);
-      this.props.setDisplay("Timetable");
-    }, this.props.logOut)
+    retrieveUserInfo(
+      this.props.setUser,
+      this.props.setDisplay, 
+      this.props.logOut)
   }
 
   componentDidUpdate() {
+    console.log(this.props.User);
+  }
+  componentWillUnmount() {
+    console.log(this.props.User);
+
   }
 
   render() {
     const { User, display, rightMenu } = this.props;
-
+    console.log(this.props.User);
     const sidemenu = User? (
     <div className="App-sidemenu">
       <SideMenu/>
@@ -48,9 +54,15 @@ class App extends Component {
 }
 
 const mapStateToProps = state => {
+  console.log("App");
+  console.log(state);
   const User = getUser(state);
+  console.log(User);
   const display = getDisplay(state);
   const rightMenu = getRightMenu(state);
+  console.log(display);
+  console.log(rightMenu);
+
   return { display, rightMenu, User };
 };
 

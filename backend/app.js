@@ -80,7 +80,13 @@ app.use(cors(corsOptions));*/
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+  if ('OPTIONS' === req.method) {
+	  res.sendStatus(200);
+  } else {
+	  next();
+  }
 });
 
 /* ---- LOGGING done ---- */
@@ -107,6 +113,7 @@ passport.deserializeUser(function(user, done) {
 });
 
 let isAuthenticated = function(req, res, next) {
+	console.log("isAu:"+req.isAuthenticated());
     if (!req.isAuthenticated()) return res.status(401).end("access denied"); 
     else next();
 };
@@ -116,8 +123,8 @@ let isAuthenticated = function(req, res, next) {
  */
 app.get('/logout', isAuthenticated, function(req, res, next){
 	req.logout();
-	res.redirect(REACT_HOMEPAGE);
-	next();
+	// res.redirect(REACT_HOMEPAGE);
+	res.sendStatus(200);
 });
 
 /*

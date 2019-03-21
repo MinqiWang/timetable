@@ -54,7 +54,6 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
         e.preventDefault();
         e.stopPropagation();
         if (curr_event) {
-            console.log(curr_event);
             undecorate(Array.from(document.querySelectorAll('.' + curr_event.EVENT_ID)));
         }
         container.removeEventListener('mouseleave', stopAdjust);
@@ -87,7 +86,6 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
     }
 
     function decorate(elements) {
-        console.log(element);
         elements.map(element => {
             element.style.width = "95%";
             element.style.boxShadow = "2px 2px 2px 2px #00000055";
@@ -169,6 +167,8 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
 }
 
 const mapStateToProps = state => {
+    console.log("Event");
+    console.log(state);
     const curr_event = getCurrentEvent(state);
     return {curr_event};
 };

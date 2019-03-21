@@ -1,4 +1,4 @@
-import {USER_INFO, FRIEND_LIST} from '../actionTypes';
+import {USER_INFO, FRIEND_LIST, LOGOUT} from '../actionTypes';
 
 const initialState = {
     User: null,
@@ -20,6 +20,9 @@ export default function(state = initialState, action) {
                 ...state,
                 Friends
             }
+        }
+        case LOGOUT: {
+            return initialState
         }
         default:
             return state;

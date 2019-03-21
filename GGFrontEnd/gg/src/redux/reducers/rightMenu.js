@@ -1,4 +1,4 @@
-import {SET_RIGHT_MENU, SET_CURR_EVENT, SET_DEFAULT_EVENT} from '../actionTypes';
+import {LOGOUT, SET_RIGHT_MENU, SET_CURR_EVENT, SET_DEFAULT_EVENT} from '../actionTypes';
 
 const initialState = {
     rightMenu: "Close",
@@ -30,6 +30,9 @@ export default function(state = initialState, action) {
                 ...state,
                 defaultEvent
             }
+        }
+        case LOGOUT: {
+            return initialState
         }
         default:
             return state;

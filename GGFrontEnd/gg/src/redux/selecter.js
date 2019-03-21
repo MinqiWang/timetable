@@ -7,6 +7,7 @@ export const getDefaultEvent_Slots = state => state.rightMenu.defaultEvent.timet
 export const getDefaultEvent_Slots_byDay = (state, day) => getDefaultEvent_Slots(state)[day];
 export const getUser = state => state.user.User;
 export const getFriends = state => state.user.Friends;
+export const getWeekOf = state => state.event.weekOf;
 
 
 

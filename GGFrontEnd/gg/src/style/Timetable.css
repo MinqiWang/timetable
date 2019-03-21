@@ -25,8 +25,22 @@
 
 .Timetable-header {
     display: flex;
-    flex: 1 1 auto;
-    background-color: red;
+    flex: 1 0 auto;
+    background-color: rgb(14, 182, 233);
+}
+
+.Timetable-navbtn {
+    display: flex;
+
+    width: 100px;
+    min-width: 100px;
+    font-size: 10px;
+}
+
+.Timetable-week {
+    flex: 1 0 auto;
+    color: white;
+    text-align: center;
 }
 
 .Timetable-scroll {

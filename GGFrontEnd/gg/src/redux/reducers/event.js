@@ -1,8 +1,11 @@
-import {SET_SLOTS, DETAIL_EVENT} from '../actionTypes';
+import {SET_SLOTS, DETAIL_EVENT, WEEK_OF} from '../actionTypes';
+import {weekOfFromMilliSec} from '../actions'
+
 
 const initialState = {
     slotsInAWeek: [],
-    eventDetail: []
+    eventDetail: [],
+    weekOf: weekOfFromMilliSec()
 }
 
 export default function(state = initialState, action) {
@@ -19,6 +22,13 @@ export default function(state = initialState, action) {
             return {
                 ...state,
                 eventDetail
+            }
+        }
+        case WEEK_OF: {
+            const {weekOf} = action.payload;
+            return {
+                ...state,
+                weekOf
             }
         }
         default:

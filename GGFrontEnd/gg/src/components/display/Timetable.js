@@ -1,26 +1,24 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setCurrEvent, setRightMenu, setDefaultEvent, setSlots} from '../../redux/actions'
+import {setCurrEvent, setRightMenu, setDefaultEvent, setSlots, setWeekOf, logOut} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent } from '../../redux/selecter';
+import { getDefaultEvent, getWeekOf } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
+import {weekOfFromMilliSec} from '../../redux/actions'
 
 export class Timetable extends Component {
   constructor(props) {
     super(props)
-    let date = new Date();
-    let now = date.getTime();
-    let dayOfWeek = date.getDay();
-    let weekOfDate = new Date(now - 86400000*dayOfWeek);
-    let week_of = weekOfDate.toISOString().split('T')[0];
-    retrieveAllSlotsInAWeek(this.props.setSlots, week_of);
+    
+    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, this.props.week_of);
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
        slots: {"Sun": [{SLOT_ID: "slot_a", EVENT_ID: "a", EVENT_NAME: "hello world", EVENT_HAS_DETAIL: false, START_TIME: "18:45:00", LENGTH: "120", WEEK_OF: "2019-03-17", DAY_OF_THE_WEEK: 0, IS_REPEATING: false, 
        OBSCURED_BY: null, IS_EMPTY_OBSCURE: null}], "Mon": [], 
-       "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}
+       "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
+       week_num: 0
     }
   }
 
@@ -37,10 +35,43 @@ export class Timetable extends Component {
     }
     this.setState({time_tag: time_tag});
   }
+
+  prev = (ev) => {
+    // let show_week = new Date(this.props.week_of);
+    // console.log(this.props.week_of);
+    // let offset = (new Date()).getTimezoneOffset()*60*1000;
+    // console.log(offset);
+    let week_num = this.state.week_num - 1;
+    let week_of = weekOfFromMilliSec(week_num);
+    retrieveAllSlotsInAWeek(this.props.setSlots, week_of);
+    this.props.setWeekOf(week_of);
+    this.setState({week_num: week_num});
+    
+  }
   
+  next = (ev) => {
+    // let show_week = new Date(this.props.week_of);
+    // console.log(this.props.week_of);
+    // let offset = (new Date()).getTimezoneOffset()*60*1000;
+    // this.props.setWeekOf(weekOfFromMilliSec(show_week.getTime() + offset + 86400000*7));
+    let week_num = this.state.week_num + 1;
+    let week_of = weekOfFromMilliSec(week_num);
+    retrieveAllSlotsInAWeek(this.props.setSlots, week_of);
+    this.props.setWeekOf(week_of);
+    this.setState({week_num: week_num});
+  }
+
+  today = (ev) => {
+    console.log(this.props.week_of);
+    let week_of = weekOfFromMilliSec();
+    retrieveAllSlotsInAWeek(this.props.setSlots, week_of);
+    this.props.setWeekOf(week_of);
+    this.setState({week_num: 0});
+  }
+
   render() {
     const {time_tag, days, slots} = this.state;
-    const {default_event} = this.props;
+    const {default_event, week_of} = this.props;
     console.log(slots["Sun"]);
     console.log(default_event);
     return (
@@ -48,9 +79,13 @@ export class Timetable extends Component {
       <div className="Timetable-wrapper">
       <div className="Timetable">
         <div className="Timetable-header">
-          <button>prev week</button>
-          <button>next week</button>
-          <div>this week</div>
+          <div className="Timetable-navbtn">
+            <button onClick={this.prev}>prev week</button>
+            <button onClick={this.next}>next week</button>
+            <button onClick={this.today}>Today</button>
+          </div>
+          
+          <div className="Timetable-week">{week_of}</div>
         </div>
         <div className="Timetable-scroll">
           <ul className="time-tag">
@@ -78,8 +113,9 @@ export class Timetable extends Component {
 
 const mapStateToProps = state => {
   const default_event = getDefaultEvent(state);
-  console.log(default_event);
-  return {default_event};
+  const week_of = getWeekOf(state);
+  console.log(week_of);
+  return {default_event, week_of};
 };
 
-export default connect(mapStateToProps, {})(Timetable);
+export default connect(mapStateToProps, {setWeekOf, logOut})(Timetable);

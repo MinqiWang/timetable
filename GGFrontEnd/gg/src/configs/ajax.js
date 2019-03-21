@@ -15,10 +15,10 @@ import baseURL from './config'
  * Request body:
  * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
-export const retrieveUserInfo = (callback, id="") => {
+export const retrieveUserInfo = (callback, errcallback, id="") => {
     axios.get(baseURL + "/auth/retrieveUserInfo/" + id)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err => {errcallback(err); console.log(err)})
 }
 
 /*
@@ -28,10 +28,10 @@ export const retrieveUserInfo = (callback, id="") => {
  * Request body:
  * Response body: Success/Failure messages 
  */
-export const invite = (callback, user_id) => {
+export const invite = (callback, errcallback, user_id) => {
     axios.get(baseURL + "/friend/invite/" + user_id)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err => {errcallback(err); console.log(err)})
 }
 
 /*
@@ -41,10 +41,10 @@ export const invite = (callback, user_id) => {
  * Request body:
  * Response body: Success/Failure messages 
  */
-export const accept = (callback, user_id) => {
+export const accept = (callback, errcallback, user_id) => {
     axios.get(baseURL + "/friend/invite/accept/" + user_id)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err => {errcallback(err); console.log(err)})
 }
 
 /*
@@ -54,10 +54,10 @@ export const accept = (callback, user_id) => {
  * Request body:
  * Response body: [1, 2, 3, 4, 5] (where 1, 2, 3, 4, 5 are all user ids)
  */
-export const retrieveFriendlist = (callback) => {
+export const retrieveFriendlist = (callback, errcallback) => {
     axios.get(baseURL + "/friend/retrieveAll")
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -70,10 +70,10 @@ export const retrieveFriendlist = (callback) => {
  * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...] ...]}
  * Response body: Success/Failure messages 
  */
-export const createEvent = (callback, data) => {
+export const createEvent = (callback, errcallback, data) => {
     axios.post(baseURL + "/event/create", data)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -86,10 +86,10 @@ export const createEvent = (callback, data) => {
  * Request body example: {"event_id": 1, "obscure_id": 2, "timetable_slot": ["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null]}
  * Response body: Success/Failure messages 
  */
-export const addTimeslot = (callback, data) => {
+export const addTimeslot = (callback, errcallback, data) => {
     axios.post(baseURL + "/event/timetable_slot/create", data)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -100,10 +100,10 @@ export const addTimeslot = (callback, data) => {
  * Request body example: {"event_id": 1, event_detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], event_name: "event1"}
  * Response body: Success/Failure messages 
  */
-export const updateEvent = (callback, data) => {
+export const updateEvent = (callback, errcallback, data) => {
     axios.patch(baseURL + "/event/update", data)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -114,10 +114,10 @@ export const updateEvent = (callback, data) => {
  * Request body example: {"event_id": 1, "id": 1, "timetable_slot": ["8:45:00", "15", 1]}
  * Response body: Success/Failure messages 
  */
-export const updateTimeslot = (callback, data) => {
-    axios.get(baseURL + "/event/timetable_slot/update")
+export const updateTimeslot = (callback, errcallback, data) => {
+    axios.patch(baseURL + "/event/timetable_slot/update", data)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -128,10 +128,10 @@ export const updateTimeslot = (callback, data) => {
  * Request body:
  * Response body: Success/Failure messages
  */
-export const deleteTimeslot = (callback, slot_id, event_id) => {
+export const deleteTimeslot = (callback, errcallback, slot_id, event_id) => {
     axios.delete(baseURL + "/event/timetable_slot/delete/" + slot_id + "/" + event_id)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -141,10 +141,10 @@ export const deleteTimeslot = (callback, slot_id, event_id) => {
  * Reqeust body:
  * Response body: Success/Failure messages
  */
-export const deleteEvent = (callback, event_id) => {
+export const deleteEvent = (callback, errcallback, event_id) => {
     axios.delete(baseURL + "/event/delete/" + event_id)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /* 
@@ -156,10 +156,10 @@ export const deleteEvent = (callback, event_id) => {
  * OBSCURED_BY, IS_EMPTY_OBSCURE], [...], ...]
  * Response body example: [["1", 1", "event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...], ...]
  */
-export const retrieveAllSlotsInAWeek = (callback, week_of) => {
+export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of) => {
     axios.get(baseURL + "/event/timetable_slot/retrieveAll" + week_of)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err => {errcallback(err); console.log(err)})
 }
 
 /*
@@ -170,10 +170,10 @@ export const retrieveAllSlotsInAWeek = (callback, week_of) => {
  * Response body: [EVENT_ID, TEXT_CONTENT, MEDIA_CONTENT_URLS, PLACE]
  * Response body example: ["1", "Hello World", "", "UTSC"]
  */
-export const retrieveDetailEvent = (callback, event_id) => {
+export const retrieveDetailEvent = (callback, errcallback, event_id) => {
     axios.get(baseURL + "/event/retrieve" + event_id)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 
@@ -184,10 +184,10 @@ export const retrieveDetailEvent = (callback, event_id) => {
  * Reqeust body: {id: EVENT_ID, invitees: [USER_ID1, USER_ID2, ...]}
  * Response body: Success/Failure messages
  */
-export const createGroupEvent = (callback, data) => {
+export const createGroupEvent = (callback, errcallback, data) => {
     axios.post(baseURL + "/event/group/create", data)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 /*
@@ -197,10 +197,10 @@ export const createGroupEvent = (callback, data) => {
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
-export const acceptGroupEvent = (callback, data) => {
+export const acceptGroupEvent = (callback, errcallback, data) => {
     axios.post(baseURL + "/event/group/accept", data)
     .then(res => callback(res))
-    .catch(err => console.log(err))
+    .catch(err =>  {errcallback(err); console.log(err)})
 }
 
 

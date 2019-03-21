@@ -1,4 +1,4 @@
-import {SET_DISPLAY} from '../actionTypes';
+import {SET_DISPLAY, LOGOUT} from '../actionTypes';
 
 const initialState = {
     display: "SignInUp"
@@ -12,6 +12,9 @@ export default function(state = initialState, action) {
                 ...state,
                 display
             }
+        }
+        case LOGOUT: {
+            return initialState
         }
         default:
             return state;

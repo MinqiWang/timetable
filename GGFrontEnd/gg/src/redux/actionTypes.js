@@ -9,6 +9,8 @@ export const USER_INFO = 'USER_INFO';
 export const FRIEND_LIST = 'FRIEND_LIST';
 export const SET_SLOTS = 'SET_SLOTS';
 export const DETAIL_EVENT = 'DETAIL_EVENT';
+export const WEEK_OF = 'WEEK_OF';
+
 
 
 

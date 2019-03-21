@@ -38,6 +38,13 @@ export class InfoMode extends Component {
                 <button onClick={(ev, curr_event) => this.delete(ev, curr_event)}>delete</button>
                 <button onClick={this.close}>close</button>
             </div>
+            
+            <div>curr_event name</div>
+            <div>curr_event text</div>
+            <div>curr_event media</div>
+            <div>curr_event media</div>
+
+
         {/* {curr_event.id} */}
         </div>
     )

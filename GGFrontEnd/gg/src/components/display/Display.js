@@ -11,7 +11,6 @@ import Map from './Map';
 */
 export class Display extends Component {
   render() {
-    // const { isLogIn } = this.props;
     const { display } = this.props;
     let display_page;
     switch (display) {

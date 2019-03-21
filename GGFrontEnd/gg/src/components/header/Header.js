@@ -6,7 +6,7 @@ import UserImage from './UserImage';
 import Dropdown from 'react-bootstrap/Dropdown'
 import UserMenu from './UserMenu';
 import logo from '../../logo.svg';
-import { setLogState, setDisplay, setUser } from '../../redux/actions'
+import { logOut, setDisplay, setUser } from '../../redux/actions'
 import { getUser } from '../../redux/selecter';
 
 
@@ -20,7 +20,7 @@ export class Header extends Component {
         return console.log("do userinfo")
       case "2":
         this.props.setUser();
-        this.props.setLogState(false);
+        this.props.logOut();
         this.props.setDisplay("SignInUp");
         return
       default:
@@ -83,4 +83,4 @@ const mapStateToProps = state => {
   return { User };
 };
 
-export default connect(mapStateToProps, { setLogState, setDisplay, setUser })(Header);
+export default connect(mapStateToProps, { logOut, setDisplay, setUser })(Header);

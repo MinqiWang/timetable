@@ -350,7 +350,7 @@ app.get('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, n
 				}
 				else {
 					// Accept friend invitation
-					pool.query("update friendship set has_accepted=? where id_from=? and id_to=?", [true, your_id, user_id], function(error2, results2, fields2){
+					pool.query("update friendship set has_accepted=? where id_from=? and id_to=?", [true, user_id, your_id], function(error2, results2, fields2){
 						if (error2) {
 							logAPIerror("/friend/invite/accept/:user_id", error2);
 							res.status(500).end(error2);
@@ -786,7 +786,7 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 			let num_finished = 0;
 
 			for (let i = 0; i < num_invitees; i++) {
-				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees], function (error2, results2, fields2){
+				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], false], function (error2, results2, fields2){
 					if (error2) {
 						logAPIerror("/event/group/create", error2);
 						res.status(500).end(error2);

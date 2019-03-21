@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import {setCurrEvent, setRightMenu} from '../../redux/actions';
+import {setFocusEvent, setRightMenu} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getCurrentEvent } from '../../redux/selecter';
+import { getFocusEvent } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import {deleteEvent} from '../../configs/ajax'
 
@@ -19,23 +19,25 @@ export class InfoMode extends Component {
     }
 
     close = (ev) => {
-        this.props.setCurrEvent();
+        this.props.setFocusEvent();
         this.props.setRightMenu("Close");
     }
 
-    delete = (ev, curr_event) => {
-        this.props.setCurrEvent();
-        deleteEvent((res)=>{console.log(res)}, curr_event.Event_ID);
+    delete = (ev) => {
+        const { focused_event } = this.props;
+        this.props.setFocusEvent();
+        deleteEvent((res)=>{console.log(res)}, focused_event.event_id);
+        
         this.props.setRightMenu("Close");
     }
 
   render() {
-    const { curr_event } = this.props;
+    const { focused_event } = this.props;
     return (
         <div className="App-rightmenu">
             <div className="Nav-Btns">
                 <button onClick={this.edit}>edit</button>
-                <button onClick={(ev, curr_event) => this.delete(ev, curr_event)}>delete</button>
+                <button onClick={this.delete}>delete</button>
                 <button onClick={this.close}>close</button>
             </div>
             
@@ -54,8 +56,8 @@ export class InfoMode extends Component {
 const mapStateToProps = state => {
     console.log("Info");
     console.log(state);
-    const curr_event = getCurrentEvent(state);
-    return {curr_event};
+    const focused_event = getFocusEvent(state);
+    return {focused_event};
 };
 
-export default connect(mapStateToProps, {setCurrEvent, setRightMenu})(InfoMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu})(InfoMode);

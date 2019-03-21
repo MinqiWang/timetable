@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import {setCurrEvent, setRightMenu} from '../../redux/actions'
+import {setFocusEvent, setRightMenu} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getCurrentEvent } from '../../redux/selecter';
+import { getFocusEvent } from '../../redux/selecter';
 
 export class Event extends Component {
 
@@ -12,17 +12,17 @@ constructor(props) {
 }
 
 componentDidMount() {
-    let {event, col_id, setCurrEvent, setRightMenu, curr_event} = this.props;
-    this.makeEventListener(event.SLOT_ID, col_id, event, curr_event, setCurrEvent, setRightMenu);
+    let {slot, col_id, setFocusEvent, setRightMenu, focused_event} = this.props;
+    this.makeEventListener(slot.id, col_id, slot, focused_event, setFocusEvent, setRightMenu);
 }
 
 componentDidUpdate() {
-    let {event, col_id, setCurrEvent, setRightMenu, curr_event} = this.props;
-    this.makeEventListener(event.SLOT_ID, col_id, event, curr_event, setCurrEvent, setRightMenu);
+    let {slot, col_id, setFocusEvent, setRightMenu, focused_event} = this.props;
+    this.makeEventListener(slot.id, col_id, slot, focused_event, setFocusEvent, setRightMenu);
 }
 
-makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
-    const element = document.querySelector('#' + id);
+makeEventListener(id, col_id, slot, focused_event, setFocusEvent, setRightMenu) {
+    const element = document.getElementById(id);
     const resizer = document.querySelector('#resizer' + id);
     const container = document.querySelector('#' + col_id);
     const drager = document.querySelector('#draggable' + id);
@@ -53,14 +53,14 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
     drager.addEventListener('dblclick', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        if (curr_event) {
-            undecorate(Array.from(document.querySelectorAll('.' + curr_event.EVENT_ID)));
+        if (focused_event) {
+            undecorate(Array.from(document.querySelectorAll('.' + focused_event.event_id)));
         }
         container.removeEventListener('mouseleave', stopAdjust);
-        decorate(Array.from(document.querySelectorAll('.' + event.EVENT_ID)));
+        decorate(Array.from(document.querySelectorAll('.' + slot.event_id)));
         //set the elmt to be the current focused event for the right menu
         // axios get detail, make the structual for current event
-        setCurrEvent(event);
+        // setFocusEvent(slot);
         setRightMenu("Info");
     })
       
@@ -138,13 +138,16 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
   }
 
   render() {
-    const {event, shouldDecorate} = this.props;
-    let time_array = event.START_TIME.split(":");
+    const {slot, shouldDecorate} = this.props;
+    console.log(slot);
+    console.log(shouldDecorate);
+
+    let time_array = slot.start_time.split(":");
     let bar = parseInt(time_array[0]);
     let index = parseInt(time_array[1]);
     let top = bar*40 + (index/15)*10;
 
-    let height = parseInt(event.LENGTH)/15*10;
+    let height = parseInt(slot.length)/15*10;
 
     const eventStyle = {
         top: top + "px",
@@ -158,9 +161,9 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
     }
 
     return (
-    <div id={event.SLOT_ID} className={"event " + event.EVENT_ID} style={eventStyle}>
-        <div id={"draggable"+event.SLOT_ID} className="draggable"></div>
-        <div id={"resizer"+event.SLOT_ID} className="resizer"></div>
+    <div id={slot.id} className={"event " + slot.event_id} style={eventStyle}>
+        <div id={"draggable"+slot.id} className="draggable"></div>
+        <div id={"resizer"+slot.id} className="resizer"></div>
     </div>
     )
   }
@@ -169,9 +172,9 @@ makeEventListener(id, col_id, event, curr_event, setCurrEvent, setRightMenu) {
 const mapStateToProps = state => {
     console.log("Event");
     console.log(state);
-    const curr_event = getCurrentEvent(state);
-    return {curr_event};
+    const focused_event = getFocusEvent(state);
+    return {focused_event};
 };
 
 
-export default connect(mapStateToProps, {setCurrEvent, setRightMenu})(Event);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu})(Event);

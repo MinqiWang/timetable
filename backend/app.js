@@ -721,7 +721,8 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 			// Format the data
 			let formatted_results = {Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: []};
 			for (let i = 0; i < results.length; i++) {
-				switch (results[i][8]) {
+				console.log(results[i], results[i].day_of_the_week);
+				switch (results[i].day_of_the_week) {
 					case 0:
 						formatted_results.Sun.push(results[i]);
 						break;

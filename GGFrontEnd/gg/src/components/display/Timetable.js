@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setCurrEvent, setRightMenu, setDefaultEvent, setSlots, setWeekOf, logOut} from '../../redux/actions'
+import {setRightMenu, setSlots, setWeekOf, logOut} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf, getSlots } from '../../redux/selecter';
+import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
 import {weekOfFromMilliSec} from '../../redux/actions'
 
@@ -15,9 +15,9 @@ export class Timetable extends Component {
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-       slots: {"Sun": [{SLOT_ID: "slot_a", EVENT_ID: "a", EVENT_NAME: "hello world", EVENT_HAS_DETAIL: false, START_TIME: "18:45:00", LENGTH: "120", WEEK_OF: "2019-03-17", DAY_OF_THE_WEEK: 0, IS_REPEATING: false, 
-       OBSCURED_BY: null, IS_EMPTY_OBSCURE: null}], "Mon": [], 
-       "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
+      //  slots: {"Sun": [{SLOT_ID: "slot_a", EVENT_ID: "a", EVENT_NAME: "hello world", EVENT_HAS_DETAIL: false, START_TIME: "18:45:00", LENGTH: "120", WEEK_OF: "2019-03-17", DAY_OF_THE_WEEK: 0, IS_REPEATING: false, 
+      //  OBSCURED_BY: null, IS_EMPTY_OBSCURE: null}], "Mon": [], 
+      //  "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
        week_num: 0
     }
   }
@@ -62,8 +62,8 @@ export class Timetable extends Component {
 
   render() {
     const {time_tag, days} = this.state;
-    const {default_event, week_of, slots} = this.props;
-    console.log("!!!!!!!!"+slots);
+    const {focused_event, week_of, slots} = this.props;
+    console.log(slots);
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
@@ -84,7 +84,7 @@ export class Timetable extends Component {
           </ul>
           <div className="scroll-slots">
               <div className="scroll-slots-col1"></div>
-                {days.map(day => <DayColumn key={day} col_id={day} slots={slots[day]} default_slots={default_event.timetable_slots[day]}></DayColumn>)}
+                {days.map(day => <DayColumn week_of={week_of} key={day} col_id={day} slots={slots[day]} default_slots={focused_event.timetable_slots[day]}></DayColumn>)}
               {/* <div id="col3" className="scroll-slots-col">Mon</div>
               <div id="col4" className="scroll-slots-col">Tue</div>
               <div id="col5" className="scroll-slots-col">Wed</div>
@@ -104,10 +104,10 @@ export class Timetable extends Component {
 const mapStateToProps = state => {
   console.log("Timetable");
     console.log(state);
-  const default_event = getDefaultEvent(state);
+  const focused_event = getFocusEvent(state);
   const week_of = getWeekOf(state);
   const slots = getSlots(state);
-  return {default_event, week_of, slots};
+  return {focused_event, week_of, slots};
 };
 
 export default connect(mapStateToProps, {setWeekOf, logOut, setSlots})(Timetable);

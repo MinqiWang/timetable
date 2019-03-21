@@ -160,7 +160,7 @@ export const deleteEvent = (callback, errcallback, event_id) => {
  */
 export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of) => {
     axios.get(baseURL + "/event/timetable_slot/retrieveAll/" + week_of, config)
-    .then(res => callback(res.data))
+    .then(res => {console.log(res.data); callback(res.data)})
     .catch(err => {errcallback(err); console.log(err)})
 }
 

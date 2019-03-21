@@ -1,13 +1,14 @@
 import {SETLOG, 
-    SET_DISPLAY, 
-    SET_CURR_EVENT, 
-    SET_RIGHT_MENU, 
-    SET_DEFAULT_EVENT, 
+    SET_DISPLAY,
+    SET_RIGHT_MENU,
     USER_INFO, 
     FRIEND_LIST,
     WEEK_OF,
     LOGOUT,
-    SET_SLOTS} from './actionTypes';
+    SET_SLOTS,
+    SET_FOCUS_EVENT,
+    IS_NOTDEFAULT,
+    IS_DEFAULT} from './actionTypes';
 import rightMenu from './reducers/rightMenu';
 
 // {console.log(err); return 
@@ -26,13 +27,6 @@ export const setDisplay = display => ({
     }
 });
 
-export const setCurrEvent = (currentEvent=null) => ({
-    type: SET_CURR_EVENT,
-    payload: {
-        currentEvent
-    }
-});
-
 export const setRightMenu = rightMenu => ({
     type: SET_RIGHT_MENU,
     payload: {
@@ -40,12 +34,23 @@ export const setRightMenu = rightMenu => ({
     }
 });
 
-export const setDefaultEvent = defaultEvent => ({
-    type: SET_DEFAULT_EVENT,
+export const setFocusEvent = (focusedEvent=null) => ({
+    type: SET_FOCUS_EVENT,
     payload: {
-        defaultEvent
+        focusedEvent
     }
 });
+
+export const isDefault = () => ({
+    type: IS_DEFAULT,
+    payload: {}
+});
+
+export const isNotDefault = () => ({
+    type: IS_NOTDEFAULT,
+    payload: {}
+});
+
 
 export const setUser = (User=null) => ({
     type: USER_INFO,
@@ -61,12 +66,13 @@ export const setFriends = (Friends = []) => ({
     }
 });
 
-export const setSlots = (slotsInAWeek = []) => ({
+export const setSlots = (slotsInAWeek = []) => {
+    return {
     type: SET_SLOTS,
     payload: {
         slotsInAWeek
     }
-});
+}};
 
 export const setEventDetail = (eventDetail = []) => ({
     type: FRIEND_LIST,

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import Event from './Event'
-import {setCurrEvent, setRightMenu, setDefaultEvent} from '../../redux/actions'
+import {setRightMenu, setFocusEvent, isDefault, isNotDefault} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent } from '../../redux/selecter';
+import { getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent } from '../../redux/selecter';
 
 
 export class DayColumn extends Component {
@@ -33,23 +33,26 @@ export class DayColumn extends Component {
         let EVENT_HAS_DETAIL = false;
         let START_TIME = this.startTimeFromY(ev.clientY - rect.top);
         let LENGTH = "60";
-        let WEEK_OF = "2019-03-17"; 
+        let WEEK_OF = this.props.week_of; 
         let DAY_OF_THE_WEEK = this.props.col_id; 
         let IS_REPEATING = false;
         let OBSCURED_BY = null; 
         let IS_EMPTY_OBSCURE = null;
-        const event = {detail:[],
+
+        const event = {event_id: EVENT_ID, event_name: EVENT_NAME,
+            detail:[],
             timetable_slots: {"Sun": [], "Mon": [], 
         "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}};
-        event.timetable_slots[DAY_OF_THE_WEEK] = [{SLOT_ID: SLOT_ID, EVENT_ID: EVENT_ID, 
-            EVENT_NAME: EVENT_NAME, EVENT_HAS_DETAIL: false, START_TIME: START_TIME, 
-            LENGTH: LENGTH, WEEK_OF: "2019-03-17", DAY_OF_THE_WEEK: this.props.col_id, 
-            IS_REPEATING: false, OBSCURED_BY: null, IS_EMPTY_OBSCURE: null}];
+
+        event.timetable_slots[DAY_OF_THE_WEEK] = [{id: SLOT_ID, event_id: EVENT_ID, 
+            event_name: EVENT_NAME, event_has_detail: false, start_time: START_TIME, 
+            length: LENGTH, week_of: WEEK_OF, day_of_the_week: this.props.col_id, 
+            is_repeating: false, obscured_by: null, is_empty_obscure: null}];
         /* {detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], timetable_slots: 
  * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...] ...]} */
         // new View with Default value, setDefaultEvent, setCurrentEvent, setRightMenu="Edit"
-        this.props.setDefaultEvent(event);
-        this.props.setCurrEvent(event);
+        this.props.setFocusEvent(event);
+        this.props.isDefault();
         this.props.setRightMenu("Edit");
         // open up the edit right menu with default value
         // if cancel or clicked else where, cancel the view, setDefaultEvent=null, setCurrentEvent=null, setRightMenu="Close"
@@ -57,22 +60,26 @@ export class DayColumn extends Component {
 
     render() {
         const {col_id, default_slots, slots} = this.props;
+        console.log(slots);
+        console.log(default_slots);
+
         return (
         <div id={col_id} onDoubleClick={this.createNewEvent} className="scroll-slots-col">
             {slots.map((slot) => 
-            <Event key={slot.SLOT_ID} col_id={col_id} event={slot}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
             {default_slots.map((slot) =>  
-            <Event key={slot.SLOT_ID} col_id={col_id} event={slot} shouldDecorate={true}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true}></Event>)}
         </div>
         )
     }
 }
 
-const mapStateToProps = state => {
-    console.log("DayCol");
-    console.log(state);
-    const default_event = getDefaultEvent(state);
-    return {default_event};
-};
+// const mapStateToProps = state => {
+//     console.log("DayCol");
+//     console.log(state);
+//     const focused_event = getFocusEvent(state);
+//     const week_of = getWeekOf(state);
+//     return {week_of};
+// };
 
-export default connect(mapStateToProps, {setCurrEvent, setRightMenu, setDefaultEvent})(DayColumn);
+export default connect(null, {isDefault, setRightMenu, setFocusEvent})(DayColumn);

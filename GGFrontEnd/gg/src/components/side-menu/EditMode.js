@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
-import {setCurrEvent, setRightMenu, logOut} from '../../redux/actions';
+import {setRightMenu, logOut, setFocusEvent} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getCurrentEvent, getDefaultEvent } from '../../redux/selecter';
+import { getFocusEvent, getIsDefault } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import Form from 'react-bootstrap/Form';
 import {createEvent} from '../../configs/ajax';
@@ -16,16 +16,19 @@ export class EditMode extends Component {
         let place = "lalal";
         let data = {detail: ["Hello World", "", "UTSC"], timetable_slots: 
  [["event1", true, "8:45:00", "15", "2019-03-17", 1, false]]};
-        createEvent(this.props.setCurrEvent, this.props.logOut, data);
+        createEvent(this.props.setFocusEvent, this.props.logOut, data);
     }
     cancel = (ev) => {
-        // focusedEvent to null if it is default
-        // 
-        this.props.setRightMenu("Info");
+        if (this.props.isDefault) {
+            this.props.setFocusEvent();
+            this.props.setRightMenu("Close");
+        } else {
+            this.props.setRightMenu("Info");
+        }
     }
 
   render() {
-    const {curr_event, default_event} = this.props;
+    const {focusedEvent} = this.props;
     return (
         <div className="App-rightmenu">
             
@@ -33,7 +36,7 @@ export class EditMode extends Component {
                 <Form.Group controlId="formEventName">
                     <Form.Label>Event Name</Form.Label>
                     <Form.Control id="edit-event-name" type="text" placeholder="Enter an Event Name" 
-                    defaultValue={default_event? default_event.Event_Name: curr_event.Event_Name }/>
+                    defaultValue={focusedEvent.event_name}/>
                     {/* <Form.Text className="text-muted">
                     We'll never share your email with anyone else.
                     </Form.Text> */}
@@ -42,7 +45,7 @@ export class EditMode extends Component {
                 <Form.Group controlId="formEventDesc">
                     <Form.Label>Description</Form.Label>
                     <Form.Control id="edit-event-text" type="text" placeholder="Description"
-                    defaultValue={default_event? "" : curr_event.detail.text} />
+                    defaultValue={focusedEvent.detail[0]} />
                 </Form.Group>
                 
                 {/* {curr_event.timetables.map(slot =>{
@@ -67,11 +70,11 @@ export class EditMode extends Component {
 const mapStateToProps = state => {
     console.log("Edit");
     console.log(state);
-    const curr_event = getCurrentEvent(state);
-    const default_event = getDefaultEvent(state);
+    const focusedEvent = getFocusEvent(state);
+    const isDefault = getIsDefault(state);
 
-    return {curr_event, default_event};
+    return {focusedEvent, isDefault};
 };
 
 
-export default connect(mapStateToProps, {setCurrEvent, setRightMenu, logOut})(EditMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut})(EditMode);

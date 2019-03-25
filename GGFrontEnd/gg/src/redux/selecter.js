@@ -9,6 +9,6 @@ export const getUser = state => state.user.User;
 export const getFriends = state => state.user.Friends;
 export const getWeekOf = state => state.event.weekOf;
 export const getSlots = state => state.event.slotsInAWeek;
-
+export const getTargetSlot = state => state.event.targetSlot;
 
 

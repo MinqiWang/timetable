@@ -12,7 +12,7 @@ export const FRIEND_LIST = 'FRIEND_LIST';
 export const SET_SLOTS = 'SET_SLOTS';
 export const DETAIL_EVENT = 'DETAIL_EVENT';
 export const WEEK_OF = 'WEEK_OF';
-
+export const SET_TARGET_SLOT = 'SET_TARGET_SLOT';
 
 
 

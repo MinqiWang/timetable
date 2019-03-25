@@ -3,7 +3,7 @@ import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
 import {setRightMenu, setSlots, setWeekOf, logOut} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent } from '../../redux/selecter';
+import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
 import {weekOfFromMilliSec} from '../../redux/actions'
 
@@ -62,7 +62,7 @@ export class Timetable extends Component {
 
   render() {
     const {time_tag, days} = this.state;
-    const {focused_event, week_of, slots} = this.props;
+    const {focused_event, week_of, slots, isDefault} = this.props;
     console.log(slots);
     return (
       <div className="Timetable-top-wrapper">
@@ -82,9 +82,9 @@ export class Timetable extends Component {
             {time_tag.map(time_obj =>
               <li key={time_obj.ID}>{time_obj.time}</li>)}
           </ul>
-          <div className="scroll-slots">
+          <div className="scroll-slots" onMouseLeave={this.solidifyEvent}>
               <div className="scroll-slots-col1"></div>
-                {days.map(day => <DayColumn week_of={week_of} key={day} col_id={day} slots={slots[day]} default_slots={focused_event.timetable_slots[day]}></DayColumn>)}
+                {days.map((day, index)=> <DayColumn week_of={week_of} key={day} indice={index} col_id={day} slots={slots[day]} default_slots={isDefault? focused_event.timetable_slots[day]: []}></DayColumn>)}
               {/* <div id="col3" className="scroll-slots-col">Mon</div>
               <div id="col4" className="scroll-slots-col">Tue</div>
               <div id="col5" className="scroll-slots-col">Wed</div>
@@ -107,7 +107,8 @@ const mapStateToProps = state => {
   const focused_event = getFocusEvent(state);
   const week_of = getWeekOf(state);
   const slots = getSlots(state);
-  return {focused_event, week_of, slots};
+  const isDefault = getIsDefault(state);
+  return {focused_event, week_of, slots, isDefault};
 };
 
 export default connect(mapStateToProps, {setWeekOf, logOut, setSlots})(Timetable);

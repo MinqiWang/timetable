@@ -1,4 +1,11 @@
-import {SET_SLOTS, DETAIL_EVENT, WEEK_OF, SET_FOCUS_EVENT, IS_NOTDEFAULT, IS_DEFAULT, LOGOUT} from '../actionTypes';
+import {SET_SLOTS, 
+    DETAIL_EVENT, 
+    WEEK_OF, 
+    SET_FOCUS_EVENT, 
+    IS_NOTDEFAULT, 
+    IS_DEFAULT,
+    SET_TARGET_SLOT, 
+    LOGOUT} from '../actionTypes';
 import {weekOfFromMilliSec} from '../actions'
 
 let EVENT_NAME = "default_event";
@@ -9,6 +16,18 @@ const default_focused = {event_id: EVENT_ID, event_name: EVENT_NAME,
     timetable_slots: {"Sun": [], "Mon": [], 
 "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}};
 
+const default_targetSlot = {    
+    isDragging: false,
+    isResizing: false,
+    id: "default_targetSlot",
+    original_height: 0,
+    original_y: 0,
+    original_mouse_y: 0,
+    difference_y: 0,
+    minimum_bound: 0,
+    maximum_bound: 0
+};
+
 const initialState = {
     slotsInAWeek: {"Sun": [], "Mon": [], 
     "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
@@ -16,6 +35,7 @@ const initialState = {
     weekOf: weekOfFromMilliSec(),
     focusedEvent: default_focused,
     isDefault: false,
+    targetSlot: default_targetSlot
 }
 
 export default function(state = initialState, action) {
@@ -61,6 +81,16 @@ export default function(state = initialState, action) {
             return {
                 ...state,
                 isDefault: false
+            }
+        }
+        case SET_TARGET_SLOT: {
+            const {targetSlot} = action.payload;
+            return targetSlot? {
+                ...state,
+                targetSlot
+            } : {
+                ...state,
+                targetSlot: default_targetSlot
             }
         }
         case LOGOUT: {

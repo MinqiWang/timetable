@@ -41,11 +41,9 @@ export class InfoMode extends Component {
                 <button onClick={this.close}>close</button>
             </div>
             
-            <div>curr_event name</div>
-            <div>curr_event text</div>
-            <div>curr_event media</div>
-            <div>curr_event media</div>
-
+            <h1>{focused_event.event_name}</h1>
+            <div>{focused_event.detail}</div>
+            {/* {focused_event.timetable_slots[].map(slot => {<TimeslotDetail slot={slot}></TimeslotDetail>})} */}
 
         {/* {curr_event.id} */}
         </div>
@@ -54,10 +52,7 @@ export class InfoMode extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("Info");
-    console.log(state);
-    const focused_event = getFocusEvent(state);
-    return {focused_event};
+    
 };
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu})(InfoMode);
+export default connect(null, {setFocusEvent, setRightMenu})(InfoMode);

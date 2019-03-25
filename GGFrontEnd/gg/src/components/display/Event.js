@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {setFocusEvent, setRightMenu, isNotDefault, setTargetSlot} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getFocusEvent, getIsDefault } from '../../redux/selecter';
+import { getFocusEvent, getIsDefault, getTargetSlot } from '../../redux/selecter';
 import {decorate, undecorate} from '../../utils'
 
 export class Event extends Component {
@@ -13,22 +13,24 @@ constructor(props) {
   this.resizer_mousedown = this.resizer_mousedown.bind(this);
   
 
-  let time_array = this.props.slot.start_time.split(":");
-    let hour = parseInt(time_array[0]);
-    let mins = parseInt(time_array[1]);
-    let top = hour*40 + (mins/15)*10;
+    // let time_array = this.props.slot.start_time.split(":");
+    // let hour = parseInt(time_array[0]);
+    // let mins = parseInt(time_array[1]);
+    // let top = hour*40 + (mins/15)*10;
+    // console.log("yoyoyo")
 
-    let height = parseInt(this.props.slot.length)/15*10;
-  this.state = {
-      top: top,
-      height: height,
-  }
+    // let height = parseInt(this.props.slot.length)/15*10;
+    this.state = {
+        top: 0,
+        height: 0,
+    }
 }
 
 drager_mousedown = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    let element = e.target;
+    console.log(e);
+    let element = e.currentTarget;
     decorate([element]);
     let original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
     let original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
@@ -40,6 +42,8 @@ drager_mousedown = (e) => {
         isDragging: true,
         isResizing: false,
         id: element.id,
+        top: original_y,
+        height: original_height,
         original_height: original_height,
         original_y: 0,
         original_mouse_y: 0,
@@ -88,11 +92,13 @@ resizer_mousedown = function(e) {
         isDragging: false,
         isResizing: true,
         id: element.id,
+        top: original_y,
+        height: original_height,
         original_height: original_height,
         original_y: original_y,
         original_mouse_y: original_mouse_y,
         difference_y: 0,
-        minimum_bound: 10,
+        minimum_bound: 20,
         maximum_bound: 960
     }
     this.props.setTargetSlot(targetSlot);
@@ -100,13 +106,23 @@ resizer_mousedown = function(e) {
 };
 
   render() {
-    const {slot, shouldDecorate, focused_event} = this.props;
-    const {top, height} = this.state;
+    const {slot, shouldDecorate, focused_event, targetSlot} = this.props;
+    let {top, height} = this.state;
     console.log(slot);
-    console.log(shouldDecorate);
+    console.log(top);
+    console.log(height);
 
-    let hour = Math.floor(top/40);
-    let mins = (top%40)/10*15;
+    let time_array = slot.start_time.split(":");
+    let hour = parseInt(time_array[0]);
+    let mins = parseInt(time_array[1]);
+    top = hour*40 + (mins/15)*10;
+    height = parseInt(slot.length)/15*10;
+
+    console.log(top);
+    console.log(height);
+
+    hour = Math.floor(top/40);
+    mins = (top%40)/10*15;
     if (mins == 0) mins = "00";
     let start_time = +hour + ":" + mins;
 
@@ -127,11 +143,15 @@ resizer_mousedown = function(e) {
     <div id={slot.id} className={"event " + slot.event_id} style={eventStyle} 
     onMouseDown={(e) => this.drager_mousedown(e)}
     onDoubleClick={(e) => this.drager_dblclick(e, slot, shouldDecorate, focused_event)}>
-        {/* <div id={"draggable"+slot.id} className="draggable" > */}
-        {/* <div>{slot.event_name}</div>
-        <div>{start_time}</div> */}
+        <div className="event-info">
+        <div className="event-name-wrapper">
+        <div id={"eventName"+slot.id} className="event-name">{slot.event_name}</div>
+
+        </div>
+        <div id={"eventTime"+slot.id} className="event-time">{start_time}</div>
+        <div id={"eventLength"+slot.id} className="event-length">{slot.length}</div>
         
-        {/* </div> */}
+        </div>
         <div id={"resizer"+slot.id} className="resizer" onMouseDown={this.resizer_mousedown}></div>
     </div>
     )
@@ -143,7 +163,8 @@ const mapStateToProps = state => {
     console.log(state);
     const focused_event = getFocusEvent(state);
     const hasDefault = getIsDefault(state);
-    return {focused_event, hasDefault};
+    const targetSlot = getTargetSlot(state);
+    return {focused_event, hasDefault, targetSlot};
 };
 
 

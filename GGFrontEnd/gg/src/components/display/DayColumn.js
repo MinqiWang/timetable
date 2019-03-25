@@ -93,11 +93,15 @@ export class DayColumn extends Component {
     eventMove = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
-        // console.log("Move");
         // console.log(targetSlot);
         let element = document.getElementById(targetSlot.id);
+        let eventTime = document.getElementById("eventTime"+targetSlot.id);
+        let eventLength = document.getElementById("eventLength"+targetSlot.id);
+
+        console.log("Move"+targetSlot.id);
 
         if (element == null) return;
+
         //if isResizing, do Resizing
         if (targetSlot.isResizing) {
             let add_height = e.clientY - targetSlot.original_mouse_y;
@@ -106,6 +110,7 @@ export class DayColumn extends Component {
             if ( (temp_height >= targetSlot.minimum_bound) 
             && ((targetSlot.original_y + temp_height) <= targetSlot.maximum_bound)) {
                 element.style.height = temp_height + 'px';
+                eventLength.innerHTML = `${+Math.round(temp_height/10*15) + " mins"}`
             }
         }
         //if isDragging, do Dragging
@@ -118,13 +123,20 @@ export class DayColumn extends Component {
             console.log(targetSlot.difference_y);
             if ((temp_top % 10) > 5 
             && (max_top + targetSlot.original_height) <= targetSlot.maximum_bound) {
-                
                 element.style.top = max_top + 'px';
+                let hour = +Math.floor(max_top/40)
+                let mins = (max_top%40)/10*15;
+                let time = hour + ":" + (mins == 0? "00": mins);
+                eventTime.innerHTML = `${time}`
+
             } else if ((temp_top % 10) <= 5 
             && min_top >= targetSlot.minimum_bound 
             && (min_top + targetSlot.original_height) <= targetSlot.maximum_bound) {
-                
                 element.style.top = min_top + 'px';
+                let hour = +Math.floor(min_top/40)
+                let mins = (min_top%40)/10*15;
+                let time = hour + ":" + (mins == 0? "00": mins);
+                eventTime.innerHTML = `${time}`
             }
         }
         //else do nothing

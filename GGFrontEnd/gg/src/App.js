@@ -5,8 +5,9 @@ import Header from './components/header/Header';
 import Display from './components/display/Display';
 import SideMenu from './components/side-menu/SideMenu';
 import { setLogState, setDisplay, setUser, logOut } from './redux/actions';
-import { getLogState, getDisplay, getRightMenu, getUser } from './redux/selecter';
+import { getLogState, getDisplay, getUser } from './redux/selecter';
 import RightMenu from './components/side-menu/RightMenu';
+import Message from './Message'
 
 import {retrieveUserInfo} from './configs/ajax';
 
@@ -23,22 +24,20 @@ class App extends Component {
   }
 
   componentDidUpdate() {
-    console.log(this.props.User);
   }
   componentWillUnmount() {
-    console.log(this.props.User);
 
   }
 
   render() {
-    const { User, display, rightMenu } = this.props;
-    console.log(this.props.User);
+    const { User, display } = this.props;
     const sidemenu = User? (
     <div className="App-sidemenu">
       <SideMenu/>
     </div>) : null;
 
     return (
+      <>
       <div className="App">
         <Header/>
         <div className="App-main">
@@ -46,9 +45,11 @@ class App extends Component {
           <div className="App-display">
             <Display display={display}/>
           </div>
-          <RightMenu rightMenu={rightMenu}/>
+          <RightMenu/>
         </div>
       </div>
+      <Message/>
+      </>
     );
   }
 }
@@ -59,11 +60,10 @@ const mapStateToProps = state => {
   const User = getUser(state);
   console.log(User);
   const display = getDisplay(state);
-  const rightMenu = getRightMenu(state);
   console.log(display);
-  console.log(rightMenu);
 
-  return { display, rightMenu, User };
+
+  return { display, User };
 };
 
 export default connect(mapStateToProps, { logOut, setDisplay, setUser})(App);

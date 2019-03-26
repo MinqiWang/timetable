@@ -58,9 +58,10 @@
 .App-rightmenu {
   display: flex;
   flex-flow: column nowrap;
-  min-width: 250px;
-  min-height: 250px;
-  max-width: 250px;
+  min-width: 600px;
+  min-height: 200px;
+  max-width: 600px;
+  overflow: scroll;
 }
 
 .App-display {

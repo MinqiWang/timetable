@@ -8,7 +8,9 @@ import {SETLOG,
     SET_SLOTS,
     SET_FOCUS_EVENT,
     IS_NOTDEFAULT,
-    IS_DEFAULT} from './actionTypes';
+    IS_DEFAULT,
+    SET_TARGET_SLOT,
+    SET_SHOW_MESSAGE} from './actionTypes';
 import rightMenu from './reducers/rightMenu';
 
 // {console.log(err); return 
@@ -88,14 +90,67 @@ export const setWeekOf = (weekOf = weekOfFromMilliSec()) => ({
     }
 });
 
+export const setTargetSlot = (targetSlot = null) => ({
+    type: SET_TARGET_SLOT,
+    payload: {
+        targetSlot
+    }
+});
 
-export const weekOfFromMilliSec = (week_num = 0, milisec = Date.now()) => {
-    let date = new Date(milisec);
+export const setShowMessage = (showMessage = null) => ({
+    type: SET_SHOW_MESSAGE,
+    payload: {
+        showMessage
+    }
+});
+
+export const weekOfFromMilliSec = (week_num = 0) => {
+    let date = new Date();
     let dayOfWeek = date.getDay();
-    console.log(date.toISOString());
-    console.log(dayOfWeek);
-    
-    let weekOfDate = new Date(milisec - 86400000*dayOfWeek + 86400000*7*week_num);
-    let week_of = weekOfDate.toISOString().split('T')[0];
+    date.setDate(date.getDate() - dayOfWeek + week_num*7);
+    let month = (date.getMonth()+1);
+    if (month < 10) {
+        month = '0'+month;
+    }
+    let week_of = +date.getFullYear() + '-' + month + '-' + date.getDate();
     return week_of;
+}
+
+export const dateString = (week_of, hour, min, dayOfWeek) => {
+    let date = week_of.split("-");
+    let d = new Date();
+    d.setFullYear(date[0], parseInt(date[1])-1, parseInt(date[2]));
+    d.setHours(hour);
+    d.setMinutes(min);
+    d.setDate(d.getDate() + dayOfWeek);
+
+    let month = (d.getMonth()+1);
+    if (month < 10) {
+        month = '0'+month;
+    }
+    let dateString = +d.getFullYear() + '-' + month + '-' + d.getDate();
+    return dateString;
+}
+
+export const dateStringToWeekOf = (dateString) => {
+    let date = dateString.split("-");
+    let d = new Date();
+    d.setFullYear(date[0], parseInt(date[1]), parseInt(date[2]));
+    
+    d.setDate(d.getDate() - d.getDay());
+
+    let month = (d.getMonth()+1);
+    if (month < 10) {
+        month = '0'+month;
+    }
+    let week_of = +d.getFullYear() + '-' + month + '-' + d.getDate();
+    
+    return week_of;
+}
+
+export const dateStringToDayofWeek = (dateString) => {
+    let date = dateString.split("-");
+    let d = new Date();
+    d.setFullYear(date[0], parseInt(date[1]), parseInt(date[2]));
+    return d.getDay();
 }

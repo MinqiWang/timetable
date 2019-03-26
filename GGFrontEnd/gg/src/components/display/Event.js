@@ -54,7 +54,6 @@ drager_dblclick = (e, slot, isDefault, focused_event) => {
     e.preventDefault();
     e.stopPropagation();
     if (this.props.rightMenu == "Edit") {
-        console.log("hhh");
         this.props.setShowMessage(onEditMessage);
         return;
     }
@@ -72,7 +71,8 @@ drager_dblclick = (e, slot, isDefault, focused_event) => {
 
     //set the elmt to be the current focused event for the right menu
     // axios get detail, make the structual for current event
-    // this.props.setFocusEvent(slot);
+    
+    // this.props.setFocusEvent(event);
     this.props.setRightMenu("Info");
 
 }

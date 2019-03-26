@@ -29,6 +29,8 @@ export class DayColumn extends Component {
             this.props.setShowMessage(onEditMessage);
             return;
         }
+        
+        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.event_id)));
         var rect = ev.target.getBoundingClientRect();
 
         let EVENT_NAME = "default_event";
@@ -182,7 +184,9 @@ const mapStateToProps = state => {
     // const focused_event = getFocusEvent(state);
     const targetSlot = getTargetSlot(state);
     const rightMenu = getRightMenu(state);
-    return {targetSlot, rightMenu};
+    const focused_event = getFocusEvent(state);
+
+    return {targetSlot, rightMenu, focused_event};
 };
 
 export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage})(DayColumn);

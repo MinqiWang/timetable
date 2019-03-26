@@ -36,7 +36,7 @@ export class TimeslotDetail extends Component {
     let date_string = slot? dateString(slot.week_of, hour, min, slot.day_of_the_week): "";
     let length = slot? slot.length : "";
 
-    let deleteButton = slot? null : <button onClick={this.deleteEvent}>delete above timeslot</button>;
+    let deleteButton = <button onClick={this.deleteEvent}>delete above timeslot</button>;
     if (!isDeleted) {
       return (
         <>

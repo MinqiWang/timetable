@@ -65,7 +65,7 @@ export class EditMode extends Component {
                 <Form.Group controlId="formEventName">
                     <Form.Label>Event Name</Form.Label>
                     <Form.Control id="edit-event-name" type="text" placeholder="Enter an Event Name" 
-                    defaultValue={focused_event.event_name}/>
+                    defaultValue={focused_event.detail.event_name}/>
                     {/* <Form.Text className="text-muted">
                     We'll never share your email with anyone else.
                     </Form.Text> */}
@@ -74,7 +74,7 @@ export class EditMode extends Component {
                 <Form.Group controlId="formEventDesc">
                     <Form.Label>Description</Form.Label>
                     <Form.Control id="edit-event-text" type="text" placeholder="Description"
-                    defaultValue={focused_event.detail[0]} />
+                    defaultValue={focused_event.detail.text_content} />
                 </Form.Group>
 
                 {days.map(day => 
@@ -90,13 +90,13 @@ export class EditMode extends Component {
                 <Form.Group controlId="formEventPlace">
                     <Form.Label>Place</Form.Label>
                     <Form.Control id="edit-event-place" type="text" placeholder="Place"
-                    defaultValue={focused_event.detail[1]} />
+                    defaultValue={focused_event.detail.place} />
                 </Form.Group>
 
                 <Form.Group controlId="formEventMedia">
                     <Form.Label>Image</Form.Label>
                     <Form.Control id="edit-event-media" type="text" placeholder="Media"
-                    defaultValue={focused_event.detail[2]} />
+                    defaultValue={focused_event.detail.media_content_urls} />
                 </Form.Group>                
             </Form>
             <div className="Nav-Btns">

@@ -11,8 +11,12 @@ import {weekOfFromMilliSec} from '../actions'
 let EVENT_NAME = "default_event";
 let EVENT_ID = "default_event_ID";
 
-const default_focused = {event_id: EVENT_ID, event_name: EVENT_NAME,
-    detail:[],
+/*
+{"detail":{"id":2,"text_content":"Hello world!","media_content_urls":"","place":"UTSC","event_name":"event1"},"timetable_slots":{"Sun":[],"Mon":[{"id":3,"event_id":2,"event_name":"event1","event_has_detail":1,"start_time":"8:45:00","length":15,"week_of":"2019-03-17","day_of_the_week":1,"is_repeating":0,"slot_id":null,"obscured_week":null},
+*/
+const default_focused = {
+    detail: {id: EVENT_ID, event_name: EVENT_NAME, text_content: "", media_content_urls: "", 
+    place: ""},
     timetable_slots: {"Sun": [], "Mon": [], 
 "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}};
 

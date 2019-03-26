@@ -47,9 +47,9 @@ export class DayColumn extends Component {
         let OBSCURED_BY = null; 
         let IS_EMPTY_OBSCURE = null;
 
-        const event = {event_id: EVENT_ID, event_name: EVENT_NAME,
-            detail:["", "", ""],
-            timetable_slots: {"Sun": [], "Mon": [], 
+        const event = {detail: {id: EVENT_ID, event_name: EVENT_NAME, text_content: "", media_content_urls: "", 
+        place: ""},
+            timetable_slots: {"Sun": [], "Mon": [],
         "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}};
 
         event.timetable_slots[DAY_OF_THE_WEEK] = [{id: SLOT_ID, event_id: EVENT_ID, 

@@ -26,7 +26,7 @@ export class InfoMode extends Component {
     delete = (ev) => {
         const { focused_event } = this.props;
         this.props.setFocusEvent();
-        deleteEvent((res)=>{console.log(res)}, focused_event.event_id);
+        deleteEvent((res)=>{console.log(res)}, focused_event.detail.id);
         
         this.props.setRightMenu("Close");
     }
@@ -41,8 +41,8 @@ export class InfoMode extends Component {
                 <button onClick={this.close}>close</button>
             </div>
             
-            <h1>{focused_event.event_name}</h1>
-            <div>{focused_event.detail}</div>
+            <h1>{focused_event.detail.event_name}</h1>
+            <div>{focused_event.detail.text_content}</div>
             {/* {focused_event.timetable_slots[].map(slot => {<TimeslotDetail slot={slot}></TimeslotDetail>})} */}
 
         {/* {curr_event.id} */}

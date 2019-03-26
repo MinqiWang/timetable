@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import {setFocusEvent, setRightMenu, isNotDefault, setTargetSlot, setShowMessage} from '../../redux/actions'
+import {logOut, setFocusEvent, setRightMenu, isNotDefault, setTargetSlot, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
 import { getFocusEvent, getIsDefault, getTargetSlot, getRightMenu } from '../../redux/selecter';
 import {decorate, undecorate} from '../../utils'
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import {retrieveAllForEvent} from '../../configs/ajax'
 
 export class Event extends Component {
 
@@ -17,7 +18,7 @@ constructor(props) {
         height: 0,
     }
 }
-
+logOut
 drager_mousedown = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -72,7 +73,7 @@ drager_dblclick = (e, slot, isDefault, focused_event) => {
     //set the elmt to be the current focused event for the right menu
     // axios get detail, make the structual for current event
     
-    // this.props.setFocusEvent(event);
+    retrieveAllForEvent(this.props.setFocusEvent, this.props.logOut, slot.event_id);
     this.props.setRightMenu("Info");
 
 }
@@ -167,4 +168,4 @@ const mapStateToProps = state => {
 };
 
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu, setTargetSlot, setShowMessage})(Event);
+export default connect(mapStateToProps, {logOut, setFocusEvent, setRightMenu, setTargetSlot, setShowMessage})(Event);

@@ -178,6 +178,16 @@ export const retrieveDetailEvent = (callback, errcallback, event_id) => {
     .catch(err =>  {errcallback(err); console.log(err)})
 }
 
+/*
+ * Retrieve all timetable slots + detail info for a given event
+ *
+ */
+export const retrieveAllForEvent = (callback, errcallback, event_id) => {
+    axios.get(baseURL + "/event/timetable_slot/retrieveAllForEvent/" + event_id, config)
+    .then(res => callback(res.data))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
 
 /*
  * Create a group event. (Add a list of invitees)
@@ -204,5 +214,7 @@ export const acceptGroupEvent = (callback, errcallback, data) => {
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
+
+
 
 

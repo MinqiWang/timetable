@@ -7,6 +7,7 @@ import SideMenu from './components/side-menu/SideMenu';
 import { setLogState, setDisplay, setUser, logOut } from './redux/actions';
 import { getLogState, getDisplay, getUser } from './redux/selecter';
 import RightMenu from './components/side-menu/RightMenu';
+import Message from './Message'
 
 import {retrieveUserInfo} from './configs/ajax';
 
@@ -23,22 +24,20 @@ class App extends Component {
   }
 
   componentDidUpdate() {
-    console.log(this.props.User);
   }
   componentWillUnmount() {
-    console.log(this.props.User);
 
   }
 
   render() {
     const { User, display } = this.props;
-    console.log(this.props.User);
     const sidemenu = User? (
     <div className="App-sidemenu">
       <SideMenu/>
     </div>) : null;
 
     return (
+      <>
       <div className="App">
         <Header/>
         <div className="App-main">
@@ -49,6 +48,8 @@ class App extends Component {
           <RightMenu/>
         </div>
       </div>
+      <Message/>
+      </>
     );
   }
 }

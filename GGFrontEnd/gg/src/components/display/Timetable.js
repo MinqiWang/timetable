@@ -1,11 +1,13 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setRightMenu, setSlots, setWeekOf, logOut} from '../../redux/actions'
+import {setRightMenu, setSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault } from '../../redux/selecter';
+import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
 import {weekOfFromMilliSec} from '../../redux/actions'
+import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+
 
 export class Timetable extends Component {
   constructor(props) {
@@ -37,6 +39,12 @@ export class Timetable extends Component {
   }
 
   prev = (ev) => {
+    if (this.props.rightMenu == "Edit") {
+      console.log("hhh");
+
+      this.props.setShowMessage(onEditMessage);
+      return;
+  }
     let week_num = this.state.week_num - 1;
     let week_of = weekOfFromMilliSec(week_num);
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
@@ -46,6 +54,12 @@ export class Timetable extends Component {
   }
   
   next = (ev) => {
+    if (this.props.rightMenu == "Edit") {
+      console.log("hhh");
+
+      this.props.setShowMessage(onEditMessage);
+      return;
+    }
     let week_num = this.state.week_num + 1;
     let week_of = weekOfFromMilliSec(week_num);
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
@@ -54,6 +68,12 @@ export class Timetable extends Component {
   }
 
   today = (ev) => {
+    if (this.props.rightMenu == "Edit") {
+      console.log("hhh");
+
+      this.props.setShowMessage(onEditMessage);
+      return;
+    }
     let week_of = weekOfFromMilliSec();
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
     this.props.setWeekOf(week_of);
@@ -63,7 +83,6 @@ export class Timetable extends Component {
   render() {
     const {time_tag, days} = this.state;
     const {focused_event, week_of, slots, isDefault} = this.props;
-    console.log(slots);
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
@@ -108,7 +127,9 @@ const mapStateToProps = state => {
   const week_of = getWeekOf(state);
   const slots = getSlots(state);
   const isDefault = getIsDefault(state);
-  return {focused_event, week_of, slots, isDefault};
+  const rightMenu = getRightMenu(state);
+
+  return {focused_event, week_of, slots, isDefault, rightMenu};
 };
 
-export default connect(mapStateToProps, {setWeekOf, logOut, setSlots})(Timetable);
+export default connect(mapStateToProps, {setWeekOf, logOut, setSlots,setShowMessage})(Timetable);

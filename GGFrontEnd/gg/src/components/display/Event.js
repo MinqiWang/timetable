@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import {setFocusEvent, setRightMenu, isNotDefault, setTargetSlot} from '../../redux/actions'
+import {setFocusEvent, setRightMenu, isNotDefault, setTargetSlot, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getFocusEvent, getIsDefault, getTargetSlot } from '../../redux/selecter';
+import { getFocusEvent, getIsDefault, getTargetSlot, getRightMenu } from '../../redux/selecter';
 import {decorate, undecorate} from '../../utils'
+import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 
 export class Event extends Component {
 
@@ -11,15 +12,6 @@ constructor(props) {
 
   this.drager_mousedown = this.drager_mousedown.bind(this);
   this.resizer_mousedown = this.resizer_mousedown.bind(this);
-  
-
-    // let time_array = this.props.slot.start_time.split(":");
-    // let hour = parseInt(time_array[0]);
-    // let mins = parseInt(time_array[1]);
-    // let top = hour*40 + (mins/15)*10;
-    // console.log("yoyoyo")
-
-    // let height = parseInt(this.props.slot.length)/15*10;
     this.state = {
         top: 0,
         height: 0,
@@ -29,15 +21,17 @@ constructor(props) {
 drager_mousedown = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log(e);
+    if (this.props.rightMenu == "Edit") {
+        console.log("hhh");
+        this.props.setShowMessage(onEditMessage);
+        return;
+    }
     let element = e.currentTarget;
     decorate([element]);
     let original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
     let original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
     
     let difference_y = e.clientY - original_y;
-    console.log("setDifferece");
-    console.log(e.clientY);
     let targetSlot = {
         isDragging: true,
         isResizing: false,
@@ -59,6 +53,11 @@ drager_mousedown = (e) => {
 drager_dblclick = (e, slot, isDefault, focused_event) => {
     e.preventDefault();
     e.stopPropagation();
+    if (this.props.rightMenu == "Edit") {
+        console.log("hhh");
+        this.props.setShowMessage(onEditMessage);
+        return;
+    }
     // this event is default one
     if (isDefault) return;
 
@@ -81,9 +80,14 @@ drager_dblclick = (e, slot, isDefault, focused_event) => {
 resizer_mousedown = function(e) {
     e.preventDefault();
     e.stopPropagation();
+    if (this.props.rightMenu == "Edit") {
+        console.log("hhh");
+
+        this.props.setShowMessage(onEditMessage);
+        return;
+    }
     let element = e.target.parentNode;
     decorate([element]);
-    console.log(element);
     let original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
     let original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
     // height_in_progress = original_height_resizer;
@@ -108,18 +112,12 @@ resizer_mousedown = function(e) {
   render() {
     const {slot, shouldDecorate, focused_event, targetSlot} = this.props;
     let {top, height} = this.state;
-    console.log(slot);
-    console.log(top);
-    console.log(height);
 
     let time_array = slot.start_time.split(":");
     let hour = parseInt(time_array[0]);
     let mins = parseInt(time_array[1]);
     top = hour*40 + (mins/15)*10;
     height = parseInt(slot.length)/15*10;
-
-    console.log(top);
-    console.log(height);
 
     hour = Math.floor(top/40);
     mins = (top%40)/10*15;
@@ -164,8 +162,9 @@ const mapStateToProps = state => {
     const focused_event = getFocusEvent(state);
     const hasDefault = getIsDefault(state);
     const targetSlot = getTargetSlot(state);
-    return {focused_event, hasDefault, targetSlot};
+    const rightMenu = getRightMenu(state);
+    return {focused_event, hasDefault, targetSlot, rightMenu};
 };
 
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu, setTargetSlot})(Event);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, setTargetSlot, setShowMessage})(Event);

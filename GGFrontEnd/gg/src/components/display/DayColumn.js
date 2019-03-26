@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import Event from './Event'
-import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot} from '../../redux/actions'
+import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent } from '../../redux/selecter';
+import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
 import { undecorate } from '../../utils';
+import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 
 
 export class DayColumn extends Component {
@@ -23,6 +24,11 @@ export class DayColumn extends Component {
     createNewEvent = (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
+        if (this.props.rightMenu == "Edit") {
+            console.log("hhh");
+            this.props.setShowMessage(onEditMessage);
+            return;
+        }
         var rect = ev.target.getBoundingClientRect();
 
         let EVENT_NAME = "default_event";
@@ -61,8 +67,7 @@ export class DayColumn extends Component {
     eventRecreation = (e, targetSlot, colId) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("eventRecreation");
-        console.log(targetSlot);
+        
         if (targetSlot.isDragging) {
             // if isDragging
             //delete old slot with
@@ -77,7 +82,6 @@ export class DayColumn extends Component {
                     // console.log(error);
                 }
                 finally {
-                    console.log(slot_to_move);
                 }
             }
         }
@@ -87,18 +91,17 @@ export class DayColumn extends Component {
     onLeave = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("leave");
     }
 
     eventMove = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
+        
         // console.log(targetSlot);
         let element = document.getElementById(targetSlot.id);
         let eventTime = document.getElementById("eventTime"+targetSlot.id);
         let eventLength = document.getElementById("eventLength"+targetSlot.id);
 
-        console.log("Move"+targetSlot.id);
 
         if (element == null) return;
 
@@ -119,8 +122,7 @@ export class DayColumn extends Component {
             let temp_top = (e.clientY - targetSlot.difference_y);
             let max_top = Math.ceil(temp_top/10)*10;
             let min_top = Math.floor(temp_top/10)*10;
-            console.log("move dragging")
-            console.log(targetSlot.difference_y);
+            
             if ((temp_top % 10) > 5 
             && (max_top + targetSlot.original_height) <= targetSlot.maximum_bound) {
                 element.style.top = max_top + 'px';
@@ -145,12 +147,9 @@ export class DayColumn extends Component {
     solidifyEvent = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
-        console.log("up");
-        console.log(targetSlot);
         let element = document.getElementById(targetSlot.id);
 
         if (element == null) return;
-        console.log(element);
 
         undecorate([element]);
         //reset targetSlot
@@ -161,10 +160,7 @@ export class DayColumn extends Component {
 
     render() {
         const {col_id, default_slots, slots, targetSlot} = this.props;
-        console.log("fakeslot:")
-        // console.log(fake_slot);
-        // console.log(slots);
-        // console.log(default_slots);
+        
         return (
         <div id={col_id} onDoubleClick={this.createNewEvent}
         onMouseEnter={(e) => this.eventRecreation(e, targetSlot, col_id)} 
@@ -185,7 +181,8 @@ const mapStateToProps = state => {
     console.log(state);
     // const focused_event = getFocusEvent(state);
     const targetSlot = getTargetSlot(state);
-    return {targetSlot};
+    const rightMenu = getRightMenu(state);
+    return {targetSlot, rightMenu};
 };
 
-export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot})(DayColumn);
+export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage})(DayColumn);

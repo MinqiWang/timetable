@@ -20,7 +20,6 @@ export class Header extends Component {
       case "1":
         return console.log("do userinfo")
       case "2":
-        console.log("2");
         logout(this.props.logOut);
         return
       default:

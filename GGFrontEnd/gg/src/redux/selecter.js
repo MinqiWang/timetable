@@ -10,5 +10,7 @@ export const getFriends = state => state.user.Friends;
 export const getWeekOf = state => state.event.weekOf;
 export const getSlots = state => state.event.slotsInAWeek;
 export const getTargetSlot = state => state.event.targetSlot;
+export const getShowMessage = state => state.message.showMessage;
+
 
 

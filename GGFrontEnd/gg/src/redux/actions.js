@@ -9,7 +9,8 @@ import {SETLOG,
     SET_FOCUS_EVENT,
     IS_NOTDEFAULT,
     IS_DEFAULT,
-    SET_TARGET_SLOT} from './actionTypes';
+    SET_TARGET_SLOT,
+    SET_SHOW_MESSAGE} from './actionTypes';
 import rightMenu from './reducers/rightMenu';
 
 // {console.log(err); return 
@@ -93,6 +94,13 @@ export const setTargetSlot = (targetSlot = null) => ({
     type: SET_TARGET_SLOT,
     payload: {
         targetSlot
+    }
+});
+
+export const setShowMessage = (showMessage = null) => ({
+    type: SET_SHOW_MESSAGE,
+    payload: {
+        showMessage
     }
 });
 

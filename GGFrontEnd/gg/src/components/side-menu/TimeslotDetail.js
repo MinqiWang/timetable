@@ -33,8 +33,6 @@ export class TimeslotDetail extends Component {
     let time = slot? slot.start_time.split(":") : ["", ""];
     let hour = +time[0];
     let min = +time[1];
-    console.log(hour);
-    console.log(min);
     let date_string = slot? dateString(slot.week_of, hour, min, slot.day_of_the_week): "";
     let length = slot? slot.length : "";
 

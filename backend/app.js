@@ -833,13 +833,13 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 });
 
 /*
- * Accept a group event.
+ * Accept a group event invitation.
  *
  * URL params:
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
-app.post("/event/group/accept", isAuthenticated, function (req, res, next){
+app.patch("/event/group/accept", isAuthenticated, function (req, res, next){
 	let event_id = req.body.id;
 	let user_id = req.session.inAppId;
 
@@ -850,6 +850,53 @@ app.post("/event/group/accept", isAuthenticated, function (req, res, next){
 		}
 		else {
 			res.json("Group event is accepted!");
+		}
+	});
+	next(); // Correct?
+});
+
+/*
+ * Reject a group event invitation.
+ *
+ * URL params: id -- The id of the group event
+ * Request body: {id: EVENT_ID} 
+ * Response body: Success/Failure messages
+ */
+app.delete("/event/group/reject/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("delete from group_event_invitation where event_id=? and Invitee=?", [event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/reject", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json("Group event is rejected!");
+		}
+	});
+	next(); // Correct?
+});
+
+/*
+ * Decline a group event invitation sent by yourself.
+ *
+ * URL params: id -- The id of the group event
+ * Request body: {id: EVENT_ID} 
+ * Response body: Success/Failure messages
+ */
+app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.body.id;
+	let user_id = req.session.inAppId;
+
+	// Check the ownership
+	pool.query("delete from group_event_invitation where event_id=?", [event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/decline", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json("Group event is declined!");
 		}
 	});
 	next(); // Correct?

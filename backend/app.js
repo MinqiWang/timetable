@@ -800,6 +800,23 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
 
 /*
  * Create, update, delete slots + Update detail info for a given event
+ *
+ * Request body example:
+ {
+	"detail_info": ["text content", "URL1,URL2,URL3", "UTSC"],
+	"to_create": 
+	[
+		["new event name", true, "15:30:00", 30, "2019-03-25", 2, false],
+		["new event name", true, "18:00:00", 60, "2019-03-25", 3, true]
+	],
+	"to_update":
+	[
+		["new event name", "9:30:00", 30, "2019-04-01", 3],
+		["new event name", "10:30:00", 30, "2019-04-01", 4]
+	],
+	"to_delete":
+	[5,6]
+}
  */
 app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
@@ -836,7 +853,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 									// Finished all deletions, do update slots
 									let num_processed_updates = 0;
 									for (let i2 = 0; i2 < to_update.length; i2++) {
-										pool.query("update timetable_event set start_time=? and length=? and week=? where id=?", to_update[i2] ,function (error4, results4, fields4){
+										pool.query("update timetable_event set event_name=?, start_time=?, length=?, week_of=? where id=?", to_update[i2] ,function (error4, results4, fields4){
 											if (error4) {
 												logAPIerror("/event/MISC/:id", error4);
 												res.status(500).end(error4);
@@ -847,7 +864,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 													// Finished all updates, do create new slots
 													let num_processed_creates = 0;
 													for (let i3 = 0; i3 < to_create.length; i3++) {
-														pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", to_create[i3], function (error5, results5, fields5){
+														pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, event_id].concat(to_create[i3]), function (error5, results5, fields5){
 															if (error5) {
 																logAPIerror("/event/MISC/:id", error5);
 																res.status(500).end(error5);

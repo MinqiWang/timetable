@@ -582,7 +582,7 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("update timetable_event set start_time=?, length=?, day_of_the_week=? where id=?", timetable_slot.concat(event_id), function (error2, results2, fields2){
+			pool.query("update timetable_event set start_time=?, length=?, day_of_the_week=? where id=?", timetable_slot.concat(slot_id), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/timetable_slot/update", error2);
 					res.status(500).end(error2);
@@ -772,7 +772,7 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
 			res.status(500).end(error);
 		}
 		else {
-			pool.query("select * from timetable_event left join obscured_event on obscured_event.slot_id=timetable_event.id and timetable_event.id=?", [event_id], function (error2, results2, fields2){
+			pool.query("select * from timetable_event left join obscured_event on obscured_event.slot_id=timetable_event.id where timetable_event.event_id=?", [event_id], function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
 					res.status(500).end(error2);
@@ -805,8 +805,74 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 	let detail_info = req.body.detail_info;
+	let to_create = req.body.to_create;
+	let to_update = req.body.to_update;
+	let to_delete = req.body.to_delete;
 
-
+	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/MISC/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			// Update event detail
+			pool.query("update event_detail set text_content=? and media_content_urls=? and place=? where id=?", [detail_info, event_id], function (error2, results2, fields2){
+				if (error) {
+					logAPIerror("/event/MISC/:id", error);
+					res.status(500).end(error);
+				}
+				else {
+					// delete slots
+					let num_processed_deletes = 0;
+					for (let i = 0; i < to_delete.length; i++) {
+						pool.query("delete from timetable_event where id=?", [to_delete[i]], function (error3, results3, fields3){
+							if (error) {
+								logAPIerror("/event/MISC/:id", error);
+								res.status(500).end(error);
+							}
+							else {
+								num_processed_deletes += 1;
+								if (num_processed_deletes === to_delete.length) {
+									// Finished all deletions, do update slots
+									let num_processed_updates = 0;
+									for (let i2 = 0; i2 < to_update.length; i2++) {
+										pool.query("update timetable_event set start_time=? and length=? and week=? where id=?", to_update[i2] ,function (error4, results4, fields4){
+											if (error4) {
+												logAPIerror("/event/MISC/:id", error4);
+												res.status(500).end(error4);
+											}
+											else {
+												num_processed_updates += 1;
+												if (num_processed_updates == to_update.length) {
+													// Finished all updates, do create new slots
+													let num_processed_creates = 0;
+													for (let i3 = 0; i3 < to_create.length; i3++) {
+														pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", to_create[i3], function (error5, results5, fields5){
+															if (error5) {
+																logAPIerror("/event/MISC/:id", error5);
+																res.status(500).end(error5);
+															}
+															else {
+																num_processed_creates += 1;
+																if (num_processed_creates == to_create.length) {
+																	res.json("MISC updates for event " + event_id + " succeeded!");
+																}
+															}
+														});
+													}
+												}
+											}
+										});
+									}
+								}
+							}
+						});
+					}
+				}
+			});
+		}
+	});
+	next();
 });
 
 /*

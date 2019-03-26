@@ -675,6 +675,37 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 	next(); // Correct?
 });
 
+function formatSlotsInfo(results) {
+	let formatted_results = {Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: []};
+	for (let i = 0; i < results.length; i++) {
+		console.log(results[i], results[i].day_of_the_week);
+		switch (results[i].day_of_the_week) {
+			case 0:
+				formatted_results.Sun.push(results[i]);
+				break;
+			case 1:
+				formatted_results.Mon.push(results[i]);
+				break;
+			case 2:
+				formatted_results.Tue.push(results[i]);
+				break;
+			case 3:
+				formatted_results.Wed.push(results[i]);
+				break;
+			case 4:
+				formatted_results.Thu.push(results[i]);
+				break;
+			case 5:
+				formatted_results.Fri.push(results[i]);
+				break;
+			case 6:
+				formatted_results.Sat.push(results[i]);
+				break;
+		}
+	}
+	return formatted_results;
+}
+
 /* 
  * Retrieve all timetable slots for a given week.
  *
@@ -719,37 +750,57 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 		}
 		else {
 			// Format the data
-			let formatted_results = {Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: []};
-			for (let i = 0; i < results.length; i++) {
-				console.log(results[i], results[i].day_of_the_week);
-				switch (results[i].day_of_the_week) {
-					case 0:
-						formatted_results.Sun.push(results[i]);
-						break;
-					case 1:
-						formatted_results.Mon.push(results[i]);
-						break;
-					case 2:
-						formatted_results.Tue.push(results[i]);
-						break;
-					case 3:
-						formatted_results.Wed.push(results[i]);
-						break;
-					case 4:
-						formatted_results.Thu.push(results[i]);
-						break;
-					case 5:
-						formatted_results.Fri.push(results[i]);
-						break;
-					case 6:
-						formatted_results.Sat.push(results[i]);
-						break;
-				}
-			}
+			let formatted_results = formatSlotsInfo(results);
 			res.json(formatted_results);
 		}
 	});
 	next(); // Correct?
+});
+
+/*
+ * Retrieve all timetable slots + detail info for a given event
+ */
+app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			pool.query("select * from timetable_event left join obscured_event on obscured_event.slot_id=timetable_event.id and timetable_event.id=?", [event_id], function (error2, results2, fields2){
+				if (error2) {
+					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
+					res.status(500).end(error2);
+				}
+				else {
+					// Format the data
+					let formatted_slots_results = formatSlotsInfo(results2);
+					pool.query("select * from event_detail where id=?", [event_id], function (error3, results3, fields3) {
+						if (error3) {
+							logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error3);
+							res.status(500).end(error3);
+						}
+						else {
+							res.json([results3[0], formatted_slots_results]);
+						}
+					});
+				}
+			});
+		}
+	});
+	next();
+});
+
+/*
+ * Create, update, delete slots + Update detail info for a given event
+ */
+app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let author_id = req.session.inAppId;
+	
 });
 
 /*
@@ -833,13 +884,13 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 });
 
 /*
- * Accept a group event.
+ * Accept a group event invitation.
  *
  * URL params:
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
-app.post("/event/group/accept", isAuthenticated, function (req, res, next){
+app.patch("/event/group/accept", isAuthenticated, function (req, res, next){
 	let event_id = req.body.id;
 	let user_id = req.session.inAppId;
 
@@ -850,6 +901,53 @@ app.post("/event/group/accept", isAuthenticated, function (req, res, next){
 		}
 		else {
 			res.json("Group event is accepted!");
+		}
+	});
+	next(); // Correct?
+});
+
+/*
+ * Reject a group event invitation.
+ *
+ * URL params: id -- The id of the group event
+ * Request body: {id: EVENT_ID} 
+ * Response body: Success/Failure messages
+ */
+app.delete("/event/group/reject/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("delete from group_event_invitation where event_id=? and Invitee=?", [event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/reject", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json("Group event is rejected!");
+		}
+	});
+	next(); // Correct?
+});
+
+/*
+ * Decline a group event invitation sent by yourself.
+ *
+ * URL params: id -- The id of the group event
+ * Request body: {id: EVENT_ID} 
+ * Response body: Success/Failure messages
+ */
+app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.body.id;
+	let user_id = req.session.inAppId;
+
+	// Check the ownership
+	pool.query("delete from group_event_invitation where event_id=?", [event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/decline", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json("Group event is declined!");
 		}
 	});
 	next(); // Correct?

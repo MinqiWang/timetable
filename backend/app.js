@@ -676,9 +676,11 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 });
 
 function formatSlotsInfo(results) {
+	let event_name = null;
 	let formatted_results = {Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: []};
 	for (let i = 0; i < results.length; i++) {
 		console.log(results[i], results[i].day_of_the_week);
+		event_name = results[i].event_name;
 		switch (results[i].day_of_the_week) {
 			case 0:
 				formatted_results.Sun.push(results[i]);
@@ -703,7 +705,7 @@ function formatSlotsInfo(results) {
 				break;
 		}
 	}
-	return formatted_results;
+	return [formatted_results, event_name];
 }
 
 /* 
@@ -750,7 +752,7 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 		}
 		else {
 			// Format the data
-			let formatted_results = formatSlotsInfo(results);
+			let formatted_results = formatSlotsInfo(results)[0];
 			res.json(formatted_results);
 		}
 	});
@@ -784,7 +786,9 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
 							res.status(500).end(error3);
 						}
 						else {
-							res.json([results3[0], formatted_slots_results]);
+							let event_detail = results3[0];
+							event_detail.event_name = formatted_slots_results[1];
+							res.json({"detail": event_detail, "timetable_slots": formatted_slots_results[0]});
 						}
 					});
 				}
@@ -800,7 +804,9 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
 app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	
+	let detail_info = req.body.detail_info;
+
+
 });
 
 /*

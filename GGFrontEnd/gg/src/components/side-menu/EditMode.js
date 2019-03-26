@@ -19,6 +19,7 @@ export class EditMode extends Component {
     
 
     save = (ev) => {
+        ev.preventDefault();
         console.log("save");
         let event_name = document.getElementById("edit-event-name").value;
         let event_desc = document.getElementById("edit-event-text").value;
@@ -32,6 +33,7 @@ export class EditMode extends Component {
         createEvent(this.props.setFocusEvent, this.props.logOut, data);
     }
     cancel = (ev) => {
+        ev.preventDefault();
         if (this.props.isDefault) {
             this.props.setFocusEvent();
             this.props.setRightMenu("Close");

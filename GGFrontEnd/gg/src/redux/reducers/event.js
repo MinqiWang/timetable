@@ -6,7 +6,7 @@ import {SET_SLOTS,
     IS_DEFAULT,
     SET_TARGET_SLOT, 
     LOGOUT} from '../actionTypes';
-import {weekOfFromMilliSec} from '../actions'
+import {weekOf} from '../actions'
 
 let EVENT_NAME = "default_event";
 let EVENT_ID = "default_event_ID";
@@ -36,7 +36,7 @@ const initialState = {
     slotsInAWeek: {"Sun": [], "Mon": [], 
     "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
     eventDetail: [],
-    weekOf: weekOfFromMilliSec(),
+    weekOf: weekOf(new Date()),
     focusedEvent: default_focused,
     isDefault: false,
     targetSlot: default_targetSlot

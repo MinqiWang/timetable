@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import {setRightMenu, logOut, setFocusEvent} from '../../redux/actions';
+import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, dayOfWeek, setSlots} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getIsDefault } from '../../redux/selecter';
+import { getIsDefault, getCreateList, getDeleteList, getUpdateList, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import Form from 'react-bootstrap/Form';
 import {createEvent} from '../../configs/ajax';
 import TimeslotDetail from './TimeslotDetail';
+import {saveEvent} from '../../configs/ajax'
 
 export class EditMode extends Component {
     constructor(props) {
@@ -13,24 +14,79 @@ export class EditMode extends Component {
     
       this.state = {
         days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        slot_hold: []
+        slot_hold: [],
       }
     }
-    
 
     save = (ev) => {
         ev.preventDefault();
         console.log("save");
         let event_name = document.getElementById("edit-event-name").value;
         let event_desc = document.getElementById("edit-event-text").value;
+        let event_place = document.getElementById("edit-event-place").value;
+        let event_media = document.getElementById("edit-event-media").value;
 
-        let place = "lalal";
+        const {toCreateList, toUpdateList, toDeleteList, 
+            setSlots, logOut, focused_event, week_of} = this.props;
 
-        //get the values from redux Ready_to_Send_Event;
+        //pre-work to fit the data
+        let to_create = [];
+        let to_update = [];
+        for (let [key, value] of Object.entries(toCreateList)) {
+            console.log(key, value);
 
-        let data = {detail: ["Hello World", "", "UTSC"], timetable_slots: 
- [["event1", true, "8:45:00", "15", "2019-03-17", 1, false]]};
-        createEvent(this.props.setFocusEvent, this.props.logOut, data);
+            // validationChecking
+
+            // data looks fine
+            let create_slot = [];
+            create_slot.push(event_name);
+            create_slot.push(true);
+            if (value.mins == "0") value.mins = "00"
+            create_slot.push(value.hour + ":" + value.mins + ":00");
+            create_slot.push(value.length);
+
+            let d = toDate(value.date, value.hour, value.mins);
+            let day_of_week = d.getDay();
+            create_slot.push(weekOf(d));// week_of
+            create_slot.push(day_of_week);// day_of_week
+            create_slot.push(value.repeat);// repeat
+            to_create.push(create_slot);
+        }
+        for (let [key, value] of Object.entries(toUpdateList)) {
+            // validationChecking
+
+            // data looks fine
+            let update_slot = [];
+            update_slot.push(event_name);
+            if (value.mins == "0") value.mins = "00";
+            update_slot.push(value.hour + ":" + value.mins + ":00");
+            update_slot.push(value.length);
+
+            let d = toDate(value.date, value.hour, value.mins);
+            let day_of_week = d.getDay();
+
+            update_slot.push(weekOf(d));// week_of
+            update_slot.push(day_of_week);// day_of_week
+            update_slot.push(+key.split("$")[1]);// slot_id of slot need updating
+            
+            to_update.push(update_slot);
+        }
+        
+        let toSend =
+        {
+           "detail_info": [event_desc, event_media, event_place],
+           "to_create": 
+           to_create,
+           "to_update":to_update,
+           "to_delete":
+           toDeleteList
+       }
+
+       saveEvent(setSlots, logOut, focused_event.detail.id, toSend, week_of);
+
+       console.log(toSend);
+       
+        // createEvent(this.props.setFocusEvent, this.props.logOut, data);
     }
     cancel = (ev) => {
         ev.preventDefault();
@@ -61,7 +117,6 @@ export class EditMode extends Component {
                 <button onClick={this.cancel}>cancel</button>
             </div>
             <Form>
-                
                 <Form.Group controlId="formEventName">
                     <Form.Label>Event Name</Form.Label>
                     <Form.Control id="edit-event-name" type="text" placeholder="Enter an Event Name" 
@@ -79,11 +134,13 @@ export class EditMode extends Component {
 
                 {days.map(day => 
                 <Fragment key={day}>{focused_event.timetable_slots[day].map(slot=>
-                    <TimeslotDetail key={slot.id} slot={slot} focused_event={focused_event}/>)
+                    <TimeslotDetail key={slot.id} slot={slot} uniqueKey={"slot$" + slot.id} focused_event={focused_event} 
+                    />)
                 }</Fragment>
                 )}
                 
-                {slot_hold.map((item, index) => <TimeslotDetail key={index}/>)}   
+                {slot_hold.map((item, index) => <TimeslotDetail key={"slot_hold$" + index} uniqueKey={"slot_hold" + index} 
+                />)}   
             
                 <button onClick={this.addSlot}>add slot</button>
 
@@ -112,8 +169,12 @@ const mapStateToProps = state => {
     console.log("Edit");
     console.log(state);
     const isDefault = getIsDefault(state);
-    return {isDefault};
+    const toCreateList = getCreateList(state);
+    const toDeleteList = getDeleteList(state);
+    const toUpdateList = getUpdateList(state);
+    const week_of = getWeekOf(state);
+    return {isDefault, week_of, toCreateList, toDeleteList, toUpdateList};
 };
 
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut})(EditMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots})(EditMode);

@@ -5,7 +5,7 @@ import {setRightMenu, setSlots, setWeekOf, logOut, setShowMessage} from '../../r
 import { connect } from 'react-redux';
 import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
-import {weekOfFromMilliSec} from '../../redux/actions'
+import {weekOf} from '../../redux/actions'
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 
 
@@ -39,14 +39,14 @@ export class Timetable extends Component {
   }
 
   prev = (ev) => {
-    if (this.props.rightMenu == "Edit") {
+    if (this.props.rightMenu === "Edit") {
       console.log("hhh");
 
       this.props.setShowMessage(onEditMessage);
       return;
   }
     let week_num = this.state.week_num - 1;
-    let week_of = weekOfFromMilliSec(week_num);
+    let week_of = weekOf(new Date(), week_num);
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
@@ -54,27 +54,27 @@ export class Timetable extends Component {
   }
   
   next = (ev) => {
-    if (this.props.rightMenu == "Edit") {
+    if (this.props.rightMenu === "Edit") {
       console.log("hhh");
 
       this.props.setShowMessage(onEditMessage);
       return;
     }
     let week_num = this.state.week_num + 1;
-    let week_of = weekOfFromMilliSec(week_num);
+    let week_of = weekOf(new Date(), week_num);
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
   }
 
   today = (ev) => {
-    if (this.props.rightMenu == "Edit") {
+    if (this.props.rightMenu === "Edit") {
       console.log("hhh");
 
       this.props.setShowMessage(onEditMessage);
       return;
     }
-    let week_of = weekOfFromMilliSec();
+    let week_of = weekOf(new Date());
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: 0});

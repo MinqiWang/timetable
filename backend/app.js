@@ -860,7 +860,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 				// Finished all deletions, do update slots
 				let num_processed_updates = 0;
 				for (let i2 = 0; i2 < to_update.length; i2++) {
-					pool.query("update timetable_event set event_name=?, start_time=?, length=?, week_of=?, day_of_the_week=?, where id=?", to_update[i2] ,function (error4, results4, fields4){
+					pool.query("update timetable_event set event_name=?, start_time=?, length=?, week_of=?, day_of_the_week=? where id=?", to_update[i2] ,function (error4, results4, fields4){
 						if (error4) {
 							logAPIerror("/event/MISC/:id", error4);
 							res.status(500).end(error4);

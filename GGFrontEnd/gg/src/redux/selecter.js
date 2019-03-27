@@ -11,6 +11,10 @@ export const getWeekOf = state => state.event.weekOf;
 export const getSlots = state => state.event.slotsInAWeek;
 export const getTargetSlot = state => state.event.targetSlot;
 export const getShowMessage = state => state.message.showMessage;
+export const getUpdateList = state => state.toDoLists.toUpdateList;
+export const getDeleteList = state => state.toDoLists.toDeleteList;
+export const getCreateList = state => state.toDoLists.toCreateList;
+
 
 
 

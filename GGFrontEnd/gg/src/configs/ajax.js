@@ -2,6 +2,7 @@
 import axios from 'axios'
 import baseURL from './config'
 import {config} from './config'
+import { weekOf } from '../redux/actions';
 
 export const logout = (callback) => {
     axios.get(baseURL + "/logout", config)
@@ -176,6 +177,18 @@ export const retrieveDetailEvent = (callback, errcallback, event_id) => {
     axios.get(baseURL + "/event/retrieve" + event_id)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ * Retrieve all timetable slots + detail info for a given event
+ *
+ */
+export const saveEvent = (callback, errcallback, event_id, data, week_of) => {
+    console.log("yoyoy");
+    axios.post(baseURL + "/event/MISC/" + event_id, data, config)
+    .then(res => {console.log("whatthefuck"); retrieveAllSlotsInAWeek(callback, errcallback, week_of)})
+    .catch(err =>  {errcallback(err); console.log(err)});
+    console.log("jhhh");
 }
 
 /*

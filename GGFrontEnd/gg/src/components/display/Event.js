@@ -22,7 +22,7 @@ logOut
 drager_mousedown = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (this.props.rightMenu == "Edit") {
+    if (this.props.rightMenu === "Edit") {
         console.log("hhh");
         this.props.setShowMessage(onEditMessage);
         return;
@@ -54,7 +54,7 @@ drager_mousedown = (e) => {
 drager_dblclick = (e, slot, isDefault, focused_event) => {
     e.preventDefault();
     e.stopPropagation();
-    if (this.props.rightMenu == "Edit") {
+    if (this.props.rightMenu === "Edit") {
         this.props.setShowMessage(onEditMessage);
         return;
     }
@@ -81,7 +81,7 @@ drager_dblclick = (e, slot, isDefault, focused_event) => {
 resizer_mousedown = function(e) {
     e.preventDefault();
     e.stopPropagation();
-    if (this.props.rightMenu == "Edit") {
+    if (this.props.rightMenu === "Edit") {
         console.log("hhh");
 
         this.props.setShowMessage(onEditMessage);

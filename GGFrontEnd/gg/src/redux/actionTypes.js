@@ -14,4 +14,9 @@ export const DETAIL_EVENT = 'DETAIL_EVENT';
 export const WEEK_OF = 'WEEK_OF';
 export const SET_TARGET_SLOT = 'SET_TARGET_SLOT';
 export const SET_SHOW_MESSAGE = 'SET_SHOW_MESSAGE';
+export const SET_UPDATE_LIST = 'SET_UPDATE_LIST';
+export const SET_DELETE_LIST = 'SET_DELETE_LIST';
+export const SET_CREATE_LIST = 'SET_CREATE_LIST';
+
+
 

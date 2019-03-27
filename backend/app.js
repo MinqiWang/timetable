@@ -941,12 +941,12 @@ app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
 /*
  * Create a group event. (Add a list of invitees)
  *
- * URL params:
- * Reqeust body: {id: EVENT_ID, invitees: [USER_ID1, USER_ID2, ...]}
+ * URL params: id -- The id of the group event
+ * Reqeust body: {invitees: [USER_ID1, USER_ID2, ...]}
  * Response body: Success/Failure messages
  */
-app.post("/event/group/create", isAuthenticated, function (req, res, next){
-	let event_id = req.body.id;
+app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 	let invitees = req.body.invitees;
 
@@ -963,7 +963,7 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 			let num_finished = 0;
 
 			for (let i = 0; i < num_invitees; i++) {
-				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], false], function (error2, results2, fields2){
+				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], null], function (error2, results2, fields2){
 					if (error2) {
 						logAPIerror("/event/group/create", error2);
 						res.status(500).end(error2);
@@ -984,12 +984,12 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 /*
  * Accept a group event invitation.
  *
- * URL params:
- * Request body: {id: EVENT_ID} 
+ * URL params: id -- The id of the group event
+ * Request body:
  * Response body: Success/Failure messages
  */
-app.patch("/event/group/accept", isAuthenticated, function (req, res, next){
-	let event_id = req.body.id;
+app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
 	pool.query("update group_event_invitation set has_accepted=? where event_id=? and Invitee=?", [true, event_id, user_id], function (error, results, fields){
@@ -1008,14 +1008,14 @@ app.patch("/event/group/accept", isAuthenticated, function (req, res, next){
  * Reject a group event invitation.
  *
  * URL params: id -- The id of the group event
- * Request body: {id: EVENT_ID} 
+ * Request body: 
  * Response body: Success/Failure messages
  */
-app.delete("/event/group/reject/:id", isAuthenticated, function (req, res, next){
+app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
-	pool.query("delete from group_event_invitation where event_id=? and Invitee=?", [event_id, user_id], function (error, results, fields){
+	pool.query("update group_event_invitation set has_accepted=? where event_id=? and Invitee=?", [false, event_id, user_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/group/reject", error);
 			res.status(500).end(error);
@@ -1048,7 +1048,66 @@ app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next
 			res.json("Group event is declined!");
 		}
 	});
-	next(); // Correct?
+	next();
+});
+
+/*
+ * Retrieve all received group event invitation for a given week.
+ */
+app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticated, function (req, res, next){
+	let week_of = req.params.week_of;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where week_of=? and invitee=?", [week_of, author_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/timetable_slot/retrieveAllInvited/:week_of", error);
+			res.status(500).end(error);
+		}
+		else {
+			// Format the data
+			let formatted_results = formatSlotsInfo(results)[0];
+			res.json(formatted_results);
+		}
+	});
+	next();
+});
+
+/*
+ * Retrieve next 10 received group event invitation, start at the n'th event where n is given as a param.
+ */
+app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, function (req, res, next){
+	let n = req.params.n;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where invitee=? limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+	next();
+});
+
+/*
+ * Retrieve next 10 group event initialized by you, start at the n'th event where n is given as a param.
+ */
+app.get("/event/group/timetable_slot/retrieveSent/:n", isAuthenticated, function (req, res, next){
+	let n = req.params.n;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where timetable_event.event_id in (select event_id from event_ownership where author_id=?) limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/timetable_slot/retrieveSent/:n", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+	next();
 });
 
 /* ---- Group Event APIs done ---- */

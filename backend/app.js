@@ -832,61 +832,70 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 			res.status(500).end(error);
 		}
 		else {
-			// Update event detail
-			pool.query("update event_detail set text_content=? and media_content_urls=? and place=? where id=?", [detail_info, event_id], function (error2, results2, fields2){
-				if (error) {
-					logAPIerror("/event/MISC/:id", error);
-					res.status(500).end(error);
+			let create_slots = function () {
+				// Finished all updates, do create new slots
+				if (to_create.length === 0) {
+					res.json("MISC updates for event " + event_id + " succeeded!");
 				}
-				else {
-					// delete slots
-					let num_processed_deletes = 0;
-					for (let i = 0; i < to_delete.length; i++) {
-						pool.query("delete from timetable_event where id=?", [to_delete[i]], function (error3, results3, fields3){
-							if (error) {
-								logAPIerror("/event/MISC/:id", error);
-								res.status(500).end(error);
+				let num_processed_creates = 0;
+				for (let i3 = 0; i3 < to_create.length; i3++) {
+					pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, event_id].concat(to_create[i3]), function (error5, results5, fields5){
+						if (error5) {
+							logAPIerror("/event/MISC/:id", error5);
+							res.status(500).end(error5);
+						}
+						else {
+							num_processed_creates += 1;
+							if (num_processed_creates == to_create.length) {
+								res.json("MISC updates for event " + event_id + " succeeded!");
 							}
-							else {
-								num_processed_deletes += 1;
-								if (num_processed_deletes === to_delete.length) {
-									// Finished all deletions, do update slots
-									let num_processed_updates = 0;
-									for (let i2 = 0; i2 < to_update.length; i2++) {
-										pool.query("update timetable_event set event_name=?, start_time=?, length=?, week_of=?, day_of_the_week=?, where id=?", to_update[i2] ,function (error4, results4, fields4){
-											if (error4) {
-												logAPIerror("/event/MISC/:id", error4);
-												res.status(500).end(error4);
-											}
-											else {
-												num_processed_updates += 1;
-												if (num_processed_updates == to_update.length) {
-													// Finished all updates, do create new slots
-													let num_processed_creates = 0;
-													for (let i3 = 0; i3 < to_create.length; i3++) {
-														pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, event_id].concat(to_create[i3]), function (error5, results5, fields5){
-															if (error5) {
-																logAPIerror("/event/MISC/:id", error5);
-																res.status(500).end(error5);
-															}
-															else {
-																num_processed_creates += 1;
-																if (num_processed_creates == to_create.length) {
-																	res.json("MISC updates for event " + event_id + " succeeded!");
-																}
-															}
-														});
-													}
-												}
-											}
-										});
-									}
-								}
-							}
-						});
-					}
+						}
+					});
 				}
-			});
+			};
+			let update_slots = function () {
+				if (to_update.length === 0) {
+					create_slots();
+				}
+				// Finished all deletions, do update slots
+				let num_processed_updates = 0;
+				for (let i2 = 0; i2 < to_update.length; i2++) {
+					pool.query("update timetable_event set event_name=?, start_time=?, length=?, week_of=?, day_of_the_week=?, where id=?", to_update[i2] ,function (error4, results4, fields4){
+						if (error4) {
+							logAPIerror("/event/MISC/:id", error4);
+							res.status(500).end(error4);
+						}
+						else {
+							num_processed_updates += 1;
+							if (num_processed_updates === to_update.length) {
+								create_slots();
+							}
+						}
+					});
+				}
+			};
+			let delete_slots = function () {
+				if (to_delete.length === 0) {
+					update_slots();
+				}
+				// delete slots
+				let num_processed_deletes = 0;
+				for (let i = 0; i < to_delete.length; i++) {
+					pool.query("delete from timetable_event where id=?", [to_delete[i]], function (error3, results3, fields3){
+						if (error3) {
+							logAPIerror("/event/MISC/:id", error3);
+							res.status(500).end(error3);
+						}
+						else {
+							num_processed_deletes += 1;
+							if (num_processed_deletes === to_delete.length) {
+								update_slots();
+							}
+						}
+					});
+				}
+			};
+			delete_slots();
 		}
 	});
 	next();

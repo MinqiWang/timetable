@@ -433,7 +433,7 @@ app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 	let opt = req.params.opt;
 	let queryStr = undefined;
 	if (opt == "friendlist") {
-		queryStr = "select * from (select * from friendship join user_info on (id_from=id or id_to=id) where (id_from=? or id_to=?) and has_accepted=true) where id!=?";
+		queryStr = "select * from (select * from friendship join user_info on (id_from=id or id_to=id) where (id_from=? or id_to=?) and has_accepted=true) A where id!=?";
 	}
 	else if (opt == "pendingRequests") {
 		queryStr = "select * from friendship join user_info on id_from=id where id_to=? and id_to=? and id_to=? and has_accepted=false";

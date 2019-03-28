@@ -5,7 +5,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import '../../style/SearchFriend.css'
 import { logOut, setSearchFriend, setPendingRequests } from '../../redux/actions';
-import {retrieveSearchFriendById, invite, retrievePendingFriendlist, accept} from '../../RESTFul/ajax';
+import {retrieveSearchFriendById, invite, retrievePendingFriendlist, accept, reject} from '../../RESTFul/ajax';
 import { getSearchFriend, getPendingRequests } from '../../redux/selecter';
 import {connect} from 'react-redux';
 
@@ -55,11 +55,21 @@ export class SearchFriend extends Component {
         }, logOut, user_id);
     }
 
+    rejectInvitation = (e, user_id) => {
+        e.preventDefault();
+        e.stopPropagation();
+        let {setPendingRequests, logOut} = this.props;
+        reject(function(res) {
+            retrievePendingFriendlist(function(res) {
+                setPendingRequests(res.data);
+            }, logOut);
+        }, logOut, user_id);
+    }
+
   render() {
     const {searchFriend, pendingRequests} = this.props;
     const {firstTime} = this.state;
     let result;
-    let pending;
     if (searchFriend) {
         let canAdd = (searchFriend.id_from)? false : true;
         let isFriend = (searchFriend.has_accepted)? true : false;
@@ -104,6 +114,7 @@ export class SearchFriend extends Component {
                         <Image src={pending.avatarURL} roundedCircle width="70px" height="70px"/>
                         <div>{pending.name}</div>
                         <Button onClick={(e) => this.acceptInvitation(e, pending.id)}>Accept</Button>
+                        <Button onClick={(e) => this.rejectInvitation(e, pending.id)}>Reject</Button>
                     </div>)
                 : <div>no pending requests</div>}
             </div>

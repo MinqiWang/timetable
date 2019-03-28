@@ -8,7 +8,7 @@ import UserMenu from './UserMenu';
 import logo from '../../logo.svg';
 import { logOut, setDisplay, setUser } from '../../redux/actions'
 import { getUser } from '../../redux/selecter';
-import {logout} from '../../configs/ajax'
+import {logout} from '../../RESTFul/ajax'
 
 
 
@@ -37,6 +37,7 @@ export class Header extends Component {
       <Nav className="mr-auto">
         <Nav.Link onClick={() => this.props.setDisplay("Timetable")}>Timetable</Nav.Link>
         <Nav.Link onClick={() => this.props.setDisplay("Map")}>Map</Nav.Link>
+        <Nav.Link onClick={() => this.props.setDisplay("Search")}>Search</Nav.Link>
         <Dropdown onSelect={(key, e) => this.itemSelectionHandler(key, e)}>
           <Dropdown.Toggle alignright as={UserImage} id="dropdown-custom-components">
             Custom toggle

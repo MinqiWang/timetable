@@ -18,7 +18,7 @@ export const logout = (callback) => {
  * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
 export const retrieveUserInfo = (callback1, callback2, errcallback, id="") => {
-    axios.get(baseURL + "/auth/retrieveUserInfo/" + id, config)
+    axios.get(baseURL + "/retrieveUserInfo/" + id, config)
     .then(res => {callback1(res.data[0]); callback2("Timetable")})
     .catch(err => {errcallback(err); console.log(err)})
 }
@@ -31,7 +31,7 @@ export const retrieveUserInfo = (callback1, callback2, errcallback, id="") => {
  * Response body: Success/Failure messages 
  */
 export const invite = (callback, errcallback, user_id) => {
-    axios.get(baseURL + "/friend/invite/" + user_id)
+    axios.post(baseURL + "/friend/invite/" + user_id, {}, config)
     .then(res => callback(res))
     .catch(err => {errcallback(err); console.log(err)})
 }
@@ -44,7 +44,20 @@ export const invite = (callback, errcallback, user_id) => {
  * Response body: Success/Failure messages 
  */
 export const accept = (callback, errcallback, user_id) => {
-    axios.get(baseURL + "/friend/invite/accept/" + user_id)
+    axios.patch(baseURL + "/friend/invite/accept/" + user_id, {}, config)
+    .then(res => callback(res))
+    .catch(err => {errcallback(err); console.log(err)})
+}
+
+/*
+ * Reject friend invitation
+ * 
+ * URL params: user_id -- the user id
+ * Request body:
+ * Response body: Success/Failure messages 
+ */
+export const reject = (callback, errcallback, user_id) => {
+    axios.delete(baseURL + "/friend/invite/reject/" + user_id, config)
     .then(res => callback(res))
     .catch(err => {errcallback(err); console.log(err)})
 }
@@ -52,12 +65,29 @@ export const accept = (callback, errcallback, user_id) => {
 /*
  * Retrieve the friendlist
  *
- * URL params:
- * Request body:
- * Response body: [1, 2, 3, 4, 5] (where 1, 2, 3, 4, 5 are all user ids)
  */
 export const retrieveFriendlist = (callback, errcallback) => {
-    axios.get(baseURL + "/friend/retrieveAll")
+    axios.get(baseURL + "/friend/retrieveAll/friendlist", config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ * Retrieve the pending friend requests
+ *
+ */
+export const retrievePendingFriendlist = (callback, errcallback) => {
+    axios.get(baseURL + "/friend/retrieveAll/pendingRequests", config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ * Retrieve the friends with friendship status
+ *
+ */
+export const retrieveSearchFriendById = (callback, errcallback, friend_id) => {
+    axios.get(baseURL + "/retrieveUserInfo/withFriendship/" + friend_id, config)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
@@ -118,7 +148,7 @@ export const updateEvent = (callback, errcallback, data) => {
  * Response body: Success/Failure messages 
  */
 export const updateTimeslot = (callback, errcallback, data) => {
-    axios.patch(baseURL + "/event/timetable_slot/update", data)
+    axios.patch(baseURL + "/event/timetable_slot/update", data, config)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
@@ -145,7 +175,7 @@ export const deleteTimeslot = (callback, errcallback, slot_id, event_id) => {
  * Response body: Success/Failure messages
  */
 export const deleteEvent = (callback, errcallback, event_id) => {
-    axios.delete(baseURL + "/event/delete/" + event_id)
+    axios.delete(baseURL + "/event/delete/" + event_id, config)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
@@ -183,10 +213,10 @@ export const retrieveDetailEvent = (callback, errcallback, event_id) => {
  * Retrieve all timetable slots + detail info for a given event
  *
  */
-export const saveEvent = (callback, errcallback, event_id, data, week_of) => {
+export const saveEvent = (callback, errcallback, event_id, data) => {
     console.log("yoyoy");
     axios.post(baseURL + "/event/MISC/" + event_id, data, config)
-    .then(res => {console.log("whatthefuck"); retrieveAllSlotsInAWeek(callback, errcallback, week_of)})
+    .then(res => {console.log("whatthefuck"); callback(res)})
     .catch(err =>  {errcallback(err); console.log(err)});
     console.log("jhhh");
 }

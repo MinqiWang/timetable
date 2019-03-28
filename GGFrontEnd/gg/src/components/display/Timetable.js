@@ -4,7 +4,7 @@ import DayColumn from './DayColumn';
 import {setRightMenu, setSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
 import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
-import { retrieveAllSlotsInAWeek } from '../../configs/ajax';
+import { retrieveAllSlotsInAWeek } from '../../RESTFul/ajax';
 import {weekOf} from '../../redux/actions'
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 

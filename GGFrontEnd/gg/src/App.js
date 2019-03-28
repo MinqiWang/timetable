@@ -9,7 +9,7 @@ import { getLogState, getDisplay, getUser } from './redux/selecter';
 import RightMenu from './components/side-menu/RightMenu';
 import Message from './Message'
 
-import {retrieveUserInfo} from './configs/ajax';
+import {retrieveUserInfo} from './RESTFul/ajax';
 
 class App extends Component {
 

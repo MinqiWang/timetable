@@ -1,12 +1,11 @@
 import React, { Component, Fragment } from 'react';
-import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, dayOfWeek, setSlots} from '../../redux/actions';
+import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, dayOfWeek, setSlots, setCreateList, resetToDoList, isNotDefault} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getIsDefault, getCreateList, getDeleteList, getUpdateList, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import Form from 'react-bootstrap/Form';
-import {createEvent} from '../../configs/ajax';
 import TimeslotDetail from './TimeslotDetail';
-import {saveEvent} from '../../configs/ajax'
+import {createEvent, saveEvent, retrieveAllSlotsInAWeek} from '../../RESTFul/ajax'
 
 export class EditMode extends Component {
     constructor(props) {
@@ -27,7 +26,9 @@ export class EditMode extends Component {
         let event_media = document.getElementById("edit-event-media").value;
 
         const {toCreateList, toUpdateList, toDeleteList, 
-            setSlots, logOut, focused_event, week_of} = this.props;
+            setSlots, logOut, focused_event, week_of, is_Default, 
+            setFocusEvent, isNotDefault,
+            resetToDoList, setRightMenu} = this.props;
 
         //pre-work to fit the data
         let to_create = [];
@@ -80,21 +81,44 @@ export class EditMode extends Component {
            "to_update":to_update,
            "to_delete":
            toDeleteList
+        }
+
+        if (is_Default) {
+            let data = {
+                detail: [event_desc, event_media, event_place],
+                timetable_slots: to_create
+            }
+            // need to reset focus event, set RightMenu to Close, reset isDefault, reset toDolist
+            createEvent(function(res) {
+                setFocusEvent();
+                isNotDefault();
+                resetToDoList();
+                setRightMenu("Close");
+                retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+            }, logOut, data);
+        } else {
+            // need to reset focus event, set RightMenu to Close, reset isDefault, reset toDolist
+            saveEvent(function(res) {
+                setFocusEvent();
+                isNotDefault();
+                setRightMenu("Close");
+                resetToDoList();
+                retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+            }.bind(this), logOut, focused_event.detail.id, toSend);
+            console.log(toSend);
        }
-
-       saveEvent(setSlots, logOut, focused_event.detail.id, toSend, week_of);
-
-       console.log(toSend);
-       
-        // createEvent(this.props.setFocusEvent, this.props.logOut, data);
     }
+
     cancel = (ev) => {
         ev.preventDefault();
-        if (this.props.isDefault) {
+        if (this.props.is_Default) {
+            this.props.resetToDoList();
             this.props.setFocusEvent();
+            this.props.isNotDefault();
             this.props.setRightMenu("Close");
         } else {
             this.props.setRightMenu("Info");
+            this.props.resetToDoList();
         }
     }
 
@@ -168,13 +192,13 @@ export class EditMode extends Component {
 const mapStateToProps = state => {
     console.log("Edit");
     console.log(state);
-    const isDefault = getIsDefault(state);
+    const is_Default = getIsDefault(state);
     const toCreateList = getCreateList(state);
     const toDeleteList = getDeleteList(state);
     const toUpdateList = getUpdateList(state);
     const week_of = getWeekOf(state);
-    return {isDefault, week_of, toCreateList, toDeleteList, toUpdateList};
+    return {is_Default, week_of, toCreateList, toDeleteList, toUpdateList};
 };
 
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots})(EditMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots, resetToDoList, isNotDefault})(EditMode);

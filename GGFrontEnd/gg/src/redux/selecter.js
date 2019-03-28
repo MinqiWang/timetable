@@ -15,6 +15,10 @@ export const getUpdateList = state => state.toDoLists.toUpdateList;
 export const getDeleteList = state => state.toDoLists.toDeleteList;
 export const getCreateList = state => state.toDoLists.toCreateList;
 
+export const getSearchFriend = state => state.user.searchFriend;
+export const getPendingRequests = state => state.user.pendingRequests;
+
+
 
 
 

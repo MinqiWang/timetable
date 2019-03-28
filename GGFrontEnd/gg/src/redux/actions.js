@@ -11,7 +11,9 @@ import {SETLOG,
     IS_DEFAULT,
     SET_TARGET_SLOT,
     SET_SHOW_MESSAGE,
-    SET_UPDATE_LIST, SET_DELETE_LIST, SET_CREATE_LIST
+    SET_UPDATE_LIST, SET_DELETE_LIST, SET_CREATE_LIST, RESET_TODO_LIST,
+    SET_SEARCH_FRIEND,
+    SET_PENDING_REQUESTS
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -128,6 +130,27 @@ export const setCreateList = (toCreateList = null) => ({
         toCreateList
     }
 });
+
+export const resetToDoList = () => ({
+    type: RESET_TODO_LIST,
+    payload: {
+    }
+});
+
+export const setSearchFriend = (searchFriend=null) => ({
+    type: SET_SEARCH_FRIEND,
+    payload: {
+        searchFriend
+    }
+});
+
+export const setPendingRequests = (pendingRequests={}) => ({
+    type: SET_PENDING_REQUESTS,
+    payload: {
+        pendingRequests
+    }
+});
+
 
 
 

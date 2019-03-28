@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import {setFocusEvent, setRightMenu} from '../../redux/actions';
+import {setFocusEvent, setRightMenu, logOut, setSlots} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getFocusEvent } from '../../redux/selecter';
+import { getFocusEvent, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
-import {deleteEvent} from '../../configs/ajax'
+import {deleteEvent, retrieveAllSlotsInAWeek} from '../../RESTFul/ajax'
 
 export class InfoMode extends Component {
 
@@ -24,11 +24,13 @@ export class InfoMode extends Component {
     }
 
     delete = (ev) => {
-        const { focused_event } = this.props;
-        this.props.setFocusEvent();
-        deleteEvent((res)=>{console.log(res)}, focused_event.detail.id);
+        const { focused_event, logOut, setSlots, week_of, setRightMenu} = this.props;
+        deleteEvent(function(res) {
+            setRightMenu("Close");
+            setFocusEvent();
+            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+        }, logOut, focused_event.detail.id);
         
-        this.props.setRightMenu("Close");
     }
 
   render() {
@@ -52,7 +54,8 @@ export class InfoMode extends Component {
 }
 
 const mapStateToProps = state => {
-    
+    const week_of = getWeekOf(state);
+    return {week_of};
 };
 
-export default connect(null, {setFocusEvent, setRightMenu})(InfoMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots})(InfoMode);

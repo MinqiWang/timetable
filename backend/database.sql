@@ -18,7 +18,7 @@ create table place (name varchar(200) not null primary key,
 	visit_count int not null);
 
 create table group_event_invitation (event_id int not null,
-	invitee int not null references user(id), has_accepted boolean not null,
+	invitee int not null references user(id), has_accepted boolean,
 	primary key (event_id, invitee),
 	CONSTRAINT fk_3 foreign key (event_id) references event_ownership(event_id) on delete cascade);
 
@@ -34,7 +34,7 @@ create table user_info ( id int not null primary key references user(id), name V
 	avatarURL VARCHAR(100) not null);
 
 create table friendship ( id_from int not null references user(id), 
-	id_to int not null references user(id), has_accepted boolean not null,
+	id_to int not null references user(id), has_accepted boolean,
 	primary key (id_from, id_to));
 
 create table obscured_event ( slot_id int not null, obscured_week VARCHAR(20) not null, 

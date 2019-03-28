@@ -255,7 +255,7 @@ app.get('/private/', isAuthenticated, function (req, res, next) {
  * Request body:
  * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
-app.get('/auth/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
+app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	if (!user_id) {
 		user_id = req.session.inAppId;
@@ -289,15 +289,15 @@ app.get('/auth/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next
  * Request body:
  * Response body: Success/Failure messages 
  */
-app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
+app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
-	if (user_id === your_id) {
+	if (user_id == your_id) {
 		res.json("This is yourself");
 	}
 	else {
-		pool.query("select id from user where facebook_id=?", [user_id], function (error, results, fields){
+		pool.query("select id from user where id=?", [user_id], function (error, results, fields){
 			if (error) {
 				logAPIerror("/friend/invite/:user_id", error);
 				res.status(500).end(error);
@@ -307,14 +307,27 @@ app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
-					// Create friend invitation
-					pool.query("insert into friendship values(?,?,?) on duplicate key update", [your_id, user_id, false], function (error2, results2, fields2){
+					pool.query("select * from friendship where id_from=? and id_to=? or id_from=? and id_to=?", [your_id, user_id, user_id, your_id], function (error2, results2, fields2){
 						if (error2) {
 							logAPIerror("/friends/invite/:user_id", error2);
 							res.status(500).end(error2);
 						}
 						else {
-							res.json("Friend invitation is sent");
+							if (results2.length !== 0) {
+								res.json("Already friends or friend request already exists!");
+							}
+							else {
+								// Create friend invitation
+								pool.query("insert into friendship values(?,?,?)", [your_id, user_id, false], function (error3, results3, fields3){
+									if (error3) {
+										logAPIerror("/friends/invite/:user_id", error3);
+										res.status(500).end(error3);
+									}
+									else {
+										res.json("Friend request is sent!");
+									}
+								});
+							}
 						}
 					});
 				}
@@ -331,15 +344,15 @@ app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
  * Request body:
  * Response body: Success/Failure messages 
  */
-app.get('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, next){
+app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
-	if (user_id === your_id) {
-		res.json("This is yourself!");
+	if (user_id == your_id) {
+		return res.json("This is yourself!");
 	}
 	else {
-		pool.query("select id from user where or facebook_id=?", [user_id], function (error, results, fields){
+		pool.query("select id from user where id=?", [user_id], function (error, results, fields){
 			if (error) {
 				logAPIerror("/friend/invite/accept/:user_id", error);
 				res.status(500).end(error);
@@ -367,36 +380,98 @@ app.get('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, n
 });
 
 /*
- * Retrieve the friendlist
+ * Reject friend invitation
+ * 
+ * URL params: user_id -- the user id
+ * Request body:
+ * Response body: Success/Failure messages 
+ */
+app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res, next){
+	let your_id = req.session.inAppId;
+	let user_id = req.params.user_id;
+
+	if (user_id == your_id) {
+		return res.json("This is yourself!");
+	}
+	else {
+		pool.query("select id from user where id=?", [user_id], function (error, results, fields){
+			if (error) {
+				logAPIerror("/friend/invite/reject/:user_id", error);
+				res.status(500).end(error);
+			}
+			else {
+				if (results === []) {
+					res.status(422).end("Cannot find user with id: " + user_id);
+				}
+				else {
+					// Reject friend invitation
+					pool.query("delete from friendship where has_accepted=? and id_from=? and id_to=?", [false, user_id, your_id], function(error2, results2, fields2){
+						if (error2) {
+							logAPIerror("/friend/invite/reject/:user_id", error2);
+							res.status(500).end(error2);
+						}
+						else {
+							res.json("Friend invitation is rejected");
+						}
+					});
+				}
+			}
+		});
+	}
+	next(); // Correct?
+});
+
+/*
+ * Retrieve the friendlist or pending friend requests
  *
  * URL params:
  * Request body:
- * Response body: [1, 2, 3, 4, 5] (where 1, 2, 3, 4, 5 are all user ids)
+ * Response body:
  */
-app.get("/friend/retrieveAll", isAuthenticated, function (req, res, next){
+app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
+	let opt = req.params.opt;
+	let queryStr = undefined;
+	if (opt == "friendlist") {
+		queryStr = "select * from friendship join user_info on (id_from=id or id_to=id) where id=? and has_accepted=true";
+	}
+	else if (opt == "pendingRequests") {
+		queryStr = "select * from friendship join user_info on id_to=id where id=? and has_accepted=false";
+	}
+	else {
+		return res.status(400).end("Unexpected URL params");
+	}
 
-	pool.query("select * from friendship where (id_from=? or id_to=?) and has_accepted=?", [your_id, your_id, true], function (error, results, fields){
+	pool.query(queryStr, [your_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("friend/retrieveAll", error);
 			res.status(500).end(error);
 		}
 		else {
-			let friendlist = [];
-			for (let i = 0; i < results.length; i++ ) {
-				let from = results[i].id_from;
-				let to = results[i].id_to;
-				if (from === your_id) {
-					friendlist.push(to);
-				}
-				else if (to === your_id) {
-					friendlist.push(from);
-				}
-			}
-			res.json(friendlist);
+			res.json(results);
 		}
 	});
 	next(); // Correct?
+});
+
+/*
+ * Retrieve user info with friendship status.
+ */
+app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, res, next){
+	let user_id = req.params.id;
+	let your_id = req.session.inAppId;
+
+	if (user_id == your_id) return res.json("This is you!");
+	pool.query("select * from user_info join friendship on id=id_from or id=id_to where id=? and (id_from=? or id_to=?) limit 1", [user_id, your_id, your_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/retrieveUserInfo/withFriendship/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results[0]);
+		}
+	});
+	next();
 });
 
 /* ---- User friends APIs done ---- */
@@ -835,7 +910,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 			let create_slots = function () {
 				// Finished all updates, do create new slots
 				if (to_create.length === 0) {
-					res.json("MISC updates for event " + event_id + " succeeded!");
+					return res.json("MISC updates for event " + event_id + " succeeded!");
 				}
 				let num_processed_creates = 0;
 				for (let i3 = 0; i3 < to_create.length; i3++) {
@@ -855,7 +930,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 			};
 			let update_slots = function () {
 				if (to_update.length === 0) {
-					create_slots();
+					return create_slots();
 				}
 				// Finished all deletions, do update slots
 				let num_processed_updates = 0;
@@ -876,7 +951,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 			};
 			let delete_slots = function () {
 				if (to_delete.length === 0) {
-					update_slots();
+					return update_slots();
 				}
 				// delete slots
 				let num_processed_deletes = 0;

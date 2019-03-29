@@ -51,8 +51,17 @@
 
 .App-sidemenu {
   display: flex;
-  min-width: 200px;
+  max-width: 400px;
+  flex-flow: nowrap row;
+}
+
+.App-rightmenu {
+  display: flex;
+  flex-flow: column nowrap;
+  min-width: 600px;
   min-height: 200px;
+  max-width: 600px;
+  overflow: scroll;
 }
 
 .App-display {

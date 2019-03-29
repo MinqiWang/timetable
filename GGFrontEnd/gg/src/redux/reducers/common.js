@@ -1,4 +1,4 @@
-import {SETLOG} from '../actionTypes';
+import {SETLOG, LOGIN, LOGOUT} from '../actionTypes';
 
 const initialState = {
     isLogIn: false
@@ -6,7 +6,7 @@ const initialState = {
 
 export default function(state = initialState, action) {
     switch (action.type) {
-        case SETLOG: {
+        case LOGIN: {
             const {isLogIn} = action.payload;
             return {
                 ...state,

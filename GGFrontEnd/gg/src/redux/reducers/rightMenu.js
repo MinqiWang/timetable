@@ -1,16 +1,16 @@
-import {SET_DISPLAY, LOGOUT} from '../actionTypes';
+import {LOGOUT, SET_RIGHT_MENU} from '../actionTypes';
 
 const initialState = {
-    display: "SignInUp"
+    rightMenu: "Close",
 }
 
 export default function(state = initialState, action) {
     switch (action.type) {
-        case SET_DISPLAY: {
-            const {display} = action.payload;
+        case SET_RIGHT_MENU: {
+            const {rightMenu} = action.payload;
             return {
                 ...state,
-                display
+                rightMenu
             }
         }
         case LOGOUT: {

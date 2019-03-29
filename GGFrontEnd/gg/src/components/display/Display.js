@@ -3,6 +3,7 @@ import Advertisement from './Advertisement';
 import Timetable from './Timetable';
 import SignInUp from './SignInUp';
 import Map from './Map';
+import SearchFriend from './SearchFriend';
 
 
 /* This is the component responsible for switching Advertisement, SignInUp, Map, Timetable 
@@ -11,7 +12,6 @@ import Map from './Map';
 */
 export class Display extends Component {
   render() {
-    // const { isLogIn } = this.props;
     const { display } = this.props;
     let display_page;
     switch (display) {
@@ -23,6 +23,9 @@ export class Display extends Component {
         break;
       case "Map":
         display_page = (<Map/>);
+        break;
+      case "Search":
+        display_page = (<SearchFriend/>);
         break;
       default:
         display_page = (<div>error</div>)

@@ -80,7 +80,13 @@ app.use(cors(corsOptions));*/
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS, PATCH");
+  if ('OPTIONS' === req.method) {
+	  res.sendStatus(200);
+  } else {
+	  next();
+  }
 });
 
 /* ---- LOGGING done ---- */
@@ -107,6 +113,7 @@ passport.deserializeUser(function(user, done) {
 });
 
 let isAuthenticated = function(req, res, next) {
+	console.log("isAu:"+req.isAuthenticated());
     if (!req.isAuthenticated()) return res.status(401).end("access denied"); 
     else next();
 };
@@ -116,8 +123,8 @@ let isAuthenticated = function(req, res, next) {
  */
 app.get('/logout', isAuthenticated, function(req, res, next){
 	req.logout();
-	res.redirect(REACT_HOMEPAGE);
-	next();
+	// res.redirect(REACT_HOMEPAGE);
+	res.sendStatus(200);
 });
 
 /*
@@ -248,7 +255,7 @@ app.get('/private/', isAuthenticated, function (req, res, next) {
  * Request body:
  * Response body: {name: "Ken", avatarURL: "https://graph.facebook.com/815763312109831/picture"} 
  */
-app.get('/auth/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
+app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	if (!user_id) {
 		user_id = req.session.inAppId;
@@ -282,15 +289,15 @@ app.get('/auth/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next
  * Request body:
  * Response body: Success/Failure messages 
  */
-app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
+app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
-	if (user_id === your_id) {
+	if (user_id == your_id) {
 		res.json("This is yourself");
 	}
 	else {
-		pool.query("select id from user where facebook_id=?", [user_id], function (error, results, fields){
+		pool.query("select id from user where id=?", [user_id], function (error, results, fields){
 			if (error) {
 				logAPIerror("/friend/invite/:user_id", error);
 				res.status(500).end(error);
@@ -300,14 +307,27 @@ app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
-					// Create friend invitation
-					pool.query("insert into friendship values(?,?,?) on duplicate key update", [your_id, user_id, false], function (error2, results2, fields2){
+					pool.query("select * from friendship where id_from=? and id_to=? or id_from=? and id_to=?", [your_id, user_id, user_id, your_id], function (error2, results2, fields2){
 						if (error2) {
 							logAPIerror("/friends/invite/:user_id", error2);
 							res.status(500).end(error2);
 						}
 						else {
-							res.json("Friend invitation is sent");
+							if (results2.length !== 0) {
+								res.json("Already friends or friend request already exists!");
+							}
+							else {
+								// Create friend invitation
+								pool.query("insert into friendship values(?,?,?)", [your_id, user_id, false], function (error3, results3, fields3){
+									if (error3) {
+										logAPIerror("/friends/invite/:user_id", error3);
+										res.status(500).end(error3);
+									}
+									else {
+										res.json("Friend request is sent!");
+									}
+								});
+							}
 						}
 					});
 				}
@@ -324,15 +344,15 @@ app.get('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
  * Request body:
  * Response body: Success/Failure messages 
  */
-app.get('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, next){
+app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
-	if (user_id === your_id) {
-		res.json("This is yourself!");
+	if (user_id == your_id) {
+		return res.json("This is yourself!");
 	}
 	else {
-		pool.query("select id from user where or facebook_id=?", [user_id], function (error, results, fields){
+		pool.query("select id from user where id=?", [user_id], function (error, results, fields){
 			if (error) {
 				logAPIerror("/friend/invite/accept/:user_id", error);
 				res.status(500).end(error);
@@ -360,36 +380,98 @@ app.get('/friend/invite/accept/:user_id', isAuthenticated, function (req, res, n
 });
 
 /*
- * Retrieve the friendlist
+ * Reject friend invitation
+ * 
+ * URL params: user_id -- the user id
+ * Request body:
+ * Response body: Success/Failure messages 
+ */
+app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res, next){
+	let your_id = req.session.inAppId;
+	let user_id = req.params.user_id;
+
+	if (user_id == your_id) {
+		return res.json("This is yourself!");
+	}
+	else {
+		pool.query("select id from user where id=?", [user_id], function (error, results, fields){
+			if (error) {
+				logAPIerror("/friend/invite/reject/:user_id", error);
+				res.status(500).end(error);
+			}
+			else {
+				if (results === []) {
+					res.status(422).end("Cannot find user with id: " + user_id);
+				}
+				else {
+					// Reject friend invitation
+					pool.query("delete from friendship where has_accepted=? and id_from=? and id_to=?", [false, user_id, your_id], function(error2, results2, fields2){
+						if (error2) {
+							logAPIerror("/friend/invite/reject/:user_id", error2);
+							res.status(500).end(error2);
+						}
+						else {
+							res.json("Friend invitation is rejected");
+						}
+					});
+				}
+			}
+		});
+	}
+	next(); // Correct?
+});
+
+/*
+ * Retrieve the friendlist or pending friend requests
  *
  * URL params:
  * Request body:
- * Response body: [1, 2, 3, 4, 5] (where 1, 2, 3, 4, 5 are all user ids)
+ * Response body:
  */
-app.get("/friend/retrieveAll", isAuthenticated, function (req, res, next){
+app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
+	let opt = req.params.opt;
+	let queryStr = undefined;
+	if (opt == "friendlist") {
+		queryStr = "select * from (select * from friendship join user_info on (id_from=id or id_to=id) where (id_from=? or id_to=?) and has_accepted=true) A where id!=?";
+	}
+	else if (opt == "pendingRequests") {
+		queryStr = "select * from friendship join user_info on id_from=id where id_to=? and id_to=? and id_to=? and has_accepted=false";
+	}
+	else {
+		return res.status(400).end("Unexpected URL params");
+	}
 
-	pool.query("select * from friendship where (id_from=? or id_to=?) and has_accepted=?", [your_id, your_id, true], function (error, results, fields){
+	pool.query(queryStr, [your_id, your_id, your_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("friend/retrieveAll", error);
 			res.status(500).end(error);
 		}
 		else {
-			let friendlist = [];
-			for (let i = 0; i < results.length; i++ ) {
-				let from = results[i].id_from;
-				let to = results[i].id_to;
-				if (from === your_id) {
-					friendlist.push(to);
-				}
-				else if (to === your_id) {
-					friendlist.push(from);
-				}
-			}
-			res.json(friendlist);
+			res.json(results);
 		}
 	});
 	next(); // Correct?
+});
+
+/*
+ * Retrieve user info with friendship status.
+ */
+app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, res, next){
+	let user_id = req.params.id;
+	let your_id = req.session.inAppId;
+
+	if (user_id == your_id) return res.json("This is you!");
+	pool.query("select * from (select * from user_info left join friendship on id=id_from or id=id_to where id=?) A where id_from=? or id_to=? or id_from is null limit 1", [user_id, your_id, your_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/retrieveUserInfo/withFriendship/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results[0]);
+		}
+	});
+	next();
 });
 
 /* ---- User friends APIs done ---- */
@@ -557,7 +639,7 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
  *
  * URL params:
  * Request body; {"event_id": EVENT_ID, "id": "slot_id": TIMETABLE_SLOT_ID, "timetable_slot": [START_TIME, LENGTH, DAY_OF_THE_WEEK]}
- * Request body example: {"event_id": 1, "id": 1, "timetable_slot": ["8:45:00", "15", 1]}
+ * Request body example: {"event_id": 1, "id": 1, "timetable_slot": ["8:45:00", "15", "2019-03-24", 1]}
  * Response body: Success/Failure messages 
  */
 app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, next){
@@ -575,7 +657,7 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("update timetable_event set start_time=?, length=?, day_of_the_week=? where id=?", timetable_slot.concat(event_id), function (error2, results2, fields2){
+			pool.query("update timetable_event set start_time=?, length=?, week_of=?, day_of_the_week=? where id=?", timetable_slot.concat(slot_id), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/timetable_slot/update", error2);
 					res.status(500).end(error2);
@@ -668,6 +750,39 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 	next(); // Correct?
 });
 
+function formatSlotsInfo(results) {
+	let event_name = null;
+	let formatted_results = {Sun: [], Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: []};
+	for (let i = 0; i < results.length; i++) {
+		console.log(results[i], results[i].day_of_the_week);
+		event_name = results[i].event_name;
+		switch (results[i].day_of_the_week) {
+			case 0:
+				formatted_results.Sun.push(results[i]);
+				break;
+			case 1:
+				formatted_results.Mon.push(results[i]);
+				break;
+			case 2:
+				formatted_results.Tue.push(results[i]);
+				break;
+			case 3:
+				formatted_results.Wed.push(results[i]);
+				break;
+			case 4:
+				formatted_results.Thu.push(results[i]);
+				break;
+			case 5:
+				formatted_results.Fri.push(results[i]);
+				break;
+			case 6:
+				formatted_results.Sat.push(results[i]);
+				break;
+		}
+	}
+	return [formatted_results, event_name];
+}
+
 /* 
  * Retrieve all timetable slots for a given week.
  *
@@ -711,10 +826,154 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 			res.status(500).end(error);
 		}
 		else {
-			res.json(results);
+			// Format the data
+			let formatted_results = formatSlotsInfo(results)[0];
+			res.json(formatted_results);
 		}
 	});
 	next(); // Correct?
+});
+
+/*
+ * Retrieve all timetable slots + detail info for a given event
+ */
+app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			pool.query("select * from timetable_event left join obscured_event on obscured_event.slot_id=timetable_event.id where timetable_event.event_id=?", [event_id], function (error2, results2, fields2){
+				if (error2) {
+					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
+					res.status(500).end(error2);
+				}
+				else {
+					// Format the data
+					let formatted_slots_results = formatSlotsInfo(results2);
+					pool.query("select * from event_detail where id=?", [event_id], function (error3, results3, fields3) {
+						if (error3) {
+							logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error3);
+							res.status(500).end(error3);
+						}
+						else {
+							let event_detail = results3[0];
+							event_detail.event_name = formatted_slots_results[1];
+							res.json({"detail": event_detail, "timetable_slots": formatted_slots_results[0]});
+						}
+					});
+				}
+			});
+		}
+	});
+	next();
+});
+
+/*
+ * Create, update, delete slots + Update detail info for a given event
+ *
+ * Request body example:
+ {
+	"detail_info": ["text content", "URL1,URL2,URL3", "UTSC"],
+	"to_create": 
+	[
+		["new event name", true, "15:30:00", 30, "2019-03-25", 2, false],
+		["new event name", true, "18:00:00", 60, "2019-03-25", 3, true]
+	],
+	"to_update":
+	[
+		["new event name", "9:30:00", 30, "2019-04-01", 0, 3],
+		["new event name", "10:30:00", 30, "2019-04-01", 1, 4]
+	],
+	"to_delete":
+	[5,6]
+ }
+ */
+app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let author_id = req.session.inAppId;
+	let detail_info = req.body.detail_info;
+	let to_create = req.body.to_create;
+	let to_update = req.body.to_update;
+	let to_delete = req.body.to_delete;
+
+	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/MISC/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			let create_slots = function () {
+				// Finished all updates, do create new slots
+				if (to_create.length === 0) {
+					return res.json("MISC updates for event " + event_id + " succeeded!");
+				}
+				let num_processed_creates = 0;
+				for (let i3 = 0; i3 < to_create.length; i3++) {
+					pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, event_id].concat(to_create[i3]), function (error5, results5, fields5){
+						if (error5) {
+							logAPIerror("/event/MISC/:id", error5);
+							res.status(500).end(error5);
+						}
+						else {
+							num_processed_creates += 1;
+							if (num_processed_creates == to_create.length) {
+								res.json("MISC updates for event " + event_id + " succeeded!");
+							}
+						}
+					});
+				}
+			};
+			let update_slots = function () {
+				if (to_update.length === 0) {
+					return create_slots();
+				}
+				// Finished all deletions, do update slots
+				let num_processed_updates = 0;
+				for (let i2 = 0; i2 < to_update.length; i2++) {
+					pool.query("update timetable_event set event_name=?, start_time=?, length=?, week_of=?, day_of_the_week=? where id=?", to_update[i2] ,function (error4, results4, fields4){
+						if (error4) {
+							logAPIerror("/event/MISC/:id", error4);
+							res.status(500).end(error4);
+						}
+						else {
+							num_processed_updates += 1;
+							if (num_processed_updates === to_update.length) {
+								create_slots();
+							}
+						}
+					});
+				}
+			};
+			let delete_slots = function () {
+				if (to_delete.length === 0) {
+					return update_slots();
+				}
+				// delete slots
+				let num_processed_deletes = 0;
+				for (let i = 0; i < to_delete.length; i++) {
+					pool.query("delete from timetable_event where id=?", [to_delete[i]], function (error3, results3, fields3){
+						if (error3) {
+							logAPIerror("/event/MISC/:id", error3);
+							res.status(500).end(error3);
+						}
+						else {
+							num_processed_deletes += 1;
+							if (num_processed_deletes === to_delete.length) {
+								update_slots();
+							}
+						}
+					});
+				}
+			};
+			delete_slots();
+		}
+	});
+	next();
 });
 
 /*
@@ -757,12 +1016,12 @@ app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
 /*
  * Create a group event. (Add a list of invitees)
  *
- * URL params:
- * Reqeust body: {id: EVENT_ID, invitees: [USER_ID1, USER_ID2, ...]}
+ * URL params: id -- The id of the group event
+ * Reqeust body: {invitees: [USER_ID1, USER_ID2, ...]}
  * Response body: Success/Failure messages
  */
-app.post("/event/group/create", isAuthenticated, function (req, res, next){
-	let event_id = req.body.id;
+app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 	let invitees = req.body.invitees;
 
@@ -779,7 +1038,7 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 			let num_finished = 0;
 
 			for (let i = 0; i < num_invitees; i++) {
-				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], false], function (error2, results2, fields2){
+				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], null], function (error2, results2, fields2){
 					if (error2) {
 						logAPIerror("/event/group/create", error2);
 						res.status(500).end(error2);
@@ -798,14 +1057,14 @@ app.post("/event/group/create", isAuthenticated, function (req, res, next){
 });
 
 /*
- * Accept a group event.
+ * Accept a group event invitation.
  *
- * URL params:
- * Request body: {id: EVENT_ID} 
+ * URL params: id -- The id of the group event
+ * Request body:
  * Response body: Success/Failure messages
  */
-app.post("/event/group/accept", isAuthenticated, function (req, res, next){
-	let event_id = req.body.id;
+app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
 	pool.query("update group_event_invitation set has_accepted=? where event_id=? and Invitee=?", [true, event_id, user_id], function (error, results, fields){
@@ -818,6 +1077,112 @@ app.post("/event/group/accept", isAuthenticated, function (req, res, next){
 		}
 	});
 	next(); // Correct?
+});
+
+/*
+ * Reject a group event invitation.
+ *
+ * URL params: id -- The id of the group event
+ * Request body: 
+ * Response body: Success/Failure messages
+ */
+app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("update group_event_invitation set has_accepted=? where event_id=? and Invitee=?", [false, event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/reject", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json("Group event is rejected!");
+		}
+	});
+	next(); // Correct?
+});
+
+/*
+ * Decline a group event invitation sent by yourself.
+ *
+ * URL params: id -- The id of the group event
+ * Request body: {id: EVENT_ID} 
+ * Response body: Success/Failure messages
+ */
+app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.body.id;
+	let user_id = req.session.inAppId;
+
+	// Check the ownership
+	pool.query("delete from group_event_invitation where event_id=?", [event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/decline", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json("Group event is declined!");
+		}
+	});
+	next();
+});
+
+/*
+ * Retrieve all received group event invitation for a given week.
+ */
+app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticated, function (req, res, next){
+	let week_of = req.params.week_of;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where week_of=? and invitee=?", [week_of, author_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/timetable_slot/retrieveAllInvited/:week_of", error);
+			res.status(500).end(error);
+		}
+		else {
+			// Format the data
+			let formatted_results = formatSlotsInfo(results)[0];
+			res.json(formatted_results);
+		}
+	});
+	next();
+});
+
+/*
+ * Retrieve next 10 received group event invitation, start at the n'th event where n is given as a param.
+ */
+app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, function (req, res, next){
+	let n = req.params.n;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where invitee=? limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+	next();
+});
+
+/*
+ * Retrieve next 10 group event initialized by you, start at the n'th event where n is given as a param.
+ */
+app.get("/event/group/timetable_slot/retrieveSent/:n", isAuthenticated, function (req, res, next){
+	let n = req.params.n;
+	let author_id = req.session.inAppId;
+
+	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where timetable_event.event_id in (select event_id from event_ownership where author_id=?) limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/timetable_slot/retrieveSent/:n", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+	next();
 });
 
 /* ---- Group Event APIs done ---- */

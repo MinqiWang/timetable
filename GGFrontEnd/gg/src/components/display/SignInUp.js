@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import {loginIn} from '../../configs/ajax'
 import '../../style/SignInUp.css'
 
 /* This is the component responsible for the third party sign-in sign-up */

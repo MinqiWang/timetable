@@ -1,148 +1,230 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import Event from './Event'
+import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
+import { connect } from 'react-redux';
+import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
+import { undecorate, opacity10 } from '../../utils';
+import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import { updateTimeslot, retrieveAllSlotsInAWeek } from '../../RESTFul/ajax';
+import {
+    FAKE_SLOT_ID, 
+    FAKE_SLOT_EVENT_NAME_ID, 
+    FAKE_SLOT_EVENT_TIME_ID,
+    FAKE_SLOT_EVENT_LENGTH_ID} from "../../constants"
+
 
 export class DayColumn extends Component {
     constructor(props) {
       super(props)
-    
       this.state = {
-         events: []
+         events: [],
+         days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri","Sat"]
       }
     }
 
-    componentDidMount() {
-        const {id} = this.props;
-        let events = [];
-        for (let i = 0; i < 4; i++) {
-            let event = {};
-            event.time = i;
-            event.id = i;
-            event.title = "title"+i;
-            event.top = i*80;
-            event.height = 40;
-            events.push(event);
-        }
-        this.setState({events: events});
-        this.makeResizableDiv(id);
-        this.makeDraggableDiv(id);
+    startTimeFromY = (y) => {
+        let hour = Math.floor(y/40);
+        return +hour+":00:00";
     }
 
-    makeDraggableDiv(id) {
-        const element = document.querySelector('#event'+id);
-        const drager = document.querySelector('#draggable'+id);
-        const container = document.querySelector('#container'+id);
-
-        const minimum_bound = 0;
-        const maximum_bound = 960;
-
-        let original_height = 0;
-        let original_y = 0;
-        let difference_y = 0;
-
-        drager.addEventListener('mousedown', function(e) {
-            e.preventDefault();
-            original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
-            original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
-            difference_y = e.y - original_y;
-            container.addEventListener('mousemove', adjust);
-            container.addEventListener('mouseup', stopAdjust);
-            container.addEventListener('mouseleave', stopAdjust);
-        })
-          
-        function adjust(e) {
-            e.preventDefault();
-            let temp_top = (e.y - difference_y);
-            let max_top = Math.ceil(temp_top/10)*10;
-            let min_top = Math.floor(temp_top/10)*10;
-
-            if ((temp_top % 10) > 5 
-            && (original_y != max_top) 
-            && (max_top + original_height) <= maximum_bound) {
-                original_y = max_top;
-                element.style.top = max_top + 'px';
-            } else if ((temp_top % 10) <= 5 
-            && (original_y != min_top) 
-            && min_top >= minimum_bound 
-            && (min_top + original_height) <= maximum_bound) {
-                original_y = min_top;
-                element.style.top = min_top + 'px';
-            }
+    createNewEvent = (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (this.props.rightMenu == "Edit") {
+            console.log("hhh");
+            this.props.setShowMessage(onEditMessage);
+            return;
         }
         
-        function stopAdjust() {
-            container.removeEventListener('mousemove', adjust);
-        // do save
+        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.event_id)));
+        var rect = ev.target.getBoundingClientRect();
+
+        let EVENT_NAME = "default_event";
+        let EVENT_ID = "default_event_ID";
+        let SLOT_ID = "default_slot_ID";
+
+        let EVENT_HAS_DETAIL = false;
+        let START_TIME = this.startTimeFromY(ev.clientY - rect.top);
+        let LENGTH = "60";
+        let WEEK_OF = this.props.week_of; 
+        let DAY_OF_THE_WEEK = this.props.col_id;
+        let DAY_OF_THE_WEEK_num = this.props.indice;
+        let IS_REPEATING = false;
+        let OBSCURED_BY = null; 
+        let IS_EMPTY_OBSCURE = null;
+
+        const event = {detail: {id: EVENT_ID, event_name: EVENT_NAME, text_content: "", media_content_urls: "", 
+        place: ""},
+            timetable_slots: {"Sun": [], "Mon": [],
+        "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]}};
+
+        event.timetable_slots[DAY_OF_THE_WEEK] = [{id: SLOT_ID, event_id: EVENT_ID, 
+            event_name: EVENT_NAME, event_has_detail: false, start_time: START_TIME, 
+            length: LENGTH, week_of: WEEK_OF, day_of_the_week: DAY_OF_THE_WEEK_num, 
+            is_repeating: false, obscured_by: null, is_empty_obscure: null}];
+        /* {detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], timetable_slots: 
+ * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...] ...]} */
+        // new View with Default value, setDefaultEvent, setCurrentEvent, setRightMenu="Edit"
+        this.props.setFocusEvent(event);
+        this.props.isDefault();
+        this.props.setRightMenu("Edit");
+        // open up the edit right menu with default value
+        // if cancel or clicked else where, cancel the view, setDefaultEvent=null, setCurrentEvent=null, setRightMenu="Close"
+    }
+
+    eventRecreation = (e, targetSlot, colId) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (targetSlot.isDragging) {
+            let newTargetSlot = Object.assign({}, targetSlot);
+            newTargetSlot.col_id = colId;
+            this.props.setTargetSlot(newTargetSlot);
         }
-      }
+        //is not dragging, do nothing
+    }
 
-    makeResizableDiv(id) {
-        const element = document.querySelector('#event'+id);
-        const resizer = document.querySelector('#resizer'+id);
-        const container = document.querySelector('#container'+id);
+    onLeave = (e, targetSlot) => {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-        const minimum_bound = 10;
-        const maximum_bound = 960;
-        let original_y = 0;
-        let original_height = 0;
-        let original_mouse_y = 0;
-        let height_in_progress = 0;
+    eventMove = (e, targetSlot) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // console.log(targetSlot);
+        let element = document.getElementById(FAKE_SLOT_ID);
+        let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
+        let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
 
-        resizer.addEventListener('mousedown', function(e) {
-            e.preventDefault()
-            original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
-            original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
-            height_in_progress = original_height;
-            original_mouse_y = e.y;
-            container.addEventListener('mousemove', resize);
-            container.addEventListener('mouseup', stopResize);
-            container.addEventListener('mouseleave', stopResize);
-        })
-        function resize(e) {
-            let add_height = e.y - original_mouse_y;
+
+        if (element == null) return;
+
+        //if isResizing, do Resizing
+        if (targetSlot.isResizing) {
+            let add_height = e.clientY - targetSlot.original_mouse_y;
             let right_add_height = Math.ceil(add_height/10)*10;
-            let temp_height = original_height + right_add_height;
-            if ((temp_height != height_in_progress) 
-            && (temp_height >= minimum_bound) 
-            && ((original_y + temp_height) <= maximum_bound)) {
-                height_in_progress = temp_height;
+            let temp_height = targetSlot.original_height + right_add_height;
+            if ( (temp_height >= targetSlot.minimum_bound) 
+            && ((targetSlot.original_y + temp_height) <= targetSlot.maximum_bound)) {
                 element.style.height = temp_height + 'px';
+                eventLength.innerHTML = `${+Math.round(temp_height/10*15) + " mins"}`
             }
-          }
+        }
+        //if isDragging, do Dragging
+        else if (targetSlot.isDragging) {
+            
+            let temp_top = (e.clientY - targetSlot.difference_y);
+            let max_top = Math.ceil(temp_top/10)*10;
+            let min_top = Math.floor(temp_top/10)*10;
+            
+            if ((temp_top % 10) > 5 
+            && (max_top + targetSlot.original_height) <= targetSlot.maximum_bound) {
+                element.style.top = max_top + 'px';
+                let hour = +Math.floor(max_top/40)
+                let mins = (max_top%40)/10*15;
+                let time = hour + ":" + (mins == 0? "00": mins);
+                eventTime.innerHTML = `${time}`
 
-          function stopResize() {
-            container.removeEventListener('mousemove', resize);
-            // do save
-          }
-      }
+            } else if ((temp_top % 10) <= 5 
+            && min_top >= targetSlot.minimum_bound 
+            && (min_top + targetSlot.original_height) <= targetSlot.maximum_bound) {
+                element.style.top = min_top + 'px';
+                let hour = +Math.floor(min_top/40)
+                let mins = (min_top%40)/10*15;
+                let time = hour + ":" + (mins == 0? "00": mins);
+                eventTime.innerHTML = `${time}`
+            }
+        }
+        //else do nothing
+    }
+
+    solidifyEvent = (e, targetSlot) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const {setSlots, logOut, week_of} = this.props;
+        let element = document.getElementById(FAKE_SLOT_ID);
+        let original_element = document.getElementById(targetSlot.id);
+        
+        let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
+        let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
+        if (element == null) return;
+
+        let start_time = eventTime.innerHTML+":00";
+        let length = eventLength.innerHTML.split(" ")[0];
+        
+        let day_of_week = this.state.days.indexOf(e.currentTarget.id);
+        let id = +targetSlot.id;
+        let event_id = targetSlot.event_id;
+        let timetable_slot = [];
+        timetable_slot.push(start_time);
+        timetable_slot.push(length);
+        timetable_slot.push(week_of);
+        timetable_slot.push(day_of_week);
+        let data = {
+            event_id,
+            id,
+            timetable_slot
+        };
+        //reset targetSlot
+        this.props.setTargetSlot();
+        //axios, after saving, get all slots in a week
+        updateTimeslot(function(res) {
+            opacity10([original_element]);
+            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+        }, logOut, data);
+    }
 
     render() {
-        const {id} = this.props;
-        const {events} = this.state;
-        return (
-        <div id={"container"+id} className="scroll-slots-col">
-            {/* <div id={id+"0"} className="slot" ><div id={"event"+id} className="event" draggable="true" onDragEnd={this.dragend} onDragStart={this.dragstart}></div></div>
-            <div id={id+"1"} className="slot" onDrop={this.drop} onDragOver={this.hello}></div>
-            <div id={id+"2"} className="slot" onDrop={this.drop} onDragOver={this.hello}></div> */}
-            {/* {events.map((event) => 
-            <div key={event.id} id={id + "/" + event.id} className="event" draggable>
-                <div id={"draggable"+id} className="draggable">
-                    <div id={"title" + id + "/" + event.id}>
-                        {event.title}
-                    </div>
-                    <div id={"time" + id + "/" + event.id}>
-                        {event.time}
-                    </div>
-                </div>
-                <div id={"resizer"+id} className="resizer"></div>
-            </div>)} */}
+        const {col_id, default_slots, slots, targetSlot} = this.props;
+        
+        const eventStyle = {
+            top: targetSlot.fake_top + "px",
+            height: targetSlot.fake_height + "px",
+            width: "95%",
+            boxShadow: "2px 2px 2px 2px #00000055",
+            zIndex: "1",
+        };
 
-            <div id={"event"+id} className="event">
-                <div id={"draggable"+id} className="draggable">
+        let fake_event = (targetSlot.col_id === col_id)?
+        (<div id={FAKE_SLOT_ID} className="event" style={eventStyle}>
+            <div className="event-info">
+                <div className="event-name-wrapper">
+                    <div id={FAKE_SLOT_EVENT_NAME_ID} className="event-name">{targetSlot.event_name}</div>
                 </div>
-                <div id={"resizer"+id} className="resizer"></div>
+                <div id={FAKE_SLOT_EVENT_TIME_ID} className="event-time">{targetSlot.start_time}</div>
+                <div id={FAKE_SLOT_EVENT_LENGTH_ID} className="event-length">{targetSlot.length}</div>
             </div>
+            <div className="resizer"></div>
+        </div>) : null
+
+
+        return (
+        <div id={col_id} onDoubleClick={this.createNewEvent}
+        onMouseEnter={(e) => this.eventRecreation(e, targetSlot, col_id)} 
+        onMouseLeave={(e) => this.onLeave(e, targetSlot)} 
+        onMouseMove={(e) => this.eventMove(e, targetSlot)} 
+        onMouseUp={(e) => this.solidifyEvent(e, targetSlot)} className="scroll-slots-col">
+            {slots.map((slot) => 
+            <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
+            {default_slots.map((slot) =>  
+            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true}></Event>)}
+            {fake_event}
         </div>
         )
     }
 }
 
-export default DayColumn
+const mapStateToProps = state => {
+    console.log("DayCol");
+    console.log(state);
+    // const focused_event = getFocusEvent(state);
+    const targetSlot = getTargetSlot(state);
+    const rightMenu = getRightMenu(state);
+    const focused_event = getFocusEvent(state);
+    const week_of = getWeekOf(state);
+    return {targetSlot, rightMenu, week_of, focused_event};
+};
+
+export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage, setSlots, logOut})(DayColumn);

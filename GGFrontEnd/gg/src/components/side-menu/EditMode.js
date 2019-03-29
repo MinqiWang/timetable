@@ -43,7 +43,7 @@ export class EditMode extends Component {
             create_slot.push(event_name);
             create_slot.push(true);
             if (value.mins == "0") value.mins = "00"
-            create_slot.push(value.hour + ":" + value.mins + ":00");
+            create_slot.push(value.hour + ":" + value.mins);
             create_slot.push(value.length);
 
             let d = toDate(value.date, value.hour, value.mins);
@@ -60,7 +60,7 @@ export class EditMode extends Component {
             let update_slot = [];
             update_slot.push(event_name);
             if (value.mins == "0") value.mins = "00";
-            update_slot.push(value.hour + ":" + value.mins + ":00");
+            update_slot.push(value.hour + ":" + value.mins);
             update_slot.push(value.length);
 
             let d = toDate(value.date, value.hour, value.mins);

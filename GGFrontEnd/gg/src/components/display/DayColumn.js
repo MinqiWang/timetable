@@ -24,7 +24,7 @@ export class DayColumn extends Component {
 
     startTimeFromY = (y) => {
         let hour = Math.floor(y/40);
-        return +hour+":00:00";
+        return +hour+":00";
     }
 
     createNewEvent = (ev) => {
@@ -150,11 +150,11 @@ export class DayColumn extends Component {
         let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
         let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
         if (element == null) return;
-
-        let start_time = eventTime.innerHTML+":00";
+        console.warn(eventTime.innerHTML);
+        let start_time = eventTime.innerHTML;
         let length = eventLength.innerHTML.split(" ")[0];
         
-        let day_of_week = this.state.days.indexOf(e.currentTarget.id);
+        let day_of_week = this.state.days.indexOf(targetSlot.col_id);
         let id = +targetSlot.id;
         let event_id = targetSlot.event_id;
         let timetable_slot = [];

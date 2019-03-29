@@ -14,6 +14,7 @@ import {retrieveUserInfo} from './RESTFul/ajax';
 class App extends Component {
 
   componentDidMount() {
+    
     // call the auto login
     // this.props.setDisplay("Timetable");
 

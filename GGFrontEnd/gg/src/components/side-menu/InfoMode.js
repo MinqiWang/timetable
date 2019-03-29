@@ -23,6 +23,10 @@ export class InfoMode extends Component {
         this.props.setRightMenu("Close");
     }
 
+    addInvitees = (e) => {
+        this.props.setRightMenu("Invitee");
+    }
+
     delete = (ev) => {
         const { focused_event, logOut, setSlots, week_of, setRightMenu} = this.props;
         deleteEvent(function(res) {
@@ -30,7 +34,6 @@ export class InfoMode extends Component {
             setFocusEvent();
             retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
         }, logOut, focused_event.detail.id);
-        
     }
 
   render() {
@@ -40,6 +43,7 @@ export class InfoMode extends Component {
             <div className="Nav-Btns">
                 <button onClick={this.edit}>edit</button>
                 <button onClick={this.delete}>delete</button>
+                <button onClick={this.addInvitees}>invitees</button>
                 <button onClick={this.close}>close</button>
             </div>
             

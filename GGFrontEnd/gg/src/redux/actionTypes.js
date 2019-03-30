@@ -21,6 +21,13 @@ export const RESET_TODO_LIST = 'RESET_TODO_LIST';
 export const SET_SEARCH_FRIEND = 'SET_SEARCH_FRIEND';
 export const SET_PENDING_REQUESTS = 'SET_PENDING_REQUESTS';
 
+export const SET_MY_GROUPS = 'SET_MY_GROUPS';
+export const SET_OTHER_GROUPS = 'SET_OTHER_GROUPS';
+
+export const WATCHING_INFO = 'WATCHING_INFO';
+
+
+
 
 
 

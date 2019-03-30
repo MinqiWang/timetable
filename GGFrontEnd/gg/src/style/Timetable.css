@@ -138,8 +138,8 @@ li {
 }
 
 .event-badge {
-    width: 8px;
-    height: 8px;
+    width: 15px;
+    height: 15px;
     min-width: 8px;
     min-height: 8px;
     flex: 0 0 auto;

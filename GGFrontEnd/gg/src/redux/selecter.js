@@ -7,6 +7,13 @@ export const getDefaultEvent_Slots = state => state.rightMenu.defaultEvent.timet
 export const getDefaultEvent_Slots_byDay = (state, day) => getDefaultEvent_Slots(state)[day];
 export const getUser = state => state.user.User;
 export const getFriends = state => state.user.Friends;
+
+
+export const getMyGroupEvents = state => state.group.myGroupEvents;
+export const getOthersGroupEvents = state => state.group.otherGroupEvents;
+
+
+
 export const getWeekOf = state => state.event.weekOf;
 export const getSlots = state => state.event.slotsInAWeek;
 export const getTargetSlot = state => state.event.targetSlot;
@@ -18,7 +25,7 @@ export const getCreateList = state => state.toDoLists.toCreateList;
 export const getSearchFriend = state => state.user.searchFriend;
 export const getPendingRequests = state => state.user.pendingRequests;
 
-
+export const getWatching = state => state.user.Watching
 
 
 

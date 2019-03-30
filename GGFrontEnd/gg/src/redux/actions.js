@@ -13,7 +13,10 @@ import {SETLOG,
     SET_SHOW_MESSAGE,
     SET_UPDATE_LIST, SET_DELETE_LIST, SET_CREATE_LIST, RESET_TODO_LIST,
     SET_SEARCH_FRIEND,
-    SET_PENDING_REQUESTS
+    SET_PENDING_REQUESTS,
+    SET_MY_GROUPS,
+    SET_OTHER_GROUPS,
+    WATCHING_INFO
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -66,10 +69,31 @@ export const setUser = (User=null) => ({
     }
 });
 
+export const setWatching = (Watching=null) => ({
+    type: WATCHING_INFO,
+    payload: {
+        Watching
+    }
+});
+
 export const setFriends = (Friends = []) => ({
     type: FRIEND_LIST,
     payload: {
         Friends
+    }
+});
+
+export const setMyGroupEvents = (myGroupEvents = {}) => ({
+    type: SET_MY_GROUPS,
+    payload: {
+        myGroupEvents
+    }
+});
+
+export const setOthersGroupEvents = (otherGroupEvents = {}) => ({
+    type: SET_OTHER_GROUPS,
+    payload: {
+        otherGroupEvents
     }
 });
 

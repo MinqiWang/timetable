@@ -1130,7 +1130,7 @@ app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
-	if (!(validator.isNumeric(req.params.id) && Array.isArray(invitees))) {
+	if (!(validator.isNumeric(req.params.id) && Array.isArray(req.body.invitees))) {
 		return res.status(422).end("URL param: id must an integer");
 	}
 	let event_id = req.params.id;

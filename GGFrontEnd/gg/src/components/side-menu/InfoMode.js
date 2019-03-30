@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import {setFocusEvent, setRightMenu, logOut, setSlots} from '../../redux/actions';
+import {setFocusEvent, setRightMenu, logOut, setSlots, setFocusEventInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getFocusEvent, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
-import {deleteEvent, retrieveAllSlotsInAWeek} from '../../RESTFul/ajax'
+import {deleteEvent, retrieveAllSlotsInAWeek, inviteesByEventID} from '../../RESTFul/ajax'
 
 export class InfoMode extends Component {
 
@@ -24,7 +24,12 @@ export class InfoMode extends Component {
     }
 
     addInvitees = (e) => {
-        this.props.setRightMenu("Invitee");
+        const {logOut, focused_event, setFocusEventInvitees, setRightMenu} = this.props;
+        inviteesByEventID(function(res) {
+            console.warn(res.data)
+            setFocusEventInvitees(res.data);
+            setRightMenu("Invitee");
+        }, logOut, focused_event.detail.id)
     }
 
     delete = (ev) => {
@@ -62,4 +67,4 @@ const mapStateToProps = state => {
     return {week_of};
 };
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots})(InfoMode);
+export default connect(mapStateToProps, {setFocusEvent, setFocusEventInvitees, setRightMenu, logOut, setSlots})(InfoMode);

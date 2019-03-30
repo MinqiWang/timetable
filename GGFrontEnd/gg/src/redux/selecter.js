@@ -13,7 +13,6 @@ export const getMyGroupEvents = state => state.group.myGroupEvents;
 export const getOthersGroupEvents = state => state.group.otherGroupEvents;
 
 
-
 export const getWeekOf = state => state.event.weekOf;
 export const getSlots = state => state.event.slotsInAWeek;
 export const getTargetSlot = state => state.event.targetSlot;
@@ -25,7 +24,12 @@ export const getCreateList = state => state.toDoLists.toCreateList;
 export const getSearchFriend = state => state.user.searchFriend;
 export const getPendingRequests = state => state.user.pendingRequests;
 
-export const getWatching = state => state.user.Watching
+export const getWatching = state => state.user.Watching;
+export const getFocusEventInvitees = state => state.group.focusEventInvitees;
+export const getFocusEventToInvites = state => state.group.focusEventToInvites;
+export const getAddingInvitees = state => state.group.addingInvitees;
+
+
 
 
 

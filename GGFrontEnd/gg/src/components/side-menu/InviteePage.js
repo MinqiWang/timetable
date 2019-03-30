@@ -4,9 +4,11 @@ import Invitees from './Invitees';
 import Button from 'react-bootstrap/Button';
 import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
-import {setRightMenu} from '../../redux/actions';
+import {setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getFriends} from '../../redux/selecter';
+import { getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
+import { toInviteByEventID, sendInvitesToFriends} from '../../RESTFul/ajax'
+
 
 export class InviteePage extends Component {
 
@@ -14,7 +16,7 @@ export class InviteePage extends Component {
     super(props)
   
     this.state = {
-       isEditing: false,
+       isInviting: false,
        searchQuery: "",
     }
   }
@@ -25,11 +27,15 @@ export class InviteePage extends Component {
     }
 
     addInvitee = (e) => {
-      this.setState({isEditing: true});
+      const {setFocusEventToInvites, logOut, focused_event} = this.props;
+      toInviteByEventID(function(res){
+        setFocusEventToInvites(res.data);
+      }, logOut, focused_event.detail.id)
+      this.setState({isInviting: true});
     }
 
     cancelInvite = (e) => {
-      this.setState({isEditing: false});
+      this.setState({isInviting: false});
       this.setState({searchQuery: ""})
       document.getElementById("invite-SearchBar").value = "";
     }
@@ -49,21 +55,31 @@ export class InviteePage extends Component {
       document.getElementById("invite-SearchBar").value = "";
     }
 
+    sendInvites = (e) => {
+      const {addingInvitees, setAddingInvitees, focused_event, logOut} = this.props;
+      if (addingInvitees.invitees.length == 0) {
+        console.log("no selection");
+      } else {
+        sendInvitesToFriends(function(res) {
+          setAddingInvitees();
+          this.setState({isInviting: false});
+          this.setState({searchQuery: ""})
+          document.getElementById("invite-SearchBar").value = "";
+        }.bind(this), logOut, focused_event.detail.id, addingInvitees);
+      }
+      
+    }
     
   render() {
-    const {isEditing, searchQuery} = this.state;
-    const {Friends} = this.props;
-    let group_invitee = [];
-    let toInviteFriends = Friends.filter(friend => 
-      {// filter out group invitee
-        return true;})
-    let display = isEditing? <ToInvite searchQuery={searchQuery} friends={toInviteFriends}/> : <Invitees searchQuery={searchQuery} friends={Friends}/>;
-    let placeholder= isEditing? "To Invite": "Invited"
+    const {isInviting, searchQuery} = this.state;
+    const {Friends, focusEventInvitees, focusEventToInvites} = this.props;
+    let friends = isInviting? focusEventToInvites : focusEventInvitees;
+    let placeholder= isInviting? "To Invite": "Invited"
     return (
       <div>
         <div className="Nav-Btns">
           {
-            isEditing? 
+            isInviting? 
             <>
             <button onClick={this.sendInvites}>send Invites</button>
 
@@ -92,7 +108,17 @@ export class InviteePage extends Component {
                 </InputGroup.Append>
             </InputGroup>
         </div>
-        {display}
+        <div className="FriendList">
+        
+        {isInviting? 
+          friends.filter(friend => 
+            {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend => 
+              <ToInvite key={friend.id} friend={friend}/>)
+              :
+          friends.filter(friend => 
+            {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend =>   
+              <Invitees key={friend.id} friend={friend}/>)}
+      </div>
       </div>
     )
   }
@@ -102,7 +128,11 @@ const mapStateToProps = state => {
   console.log("Invitee");
   console.log(state);
   const Friends = getFriends(state);
-  return {Friends};
+  const focusEventInvitees = getFocusEventInvitees(state);
+  const focusEventToInvites = getFocusEventToInvites(state);
+  const addingInvitees = getAddingInvitees(state);
+  
+  return {addingInvitees, Friends, focusEventInvitees, focusEventToInvites};
 };
 
-export default connect(mapStateToProps, {setRightMenu})(InviteePage);
+export default connect(mapStateToProps, {setAddingInvitees, setRightMenu, logOut, setFocusEventToInvites})(InviteePage);

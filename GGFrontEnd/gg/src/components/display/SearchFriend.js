@@ -32,6 +32,7 @@ export class SearchFriend extends Component {
         const {setSearchFriend} = this.props;
         let friend_id = document.getElementById("searchBar").value;
         retrieveSearchFriendById(function(res) {
+            
             if (res.data != 'This is you!') setSearchFriend(res.data);
             else setSearchFriend();
         }, this.props.logOut, friend_id);
@@ -40,9 +41,13 @@ export class SearchFriend extends Component {
     add = (e, user_id) => {
         e.preventDefault();
         e.stopPropagation();
-        invite(function(res) {
-            console.log(res.data);
-        }, this.props.logOut, user_id);
+        const {logOut, setSearchFriend} = this.props;
+        invite(function(res1) {
+            retrieveSearchFriendById(function(res) {
+                if (res.data != 'This is you!') setSearchFriend(res.data);
+                else setSearchFriend();
+            }, logOut, user_id);
+        }, logOut, user_id);
     }
 
     acceptInvitation = (e, user_id) => {

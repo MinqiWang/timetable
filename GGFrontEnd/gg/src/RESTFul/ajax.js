@@ -259,5 +259,31 @@ export const acceptGroupEvent = (callback, errcallback, data) => {
 }
 
 
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const inviteesByEventID = (callback, errcallback, event_id) => {
+    axios.get(baseURL + "/event/group/invited/"+event_id, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const toInviteByEventID = (callback, errcallback, event_id) => {
+    axios.get(baseURL + "/event/group/toInvite/"+event_id, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const sendInvitesToFriends = (callback, errcallback, event_id, data) => {
+    axios.post(baseURL + "/event/group/create/"+event_id, data, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
 
 

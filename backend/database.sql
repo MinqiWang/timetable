@@ -19,6 +19,7 @@ create table place (name varchar(200) not null primary key,
 
 create table group_event_invitation (event_id int not null,
 	invitee int not null references user(id), has_accepted boolean,
+	ts TIMESTAMP NOT NULL,
 	primary key (event_id, invitee),
 	CONSTRAINT fk_3 foreign key (event_id) references event_ownership(event_id) on delete cascade);
 

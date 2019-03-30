@@ -303,7 +303,7 @@ app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 				res.status(500).end(error);
 			}
 			else {
-				if (results === []) {
+				if (results.length === 0) {
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
@@ -358,7 +358,7 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 				res.status(500).end(error);
 			}
 			else {
-				if (results === []) {
+				if (results.length === 0) {
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
@@ -400,7 +400,7 @@ app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res
 				res.status(500).end(error);
 			}
 			else {
-				if (results === []) {
+				if (results.length === 0) {
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
@@ -555,7 +555,7 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 			logAPIerror("/event/timetable_slot/create", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -607,7 +607,7 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
 			logAPIerror("/event/update", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -653,7 +653,7 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
 			logAPIerror("/event/timetable_slot/update", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -688,7 +688,7 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, functi
 			logAPIerror("/event/timetable_slot/delete", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -722,7 +722,7 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 			logAPIerror("/event/delete", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -1030,7 +1030,7 @@ app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
 			logAPIerror("/event/group/create", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -1038,15 +1038,32 @@ app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
 			let num_finished = 0;
 
 			for (let i = 0; i < num_invitees; i++) {
-				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], null], function (error2, results2, fields2){
+				if (invitees[i] == author_id) {
+					num_finished += 1;
+					continue;
+				}
+				pool.query("select * from user where id=?", [invitees[i]], function (error2, results2, fields2){
 					if (error2) {
 						logAPIerror("/event/group/create", error2);
 						res.status(500).end(error2);
 					}
 					else {
-						num_finished += 1;
-						if (num_finished == num_invitees) {
-							res.json("Group event is created! / Invitees are added!");
+						if (results2.length === 0) {
+							res.status(422).end("Cannot find user with id: " + invitees[i]);
+						}
+						else {
+							pool.query("insert ignore into group_event_invitation values(?,?,?,now())", [event_id, invitees[i], null], function (error3, results3, fields3){
+								if (error3) {
+									logAPIerror("/event/group/create", error3);
+									res.status(500).end(error3);
+								}
+								else {
+									num_finished += 1;
+									if (num_finished == num_invitees) {
+										res.json("Group event is created! / Invitees are added!");
+									}
+								}
+							});
 						}
 					}
 				});
@@ -1104,23 +1121,35 @@ app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
 
 /*
  * Decline a group event invitation sent by yourself.
+ * Can only decline an inviation which is not accepted or rejected.
  *
  * URL params: id -- The id of the group event
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
 app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
-	let event_id = req.body.id;
+	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
 	// Check the ownership
-	pool.query("delete from group_event_invitation where event_id=?", [event_id, user_id], function (error, results, fields){
+	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [user_id, event_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/group/decline", error);
 			res.status(500).end(error);
 		}
+		else if (results.length === 0){
+			res.status(401).end("Access Denied");
+		}
 		else {
-			res.json("Group event is declined!");
+			pool.query("delete from group_event_invitation where event_id=? and has_accepted is null", [event_id], function (error2, results2, fields2){
+				if (error2) {
+					logAPIerror("/event/group/decline", error2);
+					res.status(500).end(error2);
+				}
+				else {
+					res.json("Group event is declined!");
+				}
+			});
 		}
 	});
 	next();
@@ -1133,13 +1162,12 @@ app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticat
 	let week_of = req.params.week_of;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where week_of=? and invitee=?", [week_of, author_id], function (error, results, fields){
+	pool.query("select * from timetable_event where event_id in (select event_id from group_event_invitation where invitee=? and has_accepted=true) and week_of=?", [author_id, week_of], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveAllInvited/:week_of", error);
 			res.status(500).end(error);
 		}
 		else {
-			// Format the data
 			let formatted_results = formatSlotsInfo(results)[0];
 			res.json(formatted_results);
 		}
@@ -1154,7 +1182,9 @@ app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, funct
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where invitee=? limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+	pool.query("select * from timetable_event join user_info join event_ownership on timetable_event.event_id=event_ownership.event_id and event_ownership.author_id=user_info.id \
+		where timetable_event.event_id in (select t.event_id from (select event_id from group_event_invitation where invitee=? order by ts desc limit ?,?) as t) order by week_of desc, day_of_the_week desc, \
+		start_time desc", [author_id, parseInt(n), 10], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);
@@ -1169,13 +1199,17 @@ app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, funct
 /*
  * Retrieve next 10 group event initialized by you, start at the n'th event where n is given as a param.
  */
-app.get("/event/group/timetable_slot/retrieveSent/:n", isAuthenticated, function (req, res, next){
+app.get("/event/group/event/retrieveSent/:n", isAuthenticated, function (req, res, next){
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where timetable_event.event_id in (select event_id from event_ownership where author_id=?) limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+
+	pool.query("select event_id, event_name from timetable_event where event_id in (select t2.event_id \
+		from (select distinct t.event_id from (select event_ownership.event_id from group_event_invitation \
+		join event_ownership on group_event_invitation.event_id=event_ownership.event_id where author_id=? \
+		order by ts desc) as t limit ?,?) as t2) group by event_id, event_name", [author_id, parseInt(n), 10], function (error, results, fields){
 		if (error) {
-			logAPIerror("/event/group/timetable_slot/retrieveSent/:n", error);
+			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);
 		}
 		else {

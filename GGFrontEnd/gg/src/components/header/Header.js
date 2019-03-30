@@ -3,11 +3,15 @@ import { connect } from 'react-redux';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import UserImage from './UserImage';
+import Image from 'react-bootstrap/Image'
+import Tooltip from 'react-bootstrap/Tooltip'
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
+
 import Dropdown from 'react-bootstrap/Dropdown'
 import UserMenu from './UserMenu';
 import logo from '../../logo.svg';
-import { logOut, setDisplay, setUser } from '../../redux/actions'
-import { getUser } from '../../redux/selecter';
+import { logOut, setDisplay, setUser, setWatching } from '../../redux/actions'
+import { getUser, getWatching } from '../../redux/selecter';
 import {logout} from '../../RESTFul/ajax'
 
 
@@ -31,11 +35,11 @@ export class Header extends Component {
   }
 
   render() {
-    const {User} = this.props;
+    const {User, Watching} = this.props;
     let nav = User? (<>
     <Navbar.Collapse id="basic-navbar-nav">
       <Nav className="mr-auto">
-        <Nav.Link onClick={() => this.props.setDisplay("Timetable")}>Timetable</Nav.Link>
+        <Nav.Link onClick={() => {this.props.setWatching(); this.props.setDisplay("Timetable");}}>Timetable</Nav.Link>
         <Nav.Link onClick={() => this.props.setDisplay("Map")}>Map</Nav.Link>
         <Nav.Link onClick={() => this.props.setDisplay("Search")}>Search</Nav.Link>
         <Dropdown onSelect={(key, e) => this.itemSelectionHandler(key, e)}>
@@ -47,6 +51,26 @@ export class Header extends Component {
             <Dropdown.Item eventKey="2">Sign Out</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
+        
+        {Watching?
+        <> 
+        <Nav.Item>Watching</Nav.Item>
+        <OverlayTrigger
+            key='left'
+            placement='left'
+            overlay={
+                <Tooltip id={`usertooltip-left`}>
+                    {Watching.name}
+                    {/* should be the signin Name 
+                    from state, and use username in cookie to set the state */}
+                </Tooltip>
+            }
+        >
+            <Image src={Watching.avatarURL} roundedCircle width="70px" height="70px"/>
+        </OverlayTrigger>
+        </>
+        : null}
+        
       </Nav>
     </Navbar.Collapse>
     </>) : null;
@@ -84,8 +108,9 @@ const mapStateToProps = state => {
   console.log("Header");
   console.log(state);
   const User = getUser(state);
+  const Watching = getWatching(state);
   console.log(User);
-  return { User };
+  return { User, Watching };
 };
 
-export default connect(mapStateToProps, { logOut, setDisplay, setUser })(Header);
+export default connect(mapStateToProps, { logOut, setDisplay, setUser, setWatching })(Header);

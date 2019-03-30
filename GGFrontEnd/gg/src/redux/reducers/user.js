@@ -1,8 +1,9 @@
-import {USER_INFO, FRIEND_LIST, LOGOUT, SET_SEARCH_FRIEND, SET_PENDING_REQUESTS} from '../actionTypes';
+import {USER_INFO, FRIEND_LIST, LOGOUT, SET_SEARCH_FRIEND, SET_PENDING_REQUESTS, WATCHING_INFO} from '../actionTypes';
 
 const initialState = {
     User: null,
     Friends: [],
+    Watching: null,
     searchFriend: null,
     pendingRequests: {},
 }
@@ -36,6 +37,13 @@ export default function(state = initialState, action) {
             return {
                 ...state,
                 pendingRequests
+            }
+        }
+        case WATCHING_INFO: {
+            const {Watching} = action.payload;
+            return {
+                ...state,
+                Watching
             }
         }
         case LOGOUT: {

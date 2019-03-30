@@ -1,4 +1,4 @@
-.SearchExistFriend {
+.MainSideDisplay {
     flex: 1 1 auto;
     display: flex;
     flex-flow: nowrap column;
@@ -16,8 +16,8 @@
     margin-top: 20px;
 }
 
-.SearchResult {
+.SearchBar-Button {
     display: flex;
-    flex-flow: wrap row;
-    width: 100%;
+    flex-flow: nowrap row;
+    justify-content: center;
 }

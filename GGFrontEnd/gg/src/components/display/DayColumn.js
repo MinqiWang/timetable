@@ -3,9 +3,9 @@ import Event from './Event'
 import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
 import { connect } from 'react-redux';
 import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
-import { undecorate, opacity10 } from '../../utils';
+import { undecorate, opacity10, decorate } from '../../utils';
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
-import { updateTimeslot, retrieveAllSlotsInAWeek } from '../../RESTFul/ajax';
+import { updateTimeslot, retrieveAllSlotsInAWeek, retrieveAllForEvent } from '../../RESTFul/ajax';
 import {
     FAKE_SLOT_ID, 
     FAKE_SLOT_EVENT_NAME_ID, 
@@ -36,7 +36,7 @@ export class DayColumn extends Component {
             return;
         }
         
-        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.event_id)));
+        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.detail.id)));
         var rect = ev.target.getBoundingClientRect();
 
         let EVENT_NAME = "default_event";
@@ -143,7 +143,7 @@ export class DayColumn extends Component {
     solidifyEvent = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
-        const {setSlots, logOut, week_of} = this.props;
+        const {setFocusEvent, setSlots, logOut, week_of, focused_event} = this.props;
         let element = document.getElementById(FAKE_SLOT_ID);
         let original_element = document.getElementById(targetSlot.id);
         
@@ -172,7 +172,14 @@ export class DayColumn extends Component {
         //axios, after saving, get all slots in a week
         updateTimeslot(function(res) {
             opacity10([original_element]);
+            
             retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+            retrieveAllForEvent(function(res) {
+                undecorate(Array.from(document.getElementsByClassName(focused_event.detail.id)));
+                decorate([original_element]);
+                setFocusEvent(res);
+                
+                }, logOut, event_id);
         }, logOut, data);
     }
 
@@ -209,7 +216,9 @@ export class DayColumn extends Component {
             {slots.map((slot) => 
             <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
             {default_slots.map((slot) =>  
-            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true} isGroup={true}></Event>)}
+            {/* {groupslots.map((slot) => 
+            <Event key={slot.id} col_id={col_id} slot={slot} isGroup={true}></Event>)} */}
             {fake_event}
         </div>
         )

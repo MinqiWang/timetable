@@ -78,7 +78,7 @@ export class SideMenu extends Component {
         <div className="FriendList">
             {/*Search_Result sort by alphabetical order*/}
             {friendList.filter(friend => {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend => 
-            <div className="resultUser">
+            <div className="resultUser" key={friend.name}>
               <Image src={friend.avatarURL} roundedCircle width="70px" height="70px"/>
               <div>{friend.name}</div>
               <Button onClick={this.timetable}>Timetable</Button>

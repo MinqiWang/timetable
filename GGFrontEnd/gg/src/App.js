@@ -16,8 +16,7 @@ class App extends Component {
   componentDidMount() {
     
     // call the auto login
-    // this.props.setDisplay("Timetable");
-
+    document.addEventListener("contextmenu", (e)=> e.preventDefault());
     retrieveUserInfo(
       this.props.setUser,
       this.props.setDisplay, 

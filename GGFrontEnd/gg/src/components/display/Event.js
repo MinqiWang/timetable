@@ -9,18 +9,18 @@ import {retrieveAllForEvent} from '../../RESTFul/ajax'
 export class Event extends Component {
 
     constructor(props) {
-    super(props)
-    
+        super(props)
+        
 
-    this.drager_mousedown = this.drager_mousedown.bind(this);
-    this.resizer_mousedown = this.resizer_mousedown.bind(this);
+        this.drager_mousedown = this.drager_mousedown.bind(this);
+        this.resizer_mousedown = this.resizer_mousedown.bind(this);
         this.state = {
             top: 0,
             height: 0,
         }
     }
 
-    drager_mousedown = (e) => {
+    drager_mousedown = (e, slot, isDefault, focused_event) => {
         e.preventDefault();
         e.stopPropagation();
         
@@ -59,51 +59,10 @@ export class Event extends Component {
             }
     
             this.props.setTargetSlot(targetSlot);
+        } else if (e.button == 2) {
+            this.openInfo(e, slot, isDefault, focused_event);
         }
-
-        // save needed value or info of this event to redux, set isDragging
     };
-
-    mouseMove = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        let newTargetSlot = Object.assign({}, this.props.targetSlot);
-        newTargetSlot.isHidden = false;
-        this.props.setTargetSlot(newTargetSlot);
-    }
-
-    rightClickUp = (e, slot, isDefault, focused_event) => {
-        e.preventDefault();
-        e.stopPropagation();
-        if (e.button == 2) {
-            
-            console.warn("lll");
-            e.preventDefault();
-            e.stopPropagation();
-            if (this.props.rightMenu === "Edit") {
-                this.props.setShowMessage(onEditMessage);
-                return;
-            }
-            
-            // this event is default one
-            if (isDefault) return;
-
-            // this event is not default one;
-            if (focused_event) {
-                undecorate(Array.from(document.getElementsByClassName(focused_event.event_id)));
-                if (this.props.hasDefault) {
-                    isNotDefault();
-                }
-            }
-            decorate(Array.from(document.getElementsByClassName(slot.event_id)));
-
-            //set the elmt to be the current focused event for the right menu
-            // axios get detail, make the structual for current event
-            
-            retrieveAllForEvent(this.props.setFocusEvent, this.props.logOut, slot.event_id);
-            this.props.setRightMenu("Info");
-        }
-    }
 
     openInfo = (e, slot, isDefault, focused_event) => {
         e.preventDefault();
@@ -118,7 +77,8 @@ export class Event extends Component {
 
         // this event is not default one;
         if (focused_event) {
-            undecorate(Array.from(document.getElementsByClassName(focused_event.event_id)));
+            console.warn(focused_event);
+            undecorate(Array.from(document.getElementsByClassName(focused_event.detail.id)));
             if (this.props.hasDefault) {
                 isNotDefault();
             }
@@ -173,7 +133,7 @@ export class Event extends Component {
     };
 
   render() {
-    const {slot, shouldDecorate, focused_event} = this.props;
+    const {slot, shouldDecorate, focused_event, hasDefault, isGroup} = this.props;
 
     let time_array = slot.start_time.split(":");
     let hour = parseInt(time_array[0]);
@@ -197,19 +157,25 @@ export class Event extends Component {
         eventStyle.zIndex = "1";  
     }
 
+    let color;
+    if (isGroup) color = "red";
+    const eventTypeStyle = {
+        borderRadius: "50%",
+        backgroundColor: color,
+        height: "90%"
+    };
+
     return (
     <div id={slot.id} className={"event " + slot.event_id} style={eventStyle} 
-    onMouseDown={(e) => this.drager_mousedown(e)}
-    // onMouseUp={(e) => this.rightClickUp(e, slot, shouldDecorate, focused_event)}
-    onDoubleClick={(e) => this.openInfo(e, slot, shouldDecorate, focused_event)}
+    onMouseDown={(e) => this.drager_mousedown(e, slot, hasDefault, focused_event)}
     >
         <div className="event-info">
-        <div className="event-name-wrapper">
-        <div id={"eventName"+slot.id} className="event-name">{slot.event_name}</div>
-
-        </div>
-        <div id={"eventTime"+slot.id} className="event-time">{start_time}</div>
-        <div id={"eventLength"+slot.id} className="event-length">{slot.length}</div>
+            <div className="event-name-wrapper">
+                <div id={"eventName"+slot.id} className="event-name">{slot.event_name}</div>
+                <div className = "event-type" style={eventTypeStyle}>hh</div>
+            </div>
+            <div id={"eventTime"+slot.id} className="event-time">{start_time}</div>
+            <div id={"eventLength"+slot.id} className="event-length">{slot.length}</div>
         
         </div>
         <div id={"resizer"+slot.id} className="resizer" onMouseDown={this.resizer_mousedown}></div>
@@ -227,6 +193,5 @@ const mapStateToProps = state => {
     const rightMenu = getRightMenu(state);
     return {focused_event, hasDefault, targetSlot, rightMenu};
 };
-
 
 export default connect(mapStateToProps, {logOut, setFocusEvent, setRightMenu, setTargetSlot, setShowMessage})(Event);

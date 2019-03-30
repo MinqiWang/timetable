@@ -81,7 +81,7 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:3000");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS, PATCH");
   if ('OPTIONS' === req.method) {
 	  res.sendStatus(200);
   } else {
@@ -433,16 +433,16 @@ app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 	let opt = req.params.opt;
 	let queryStr = undefined;
 	if (opt == "friendlist") {
-		queryStr = "select * from friendship join user_info on (id_from=id or id_to=id) where id=? and has_accepted=true";
+		queryStr = "select * from (select * from friendship join user_info on (id_from=id or id_to=id) where (id_from=? or id_to=?) and has_accepted=true) A where id!=?";
 	}
 	else if (opt == "pendingRequests") {
-		queryStr = "select * from friendship join user_info on id_to=id where id=? and has_accepted=false";
+		queryStr = "select * from friendship join user_info on id_from=id where id_to=? and id_to=? and id_to=? and has_accepted=false";
 	}
 	else {
 		return res.status(400).end("Unexpected URL params");
 	}
 
-	pool.query(queryStr, [your_id], function (error, results, fields){
+	pool.query(queryStr, [your_id, your_id, your_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("friend/retrieveAll", error);
 			res.status(500).end(error);
@@ -462,7 +462,7 @@ app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, 
 	let your_id = req.session.inAppId;
 
 	if (user_id == your_id) return res.json("This is you!");
-	pool.query("select * from user_info join friendship on id=id_from or id=id_to where id=? and (id_from=? or id_to=?) limit 1", [user_id, your_id, your_id], function (error, results, fields){
+	pool.query("select * from (select * from user_info left join friendship on id=id_from or id=id_to where id=?) A where id_from=? or id_to=? or id_from is null limit 1", [user_id, your_id, your_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/retrieveUserInfo/withFriendship/:id", error);
 			res.status(500).end(error);

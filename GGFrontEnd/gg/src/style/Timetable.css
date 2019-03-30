@@ -115,7 +115,7 @@ li {
 .event {
     height: 40px;
     width: 90%;
-    min-height: 10px;
+    min-height: 20px;
     background: #0277BD;
     display: flex;
     flex-direction: column;
@@ -127,6 +127,24 @@ li {
     z-index: 0;
     cursor: -webkit-grab;
     cursor: grab;
+}
+
+.event-badge-include {
+    display: flex;
+    flex-flow: nowrap row;
+    justify-content: space-between;
+    min-height: 5px;
+    overflow: hidden;
+}
+
+.event-badge {
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    min-height: 8px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: white;
 }
 
 .event-info {
@@ -153,6 +171,9 @@ li {
 .event-length {
     /* overflow: hidden; */
 }
+
+
+
 .resizer {
     height: 5px;
     width: 100%;

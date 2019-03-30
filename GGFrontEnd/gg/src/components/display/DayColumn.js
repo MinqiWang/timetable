@@ -1,24 +1,30 @@
 import React, { Component } from 'react';
 import Event from './Event'
-import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage} from '../../redux/actions'
+import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
 import { connect } from 'react-redux';
 import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
-import { undecorate } from '../../utils';
+import { undecorate, opacity10, decorate } from '../../utils';
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import { updateTimeslot, retrieveAllSlotsInAWeek, retrieveAllForEvent } from '../../RESTFul/ajax';
+import {
+    FAKE_SLOT_ID, 
+    FAKE_SLOT_EVENT_NAME_ID, 
+    FAKE_SLOT_EVENT_TIME_ID,
+    FAKE_SLOT_EVENT_LENGTH_ID} from "../../constants"
 
 
 export class DayColumn extends Component {
     constructor(props) {
       super(props)
-      let {week_of, indice} = this.props;
       this.state = {
          events: [],
+         days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri","Sat"]
       }
     }
 
     startTimeFromY = (y) => {
         let hour = Math.floor(y/40);
-        return +hour+":00:00";
+        return +hour+":00";
     }
 
     createNewEvent = (ev) => {
@@ -30,7 +36,7 @@ export class DayColumn extends Component {
             return;
         }
         
-        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.event_id)));
+        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.detail.id)));
         var rect = ev.target.getBoundingClientRect();
 
         let EVENT_NAME = "default_event";
@@ -71,21 +77,9 @@ export class DayColumn extends Component {
         e.stopPropagation();
         
         if (targetSlot.isDragging) {
-            // if isDragging
-            //delete old slot with
-            let slot_to_move = document.getElementById(targetSlot.id);
-            // let parentCol = document.getElementById(colId);
-
-            if (slot_to_move) {
-                try{
-                    e.target.appendChild(slot_to_move);
-                }
-                catch (error) {
-                    // console.log(error);
-                }
-                finally {
-                }
-            }
+            let newTargetSlot = Object.assign({}, targetSlot);
+            newTargetSlot.col_id = colId;
+            this.props.setTargetSlot(newTargetSlot);
         }
         //is not dragging, do nothing
     }
@@ -100,9 +94,9 @@ export class DayColumn extends Component {
         e.stopPropagation();
         
         // console.log(targetSlot);
-        let element = document.getElementById(targetSlot.id);
-        let eventTime = document.getElementById("eventTime"+targetSlot.id);
-        let eventLength = document.getElementById("eventLength"+targetSlot.id);
+        let element = document.getElementById(FAKE_SLOT_ID);
+        let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
+        let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
 
 
         if (element == null) return;
@@ -149,20 +143,70 @@ export class DayColumn extends Component {
     solidifyEvent = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
-        let element = document.getElementById(targetSlot.id);
-
+        const {setFocusEvent, setSlots, logOut, week_of, focused_event} = this.props;
+        let element = document.getElementById(FAKE_SLOT_ID);
+        let original_element = document.getElementById(targetSlot.id);
+        
+        let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
+        let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
         if (element == null) return;
-
-        undecorate([element]);
+        console.warn(eventTime.innerHTML);
+        let start_time = eventTime.innerHTML;
+        let length = eventLength.innerHTML.split(" ")[0];
+        
+        let day_of_week = this.state.days.indexOf(targetSlot.col_id);
+        let id = +targetSlot.id;
+        let event_id = targetSlot.event_id;
+        let timetable_slot = [];
+        timetable_slot.push(start_time);
+        timetable_slot.push(length);
+        timetable_slot.push(week_of);
+        timetable_slot.push(day_of_week);
+        let data = {
+            event_id,
+            id,
+            timetable_slot
+        };
         //reset targetSlot
         this.props.setTargetSlot();
         //axios, after saving, get all slots in a week
-        
+        updateTimeslot(function(res) {
+            opacity10([original_element]);
+            
+            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+            retrieveAllForEvent(function(res) {
+                undecorate(Array.from(document.getElementsByClassName(focused_event.detail.id)));
+                decorate([original_element]);
+                setFocusEvent(res);
+                
+                }, logOut, event_id);
+        }, logOut, data);
     }
 
     render() {
         const {col_id, default_slots, slots, targetSlot} = this.props;
         
+        const eventStyle = {
+            top: targetSlot.fake_top + "px",
+            height: targetSlot.fake_height + "px",
+            width: "95%",
+            boxShadow: "2px 2px 2px 2px #00000055",
+            zIndex: "1",
+        };
+
+        let fake_event = (targetSlot.col_id === col_id)?
+        (<div id={FAKE_SLOT_ID} className="event" style={eventStyle}>
+            <div className="event-info">
+                <div className="event-name-wrapper">
+                    <div id={FAKE_SLOT_EVENT_NAME_ID} className="event-name">{targetSlot.event_name}</div>
+                </div>
+                <div id={FAKE_SLOT_EVENT_TIME_ID} className="event-time">{targetSlot.start_time}</div>
+                <div id={FAKE_SLOT_EVENT_LENGTH_ID} className="event-length">{targetSlot.length}</div>
+            </div>
+            <div className="resizer"></div>
+        </div>) : null
+
+
         return (
         <div id={col_id} onDoubleClick={this.createNewEvent}
         onMouseEnter={(e) => this.eventRecreation(e, targetSlot, col_id)} 
@@ -172,7 +216,10 @@ export class DayColumn extends Component {
             {slots.map((slot) => 
             <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
             {default_slots.map((slot) =>  
-            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true} isGroup={true}></Event>)}
+            {/* {groupslots.map((slot) => 
+            <Event key={slot.id} col_id={col_id} slot={slot} isGroup={true}></Event>)} */}
+            {fake_event}
         </div>
         )
     }
@@ -185,8 +232,8 @@ const mapStateToProps = state => {
     const targetSlot = getTargetSlot(state);
     const rightMenu = getRightMenu(state);
     const focused_event = getFocusEvent(state);
-
-    return {targetSlot, rightMenu, focused_event};
+    const week_of = getWeekOf(state);
+    return {targetSlot, rightMenu, week_of, focused_event};
 };
 
-export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage})(DayColumn);
+export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage, setSlots, logOut})(DayColumn);

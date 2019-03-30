@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import {setFocusEvent, setRightMenu} from '../../redux/actions';
+import {setFocusEvent, setRightMenu, logOut, setSlots} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getFocusEvent } from '../../redux/selecter';
+import { getFocusEvent, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
-import {deleteEvent} from '../../configs/ajax'
+import {deleteEvent, retrieveAllSlotsInAWeek} from '../../RESTFul/ajax'
 
 export class InfoMode extends Component {
 
@@ -23,12 +23,17 @@ export class InfoMode extends Component {
         this.props.setRightMenu("Close");
     }
 
+    addInvitees = (e) => {
+        this.props.setRightMenu("Invitee");
+    }
+
     delete = (ev) => {
-        const { focused_event } = this.props;
-        this.props.setFocusEvent();
-        deleteEvent((res)=>{console.log(res)}, focused_event.detail.id);
-        
-        this.props.setRightMenu("Close");
+        const { focused_event, logOut, setSlots, week_of, setRightMenu} = this.props;
+        deleteEvent(function(res) {
+            setRightMenu("Close");
+            setFocusEvent();
+            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+        }, logOut, focused_event.detail.id);
     }
 
   render() {
@@ -38,6 +43,7 @@ export class InfoMode extends Component {
             <div className="Nav-Btns">
                 <button onClick={this.edit}>edit</button>
                 <button onClick={this.delete}>delete</button>
+                <button onClick={this.addInvitees}>invitees</button>
                 <button onClick={this.close}>close</button>
             </div>
             
@@ -52,7 +58,8 @@ export class InfoMode extends Component {
 }
 
 const mapStateToProps = state => {
-    
+    const week_of = getWeekOf(state);
+    return {week_of};
 };
 
-export default connect(null, {setFocusEvent, setRightMenu})(InfoMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots})(InfoMode);

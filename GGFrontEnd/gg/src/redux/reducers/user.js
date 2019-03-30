@@ -1,8 +1,10 @@
-import {USER_INFO, FRIEND_LIST, LOGOUT} from '../actionTypes';
+import {USER_INFO, FRIEND_LIST, LOGOUT, SET_SEARCH_FRIEND, SET_PENDING_REQUESTS} from '../actionTypes';
 
 const initialState = {
     User: null,
     Friends: [],
+    searchFriend: null,
+    pendingRequests: {},
 }
 
 export default function(state = initialState, action) {
@@ -20,6 +22,20 @@ export default function(state = initialState, action) {
             return {
                 ...state,
                 Friends
+            }
+        }
+        case SET_SEARCH_FRIEND: {
+            const {searchFriend} = action.payload;
+            return {
+                ...state,
+                searchFriend
+            }
+        }
+        case SET_PENDING_REQUESTS: {
+            const {pendingRequests} = action.payload;
+            return {
+                ...state,
+                pendingRequests
             }
         }
         case LOGOUT: {

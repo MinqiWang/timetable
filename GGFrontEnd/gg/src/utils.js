@@ -13,3 +13,15 @@ export const undecorate = (elements) => {
         element.style.zIndex = "0";
     })
 }
+
+export const opacity05 = (elements) => {
+    elements.map(element=>{
+        element.style.opacity = 0.5;
+    })
+}
+
+export const opacity10 = (elements) => {
+    elements.map(element=>{
+        element.style.opacity = 1;
+    })
+}

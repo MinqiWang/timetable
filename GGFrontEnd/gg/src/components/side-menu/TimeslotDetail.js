@@ -13,7 +13,7 @@ export class TimeslotDetail extends Component {
     super(props)
     
     this.state = {
-       mins: [0, 15, 30],
+       mins: [0, 15, 30, 45],
        isDeleted: false
     }
   }

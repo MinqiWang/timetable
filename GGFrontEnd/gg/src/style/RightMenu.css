@@ -1,5 +1,7 @@
 .Nav-Btns {
     display: flex;
+    background: wheat;
+    padding: 3px;
     flex-flow: row nowrap;
     justify-content: space-evenly;
     flex: 0 0 auto;

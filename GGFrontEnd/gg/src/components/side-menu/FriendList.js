@@ -4,6 +4,7 @@ import Image from 'react-bootstrap/Image';
 import '../../style/FriendList.css';
 import { logOut, setWatching } from '../../redux/actions'
 import { connect } from 'react-redux';
+import AvatarAndName from '../AvatarAndName';
 
 
 export class FriendList extends Component {
@@ -27,8 +28,7 @@ export class FriendList extends Component {
             {/*Search_Result sort by alphabetical order*/}
             {friends.filter(friend => {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend => 
             <div className="resultUser" key={friend.id}>
-              <Image src={friend.avatarURL} roundedCircle />
-              <div>{friend.name}</div>
+              <AvatarAndName person={friend}></AvatarAndName>
               <Button onClick={(e) => this.timetable(e, friend)}>Timetable</Button>
             </div>
             )}

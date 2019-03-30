@@ -1,9 +1,7 @@
 .FriendList {
     display: flex;
     flex-flow: nowrap column;
-    
-    overflow: hidden;
-
+    overflow: scroll;
 }
 .resultUser {
     display: flex;

@@ -260,9 +260,10 @@ app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	if (!user_id) {
 		user_id = req.session.inAppId;
-	}
-	if (!validator.isNumeric(user_id)) {
-		return res.status(422).end("URL param: id must be an integer");
+	} else {
+		if (!validator.isNumeric(user_id)) {
+			return res.status(422).end("URL param: id must be an integer");
+		}
 	}
 
 	pool.query("select name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
@@ -509,12 +510,12 @@ app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, 
  * Response body: Success/Failure messages 
  */
 app.post('/event/create', isAuthenticated, function(req, res, next){
-	if (!(req.body.timetable_slots.isArray() && req.body.event_detail.isArray())) {
-		return res.status(422).end("Body: timetable_slots must be an array, event_detail must be an array");
+	if (!(Array.isArray(req.body.timetable_slots) && Array.isArray(req.body.detail))) {
+		return res.status(422).end("Body: timetable_slots must be an array, detail must be an array");
 	}
 
-	let event_detail = req.body.detail.map(x => validator.escape(x));
-	let timetable_slots = req.body.timetable_slots.map(a => (a.map(x => validator.escape(x)))); // Does not contain an event id
+	let event_detail = req.body.detail.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
+	let timetable_slots = req.body.timetable_slots.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x))); // Does not contain an event id
 	let author_id = req.session.inAppId;
 
 	let num_slots = timetable_slots.length;
@@ -567,10 +568,10 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
  * Response body: Success/Failure messages 
  */
  app.post('/event/timetable_slot/create', isAuthenticated, function (req, res, next){
- 	if (!(req.body.timetable_slots.isArray() && validator.isNumeric(req.body.event_id))) {
-		return res.status(422).end("Body: timetable_slot must be an array, event_id must be an integer");
+ 	if (!(Array.isArray(req.body.timetable_slots))) {
+		return res.status(422).end("Body: timetable_slot must be an array");
 	}
- 	let timetable_slot = req.body.timetable_slot.map(x => validator.escape(x)); // Does not contain an event id
+ 	let timetable_slot = req.body.timetable_slot.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x); // Does not contain an event id
  	let event_id = req.body.event_id;
  	let obscure_id = req.body.obscure; // Slot id
  	let week_of = validator.escape(req.body.week_of);
@@ -623,11 +624,11 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
  * Response body: Success/Failure messages 
  */
 app.patch('/event/update', isAuthenticated, function (req, res, next){
-	if (!(req.body.timetable_slots.isArray() && req.body.event_detail.isArray())) {
+	if (!(Array.isArray(req.body.timetable_slots) && Array.isArray(req.body.event_detail))) {
 		return res.status(422).end("Body: event_id must be an integer");
 	}
 
-	let event_detail = req.body.detail.map(x => validator.escape(x));
+	let event_detail = req.body.detail.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
  	let event_id = req.body.event_id;
  	let event_name = validator.escape(req.body.event_name);
 	let author_id = req.session.inAppId;
@@ -674,11 +675,11 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages 
  */
 app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, next){
-	if (!(req.body.timetable_slot.isArray() && validator.isNumeric(req.body.event_id) && validator.isNumeric(req.body.id))) {
-		return res.status(422).end("Body: timetable_slot must be an array, event_id must be an integer, id must be an integer");
+	if (!(Array.isArray(req.body.timetable_slot))) {
+		return res.status(422).end("Body: timetable_slot must be an array");
 	}
 
-	let timetable_slot = req.body.timetable_slot.map(x => validator.escape(x));
+	let timetable_slot = req.body.timetable_slot.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
  	let event_id = req.body.event_id;
  	let author_id = req.session.inAppId;
 	let slot_id = req.body.id;
@@ -938,15 +939,15 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
  }
  */
 app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
-	if (!(validator.isNumeric(req.params.id) && req.body.detail_info.isArray() && req.body.to_create.isArray() && req.body.to_update.isArray() && req.body.to_delete.isArray())) {
+	if (!(validator.isNumeric(req.params.id) && Array.isArray(req.body.detail_info) && Array.isArray(req.body.to_create) && Array.isArray(req.body.to_update) && Array.isArray(req.body.to_delete))) {
 		return res.status(422).end("URL param: id must an integer; Body: detail_info must be an array, to_create must be an array, to_update must be an array, to_delete must be an array");
 	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	let detail_info = req.body.detail_info.map(x => validator.escape(x));
-	let to_create = req.body.to_create.map(a => (a.map(x => validator.escape(x))));
-	let to_update = req.body.to_update.map(a => (a.map(x => validator.escape(x))));
-	let to_delete = req.body.to_delete.map(a => (a.map(x => validator.escape(x))));
+	let detail_info = req.body.detail_info.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
+	let to_create = req.body.to_create.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
+	let to_update = req.body.to_update.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
+	let to_delete = req.body.to_delete.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
 
 	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -1017,7 +1018,23 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 					});
 				}
 			};
-			delete_slots();
+			let update_detail = function () {
+				if (detail_info.length === 0) {
+					delete_slots();
+				}
+				else {
+					pool.query("update event_detail set text_content=?, media_content_urls=?, place=? where id=?", detail_info.concat(event_id), function(error, results, fileds){
+						if (error) {
+							logAPIerror("/event/MISC/:id", error);
+							res.status(500).end(error);
+						}
+						else {
+							delete_slots();
+						}
+					});
+				}
+			}
+			update_detail();
 		}
 	});
 	next();
@@ -1113,12 +1130,12 @@ app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
-	if (!(validator.isNumeric(req.params.id) && invitees.isArray())) {
+	if (!(validator.isNumeric(req.params.id) && Array.isArray(invitees))) {
 		return res.status(422).end("URL param: id must an integer");
 	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	let invitees = req.body.invitees.map(x => validator.escape(x));
+	let invitees = req.body.invitees.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {

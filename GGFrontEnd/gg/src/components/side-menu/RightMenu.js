@@ -25,6 +25,7 @@ export class RightMenu extends Component {
         break;
       case "Invitee":
         rightmenu_page = (<InviteePage focused_event={focused_event}/>)
+        break;
       default:
         rightmenu_page = (<div>error</div>)
     }

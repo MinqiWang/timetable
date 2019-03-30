@@ -122,7 +122,7 @@ export class SideMenu extends Component {
         </div>
         <div className="SearchBar-Button">
           <Button variant="primary" onClick={this.search}>Go</Button>
-          <Button variant="secondary" onClick={this.cancel}>Back</Button>
+          <Button variant="secondary" onClick={this.cancel}>Clear</Button>
         </div>
         {display}
       </div> : null

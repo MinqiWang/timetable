@@ -8,6 +8,7 @@ import { logOut, setSearchFriend, setPendingRequests } from '../../redux/actions
 import {retrieveSearchFriendById, invite, retrievePendingFriendlist, accept, reject} from '../../RESTFul/ajax';
 import { getSearchFriend, getPendingRequests } from '../../redux/selecter';
 import {connect} from 'react-redux';
+import AvatarAndName from '../AvatarAndName'
 
 
 export class SearchFriend extends Component {
@@ -111,8 +112,7 @@ export class SearchFriend extends Component {
                 {(pendingRequests)? Object.values(pendingRequests).map(
                     pending => 
                     <div className="resultUser" key={pending.id}>
-                        <Image src={pending.avatarURL} roundedCircle width="70px" height="70px"/>
-                        <div>{pending.name}</div>
+                        <AvatarAndName person={pending}></AvatarAndName>
                         <Button onClick={(e) => this.acceptInvitation(e, pending.id)}>Accept</Button>
                         <Button onClick={(e) => this.rejectInvitation(e, pending.id)}>Reject</Button>
                     </div>)

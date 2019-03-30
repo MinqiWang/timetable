@@ -1,5 +1,6 @@
 const EYE_CATCHER = "***********************************************************";
 const fs = require("fs");
+const validator = require('validator');
 
 const express = require('express');
 const app = express();
@@ -260,6 +261,9 @@ app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 	if (!user_id) {
 		user_id = req.session.inAppId;
 	}
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: id must be an integer");
+	}
 
 	pool.query("select name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
 		if (error) {
@@ -292,6 +296,10 @@ app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
+
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
 
 	if (user_id == your_id) {
 		res.json("This is yourself");
@@ -348,6 +356,10 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
+
 	if (user_id == your_id) {
 		return res.json("This is yourself!");
 	}
@@ -389,6 +401,10 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
+
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
 
 	if (user_id == your_id) {
 		return res.json("This is yourself!");
@@ -439,7 +455,7 @@ app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 		queryStr = "select * from friendship join user_info on id_from=id where id_to=? and id_to=? and id_to=? and has_accepted=false";
 	}
 	else {
-		return res.status(400).end("Unexpected URL params");
+		return res.status(422).end("URL param: opt must be one of ('friendlist', 'pendingRequests')");
 	}
 
 	pool.query(queryStr, [your_id, your_id, your_id], function (error, results, fields){
@@ -460,6 +476,10 @@ app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	let your_id = req.session.inAppId;
+
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: id must be an integer");
+	}
 
 	if (user_id == your_id) return res.json("This is you!");
 	pool.query("select * from (select * from user_info left join friendship on id=id_from or id=id_to where id=?) A where id_from=? or id_to=? or id_from is null limit 1", [user_id, your_id, your_id], function (error, results, fields){
@@ -489,8 +509,12 @@ app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, 
  * Response body: Success/Failure messages 
  */
 app.post('/event/create', isAuthenticated, function(req, res, next){
-	let event_detail = req.body.detail;
-	let timetable_slots = req.body.timetable_slots; // Does not contain an event id
+	if (!(req.body.timetable_slots.isArray() && req.body.event_detail.isArray())) {
+		return res.status(422).end("Body: timetable_slots must be an array, event_detail must be an array");
+	}
+
+	let event_detail = req.body.detail.map(x => validator.escape(x));
+	let timetable_slots = req.body.timetable_slots.map(a => (a.map(x => validator.escape(x)))); // Does not contain an event id
 	let author_id = req.session.inAppId;
 
 	let num_slots = timetable_slots.length;
@@ -543,10 +567,13 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
  * Response body: Success/Failure messages 
  */
  app.post('/event/timetable_slot/create', isAuthenticated, function (req, res, next){
- 	let timetable_slot = req.body.timetable_slot; // Does not contain an event id
+ 	if (!(req.body.timetable_slots.isArray() && validator.isNumeric(req.body.event_id))) {
+		return res.status(422).end("Body: timetable_slot must be an array, event_id must be an integer");
+	}
+ 	let timetable_slot = req.body.timetable_slot.map(x => validator.escape(x)); // Does not contain an event id
  	let event_id = req.body.event_id;
  	let obscure_id = req.body.obscure; // Slot id
- 	let week_of = req.body.week_of;
+ 	let week_of = validator.escape(req.body.week_of);
  	let author_id = req.session.inAppId;
 
 	// Verify event ownership first
@@ -596,9 +623,13 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
  * Response body: Success/Failure messages 
  */
 app.patch('/event/update', isAuthenticated, function (req, res, next){
-	let event_detail = req.body.detail;
+	if (!(req.body.timetable_slots.isArray() && req.body.event_detail.isArray())) {
+		return res.status(422).end("Body: event_id must be an integer");
+	}
+
+	let event_detail = req.body.detail.map(x => validator.escape(x));
  	let event_id = req.body.event_id;
- 	let event_name = req.body.event_name;
+ 	let event_name = validator.escape(req.body.event_name);
 	let author_id = req.session.inAppId;
 
 
@@ -643,7 +674,11 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages 
  */
 app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, next){
-	let timetable_slot = req.body.timetable_slot;
+	if (!(req.body.timetable_slot.isArray() && validator.isNumeric(req.body.event_id) && validator.isNumeric(req.body.id))) {
+		return res.status(422).end("Body: timetable_slot must be an array, event_id must be an integer, id must be an integer");
+	}
+
+	let timetable_slot = req.body.timetable_slot.map(x => validator.escape(x));
  	let event_id = req.body.event_id;
  	let author_id = req.session.inAppId;
 	let slot_id = req.body.id;
@@ -679,6 +714,9 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
  * Response body: Success/Failure messages
  */
 app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && validator.isNumeric(req.params.event_id))) {
+		return res.status(422).end("URL param: id must an integer, event_id must be an integer");
+	}
 	let slot_id = req.params.id;
 	let event_id = req.params.event_id;
 	let author_id = req.session.inAppId;
@@ -692,10 +730,10 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, functi
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("delete from timetable_event where id=?", [slot_id], function (error, results, fields){
-				if (error) {
-					logAPIerror("/event/timetable_slot/delete", error);
-					res.status(500).end(error);
+			pool.query("delete from timetable_event where id=?", [slot_id], function (error2, results2, fields2){
+				if (error2) {
+					logAPIerror("/event/timetable_slot/delete", error2);
+					res.status(500).end(error2);
 				}
 				else {
 					res.json("Timetable slot is deleted!");
@@ -714,6 +752,9 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, functi
  * Response body: Success/Failure messages
  */
 app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
@@ -816,7 +857,7 @@ function formatSlotsInfo(results) {
 ]
  */
 app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function (req, res, next){
-	let week_of = req.params.week_of;
+	let week_of = validator.escape(req.params.week_of);
 	let author_id = req.session.inAppId;
 
 	pool.query("select * from timetable_event where week_of=? and id not in (select slot_id from obscured_event where week_of=?) \
@@ -838,6 +879,9 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
  * Retrieve all timetable slots + detail info for a given event
  */
 app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
@@ -894,12 +938,15 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
  }
  */
 app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && req.body.detail_info.isArray() && req.body.to_create.isArray() && req.body.to_update.isArray() && req.body.to_delete.isArray())) {
+		return res.status(422).end("URL param: id must an integer; Body: detail_info must be an array, to_create must be an array, to_update must be an array, to_delete must be an array");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	let detail_info = req.body.detail_info;
-	let to_create = req.body.to_create;
-	let to_update = req.body.to_update;
-	let to_delete = req.body.to_delete;
+	let detail_info = req.body.detail_info.map(x => validator.escape(x));
+	let to_create = req.body.to_create.map(a => (a.map(x => validator.escape(x))));
+	let to_update = req.body.to_update.map(a => (a.map(x => validator.escape(x))));
+	let to_delete = req.body.to_delete.map(a => (a.map(x => validator.escape(x))));
 
 	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -993,6 +1040,9 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
  ]
  */
 app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
@@ -1017,6 +1067,9 @@ app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
  * Get all users which can be invited to the given event.
  */
 app.get("/event/group/toInvite/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1035,6 +1088,9 @@ app.get("/event/group/toInvite/:id", isAuthenticated, function (req, res, next){
  * Get all users which are already invited to the given event.
  */
 app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1057,9 +1113,12 @@ app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && invitees.isArray())) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	let invitees = req.body.invitees;
+	let invitees = req.body.invitees.map(x => validator.escape(x));
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -1117,6 +1176,9 @@ app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1140,6 +1202,9 @@ app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1164,6 +1229,9 @@ app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1195,7 +1263,7 @@ app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next
  * Retrieve all received group event invitation for a given week.
  */
 app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticated, function (req, res, next){
-	let week_of = req.params.week_of;
+	let week_of = validator.escape(req.params.week_of);
 	let author_id = req.session.inAppId;
 
 	pool.query("select * from timetable_event where event_id in (select event_id from group_event_invitation where invitee=? and has_accepted=true) and week_of=?", [author_id, week_of], function (error, results, fields){
@@ -1215,6 +1283,9 @@ app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticat
  * Retrieve next 10 received group event invitation, start at the n'th event where n is given as a param.
  */
 app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.n)) {
+		return res.status(422).end("URL param: n must an integer");
+	}
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 
@@ -1236,6 +1307,9 @@ app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, funct
  * Retrieve next 10 group event initialized by you, start at the n'th event where n is given as a param.
  */
 app.get("/event/group/event/retrieveSent/:n", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.n)) {
+		return res.status(422).end("URL param: n must an integer");
+	}
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 

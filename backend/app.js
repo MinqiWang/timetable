@@ -128,7 +128,7 @@ app.get('/logout', isAuthenticated, function(req, res, next){
 });
 
 /*
- * Twitter authentication
+ * TODO: Twitter authentication
  */
 
 /*
@@ -1012,6 +1012,42 @@ app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
 
 
 /* ---- Group Event APIs ---- */
+
+/*
+ * Get all users which can be invited to the given event.
+ */
+app.get("/event/group/toInvite/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("select * from user_info where id not in (select invitee from group_event_invitation where event_id=?)", [event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/toInvite/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+});
+
+/*
+ * Get all users which are already invited to the given event.
+ */
+app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("select * from group_event_invitation where event_id=?", [event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/invited/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+});
 
 /*
  * Create a group event. (Add a list of invitees)

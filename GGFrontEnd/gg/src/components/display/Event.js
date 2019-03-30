@@ -160,23 +160,23 @@ export class Event extends Component {
     let color;
     if (isGroup) color = "red";
     const eventTypeStyle = {
-        borderRadius: "50%",
-        backgroundColor: color,
-        height: "90%"
+        background: color,
     };
 
     return (
     <div id={slot.id} className={"event " + slot.event_id} style={eventStyle} 
     onMouseDown={(e) => this.drager_mousedown(e, slot, hasDefault, focused_event)}
     >
-        <div className="event-info">
-            <div className="event-name-wrapper">
-                <div id={"eventName"+slot.id} className="event-name">{slot.event_name}</div>
-                <div className = "event-type" style={eventTypeStyle}>hh</div>
+        <div className="event-badge-include">
+            <div className="event-info">
+                <div className="event-name-wrapper">
+                    <div id={"eventName"+slot.id} className="event-name">{slot.event_name}</div>
+                </div>
+                <div id={"eventTime"+slot.id} className="event-time">{start_time}</div>
+                <div id={"eventLength"+slot.id} className="event-length">{slot.length}</div>
+            
             </div>
-            <div id={"eventTime"+slot.id} className="event-time">{start_time}</div>
-            <div id={"eventLength"+slot.id} className="event-length">{slot.length}</div>
-        
+            <div className = "event-badge" style={eventTypeStyle}></div>
         </div>
         <div id={"resizer"+slot.id} className="resizer" onMouseDown={this.resizer_mousedown}></div>
     </div>

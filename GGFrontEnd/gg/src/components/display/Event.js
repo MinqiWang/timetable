@@ -10,7 +10,6 @@ export class Event extends Component {
 
     constructor(props) {
         super(props)
-        
 
         this.drager_mousedown = this.drager_mousedown.bind(this);
         this.resizer_mousedown = this.resizer_mousedown.bind(this);
@@ -99,6 +98,10 @@ export class Event extends Component {
     resizer_mousedown = function(e) {
         e.preventDefault();
         e.stopPropagation();
+        if (this.props.Watching) {
+            // this.props.setShowMessage(onWatchMessage);
+            return;
+        }
         if (this.props.readOnly) {
             // this.props.setShowMessage(onReadOnlyMessage);
             return;
@@ -140,7 +143,7 @@ export class Event extends Component {
     };
 
   render() {
-    const {slot, shouldDecorate, focused_event, hasDefault, isGroup, readOnly} = this.props;
+    const {slot, shouldDecorate, focused_event, hasDefault, readOnly} = this.props;
 
     let time_array = slot.start_time.split(":");
     let hour = parseInt(time_array[0]);
@@ -166,6 +169,7 @@ export class Event extends Component {
 
     let color;
     if (readOnly) color = "red";
+    if (slot.isGroupEvent == 1) color = "yellow";
     const eventTypeStyle = {
         background: color,
     };

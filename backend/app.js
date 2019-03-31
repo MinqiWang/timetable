@@ -1309,7 +1309,7 @@ app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, funct
 
 	pool.query("select timetable_event.event_id, event_name, name, avatarURL from timetable_event join user_info join event_ownership on timetable_event.event_id=event_ownership.event_id and event_ownership.author_id=user_info.id \
 		where timetable_event.event_id in (select t.event_id from (select event_id from group_event_invitation where invitee=? order by ts desc limit ?,?) as t) group by timetable_event.event_id, event_name, name, \
-		avatarURL", [author_id, parseInt(n), 10], function (error, results, fields){
+		avatarURL", [author_id, 10 * parseInt(n), 10 * (parseInt(n)+1)], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);
@@ -1335,7 +1335,7 @@ app.get("/event/group/event/retrieveSent/:n", isAuthenticated, function (req, re
 	pool.query("select event_id, event_name from timetable_event where event_id in (select t2.event_id \
 		from (select distinct t.event_id from (select event_ownership.event_id from group_event_invitation \
 		join event_ownership on group_event_invitation.event_id=event_ownership.event_id where author_id=? \
-		order by ts desc) as t limit ?,?) as t2) group by event_id, event_name", [author_id, parseInt(n), 10], function (error, results, fields){
+		order by ts desc) as t limit ?,?) as t2) group by event_id, event_name", [author_id, 10 * parseInt(n), 10 * (parseInt(n)+1)], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);

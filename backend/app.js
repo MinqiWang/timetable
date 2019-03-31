@@ -886,31 +886,23 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
-		if (error) {
-			logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error);
-			res.status(500).end(error);
+	pool.query("select * from timetable_event where timetable_event.event_id=?", [event_id], function (error2, results2, fields2){
+		if (error2) {
+			logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
+			res.status(500).end(error2);
 		}
 		else {
-			pool.query("select * from timetable_event left join obscured_event on obscured_event.slot_id=timetable_event.id where timetable_event.event_id=?", [event_id], function (error2, results2, fields2){
-				if (error2) {
-					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
-					res.status(500).end(error2);
+			// Format the data
+			let formatted_slots_results = formatSlotsInfo(results2);
+			pool.query("select * from event_detail join event_ownership on id=event_id where id=?", [event_id], function (error3, results3, fields3) {
+				if (error3) {
+					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error3);
+					res.status(500).end(error3);
 				}
 				else {
-					// Format the data
-					let formatted_slots_results = formatSlotsInfo(results2);
-					pool.query("select * from event_detail where id=?", [event_id], function (error3, results3, fields3) {
-						if (error3) {
-							logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error3);
-							res.status(500).end(error3);
-						}
-						else {
-							let event_detail = results3[0];
-							event_detail.event_name = formatted_slots_results[1];
-							res.json({"detail": event_detail, "timetable_slots": formatted_slots_results[0]});
-						}
-					});
+					let event_detail = results3[0];
+					event_detail.event_name = formatted_slots_results[1];
+					res.json({"detail": event_detail, "timetable_slots": formatted_slots_results[0]});
 				}
 			});
 		}

@@ -6,6 +6,7 @@ import {SETLOG,
     WEEK_OF,
     LOGOUT,
     SET_SLOTS,
+    SET_ACCEPT_SLOTS,
     SET_FOCUS_EVENT,
     IS_NOTDEFAULT,
     IS_DEFAULT,
@@ -19,7 +20,8 @@ import {SETLOG,
     WATCHING_INFO,
     SET_FOCUS_EVENT_INVITEE,
     SET_FOCUS_EVENT_TOINVITE,
-    SET_ADDING_INVITEES
+    SET_ADDING_INVITEES,
+    READ_ONLY,
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -105,6 +107,14 @@ export const setSlots = (slotsInAWeek = []) => {
     type: SET_SLOTS,
     payload: {
         slotsInAWeek
+    }
+}};
+
+export const setAcceptSlots = (acceptSlotsInAWeek = []) => {
+    return {
+    type: SET_ACCEPT_SLOTS,
+    payload: {
+        acceptSlotsInAWeek
     }
 }};
 
@@ -199,7 +209,11 @@ export const setAddingInvitees = (addingInvitees={invitees: []}) => ({
     }
 });
 
-
+export const readOnly = () => ({
+    type: READ_ONLY,
+    payload: {
+    }
+});
 
 
 

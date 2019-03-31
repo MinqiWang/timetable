@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {setFocusEvent, setRightMenu, logOut, setSlots, setFocusEventInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getFocusEvent, getWeekOf } from '../../redux/selecter';
+import { getFocusEvent, getWeekOf, getUser } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import {deleteEvent, retrieveAllSlotsInAWeek, inviteesByEventID} from '../../RESTFul/ajax'
 
@@ -42,12 +42,15 @@ export class InfoMode extends Component {
     }
 
   render() {
-    const { focused_event } = this.props;
+    const { focused_event, User } = this.props;
     return (
         <div className="App-rightmenu">
             <div className="Nav-Btns">
-                <button onClick={this.edit}>edit</button>
-                <button onClick={this.delete}>delete</button>
+                {/* owner check */}
+                {(focused_event.detail.author_id == User.id)? <><button onClick={this.edit}>edit</button>
+                <button onClick={this.delete}>delete</button></>: null
+                }
+                
                 <button onClick={this.addInvitees}>invitees</button>
                 <button onClick={this.close}>close</button>
             </div>
@@ -64,7 +67,8 @@ export class InfoMode extends Component {
 
 const mapStateToProps = state => {
     const week_of = getWeekOf(state);
-    return {week_of};
+    const User = getUser(state);
+    return {week_of, User};
 };
 
 export default connect(mapStateToProps, {setFocusEvent, setFocusEventInvitees, setRightMenu, logOut, setSlots})(InfoMode);

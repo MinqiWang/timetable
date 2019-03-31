@@ -19,20 +19,21 @@ export class Invitees extends Component {
   }
   
   render() {
-    const {friend, event_id} = this.props;
+    const {friend, event_id, isEventOwner} = this.props;
     let variant;
     let status;
+    let recallButton;
     switch (friend.has_accepted) {
       case null:
         variant = "warning"
         status = "PENDING"
+        recallButton = <Button onClick={(e) => this.recall(e, friend.id, event_id)}>Recall</Button>
         break;
-      case true:
+      case 1:
         variant = "success"
         status = "ACCPECT"
         break;
-
-      case false:
+      case 0:
         variant = "danger"
         status = "REJECT"
         break;
@@ -48,7 +49,8 @@ export class Invitees extends Component {
           <Badge pill variant={variant}>
             {status}
           </Badge>
-          <Button onClick={(e) => this.recall(e, friend.id, event_id)}>Recall</Button>
+          {/* owner check */}
+          {isEventOwner? (recallButton? recallButton: <Button disabled>Recall</Button>) : null}
         </div>
     )
   }

@@ -1,10 +1,10 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setRightMenu, setSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
+import {setRightMenu, setSlots, setAcceptSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
-import { retrieveAllSlotsInAWeek } from '../../RESTFul/ajax';
+import { getDefaultEvent, getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
+import { retrieveAllSlotsInAWeek, retrieveAcceptedInAWeek } from '../../RESTFul/ajax';
 import {weekOf} from '../../redux/actions'
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 
@@ -14,6 +14,7 @@ export class Timetable extends Component {
     super(props)
     
     retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, this.props.week_of);
+    retrieveAcceptedInAWeek(this.props.setAcceptSlots, this.props.logOut, this.props.week_of);
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -82,7 +83,7 @@ export class Timetable extends Component {
 
   render() {
     const {time_tag, days} = this.state;
-    const {focused_event, week_of, slots, isDefault} = this.props;
+    const {focused_event, week_of, slots, isDefault, accept_slots} = this.props;
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
@@ -103,13 +104,7 @@ export class Timetable extends Component {
           </ul>
           <div className="scroll-slots" onMouseLeave={this.solidifyEvent}>
               <div className="scroll-slots-col1"></div>
-                {days.map((day, index)=> <DayColumn week_of={week_of} key={day} indice={index} col_id={day} slots={slots[day]} default_slots={isDefault? focused_event.timetable_slots[day]: []}></DayColumn>)}
-              {/* <div id="col3" className="scroll-slots-col">Mon</div>
-              <div id="col4" className="scroll-slots-col">Tue</div>
-              <div id="col5" className="scroll-slots-col">Wed</div>
-              <div id="col6" className="scroll-slots-col">Thu</div>
-              <div id="col7" className="scroll-slots-col">Fri</div>
-              <div id="col8" className="scroll-slots-col">Sat</div> */}
+                {days.map((day, index)=> <DayColumn week_of={week_of} key={day} indice={index} col_id={day} slots={slots[day]} accept_slots={accept_slots[day]} default_slots={isDefault? focused_event.timetable_slots[day]: []}></DayColumn>)}
               <div className="scroll-slots-col scroll-slots-col1"></div>
           </div>
         </div>
@@ -126,10 +121,12 @@ const mapStateToProps = state => {
   const focused_event = getFocusEvent(state);
   const week_of = getWeekOf(state);
   const slots = getSlots(state);
+  const accept_slots = getAcceptSlots(state);
+
   const isDefault = getIsDefault(state);
   const rightMenu = getRightMenu(state);
 
-  return {focused_event, week_of, slots, isDefault, rightMenu};
+  return {focused_event, week_of, slots, isDefault, rightMenu, accept_slots};
 };
 
-export default connect(mapStateToProps, {setWeekOf, logOut, setSlots,setShowMessage})(Timetable);
+export default connect(mapStateToProps, {setWeekOf, setAcceptSlots, logOut, setSlots,setShowMessage})(Timetable);

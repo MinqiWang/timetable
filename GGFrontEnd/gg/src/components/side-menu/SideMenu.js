@@ -3,14 +3,15 @@ import '../../style/SideMenu.css';
 import {setFriends, setMyGroupEvents, setOthersGroupEvents, logOut} from '../../redux/actions'
 import {connect} from 'react-redux';
 import { getFriends, getMyGroupEvents, getOthersGroupEvents} from '../../redux/selecter';
-import { retrieveFriendlist } from '../../RESTFul/ajax';
 import FriendList from './FriendList';
 import GroupInvites from './GroupInvites';
 import MyGroups from './MyGroups';
 import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/FormControl';
+import {retrieveFriendlist, retrieveOthersGroupEvents, retrieveMyGroupEvents} from '../../RESTFul/ajax'
 
 
 export class SideMenu extends Component {
@@ -22,13 +23,14 @@ export class SideMenu extends Component {
       setFriends(res.data);
     }, logOut);
 
-    // retrieveMyGroupEvents(function(res) {
-    //   setMyGroupEvents(res.data);
-    // }, logOut);
+    
+    retrieveMyGroupEvents(function(res) {
+      setMyGroupEvents(res.data);
+    }, logOut, 0);
 
-    // retrieveOthersGroupEvents(function(res) {
-    //   setOthersGroupEvents(res.data);
-    // }, logOut);
+    retrieveOthersGroupEvents(function(res) {
+      setOthersGroupEvents(res.data);
+    }, logOut, 0);
     
     this.state = {
       show: false,
@@ -83,7 +85,7 @@ export class SideMenu extends Component {
   render() {
     const {show, displayControl, searchQuery} = this.state;
     let {Friends, MyGroupEvents, OthersGroupEvents} = this.props;
-    let showOrEclipse = show? "eclipse" : "show";
+    let showOrCollapse = show? "Collapse" : "Menu";
     // let friendList = this.sort(Friends);
     let display;
     let place_holder;
@@ -98,7 +100,7 @@ export class SideMenu extends Component {
         break;
       case "GroupInvites":
         display = (<GroupInvites invite_groups={OthersGroupEvents} searchQuery={searchQuery}></GroupInvites>)
-        place_holder = "Event/Owner's Name"
+        place_holder = "Event/Inviter's Name"
         break;
       default:
         display = (<div>error</div>)
@@ -121,18 +123,25 @@ export class SideMenu extends Component {
             </InputGroup>
         </div>
         <div className="SearchBar-Button">
-          <Button variant="primary" onClick={this.search}>Go</Button>
-          <Button variant="secondary" onClick={this.cancel}>Clear</Button>
+          <Button size="sm" variant="primary" onClick={this.search}>Go</Button>
+          <Button size="sm" variant="secondary" onClick={this.cancel}>Clear</Button>
         </div>
         {display}
       </div> : null
       }
 
       <div>
-        <div onClick={this.showSideMenu}>{showOrEclipse}</div>
-        <div id="FriendListContol" onClick={this.showDisplay}>FriendList</div>
-        <div id="MyGroupsContol" onClick={this.showDisplay}>MyGroups</div>
-        <div id="GroupInvitesContol" onClick={this.showDisplay}>GroupInvites</div>
+        <ButtonGroup size="sm" vertical>
+          <Button onClick={this.showSideMenu}>{showOrCollapse}</Button>
+          {show? 
+          <>
+          <Button id="FriendListContol" onClick={this.showDisplay}>Friends</Button>
+          <Button id="MyGroupsContol" onClick={this.showDisplay}>My Groups</Button>
+          <Button id="GroupInvitesContol" onClick={this.showDisplay}>Event Invites</Button>
+          </>:null}
+          
+                  
+        </ButtonGroup>
       </div>
       
       </>

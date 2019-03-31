@@ -31,6 +31,10 @@ export class Event extends Component {
         }
         if (e.button == 0) {
             console.warn("hhh");
+            if (this.props.readOnly) {
+                // this.props.setShowMessage(onReadOnlyMessage);
+                return;
+            }
             let element = e.currentTarget;
             opacity05([element]);
             let original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
@@ -95,8 +99,11 @@ export class Event extends Component {
     resizer_mousedown = function(e) {
         e.preventDefault();
         e.stopPropagation();
+        if (this.props.readOnly) {
+            // this.props.setShowMessage(onReadOnlyMessage);
+            return;
+        }
         if (this.props.rightMenu === "Edit") {
-            console.log("hhh");
 
             this.props.setShowMessage(onEditMessage);
             return;
@@ -133,7 +140,7 @@ export class Event extends Component {
     };
 
   render() {
-    const {slot, shouldDecorate, focused_event, hasDefault, isGroup} = this.props;
+    const {slot, shouldDecorate, focused_event, hasDefault, isGroup, readOnly} = this.props;
 
     let time_array = slot.start_time.split(":");
     let hour = parseInt(time_array[0]);
@@ -158,7 +165,7 @@ export class Event extends Component {
     }
 
     let color;
-    if (isGroup) color = "red";
+    if (readOnly) color = "red";
     const eventTypeStyle = {
         background: color,
     };

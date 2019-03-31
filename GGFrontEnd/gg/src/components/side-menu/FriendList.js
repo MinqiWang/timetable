@@ -29,7 +29,7 @@ export class FriendList extends Component {
             {friends.filter(friend => {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend => 
             <div className="resultUser" key={friend.id}>
               <AvatarAndName person={friend}></AvatarAndName>
-              <Button onClick={(e) => this.timetable(e, friend)}>Timetable</Button>
+              <Button size="sm" onClick={(e) => this.timetable(e, friend)}>Timetable</Button>
             </div>
             )}
         </div>

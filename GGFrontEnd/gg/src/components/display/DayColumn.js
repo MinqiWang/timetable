@@ -184,7 +184,7 @@ export class DayColumn extends Component {
     }
 
     render() {
-        const {col_id, default_slots, slots, targetSlot} = this.props;
+        const {col_id, default_slots, slots, accept_slots, targetSlot} = this.props;
         
         const eventStyle = {
             top: targetSlot.fake_top + "px",
@@ -215,6 +215,10 @@ export class DayColumn extends Component {
         onMouseUp={(e) => this.solidifyEvent(e, targetSlot)} className="scroll-slots-col">
             {slots.map((slot) => 
             <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
+
+            {accept_slots.map((slot) => 
+            <Event key={slot.id} col_id={col_id} slot={slot} readOnly={true}></Event>)}
+            
             {default_slots.map((slot) =>  
             <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true} isGroup={true}></Event>)}
             {/* {groupslots.map((slot) => 

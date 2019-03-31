@@ -6,7 +6,7 @@ import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
 import {setFocusEventInvitees, setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
+import { getUser, getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
 import { inviteesByEventID, toInviteByEventID, sendInvitesToFriends} from '../../RESTFul/ajax'
 
 
@@ -76,8 +76,9 @@ export class InviteePage extends Component {
     
   render() {
     const {isInviting, searchQuery} = this.state;
-    const {focused_event, focusEventInvitees, focusEventToInvites} = this.props;
-    let placeholder= isInviting? "To Invite": "Invited"
+    const {focused_event, focusEventInvitees, focusEventToInvites, User} = this.props;
+    let placeholder= isInviting? "To Invite": "Invited";
+    let isEventOwner = (focused_event.detail.author_id == User.id);
     return (
       <div>
         <div className="Nav-Btns">
@@ -90,7 +91,8 @@ export class InviteePage extends Component {
             </>
             : 
             <>
-            <button onClick={this.addInvitee}>add more friends</button>
+            {/* owner check */}
+            {isEventOwner? <button onClick={this.addInvitee}>add more friends</button> : null}
 
             <button onClick={this.back}>back</button>
             </>
@@ -120,7 +122,7 @@ export class InviteePage extends Component {
               :
           focusEventInvitees.filter(friend => 
             {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend =>   
-              <Invitees key={friend.id} friend={friend} event_id={focused_event.detail.id}/>)}
+              <Invitees key={friend.id} isEventOwner={isEventOwner} friend={friend} event_id={focused_event.detail.id}/>)}
       </div>
       </div>
     )
@@ -133,8 +135,9 @@ const mapStateToProps = state => {
   const focusEventInvitees = getFocusEventInvitees(state);
   const focusEventToInvites = getFocusEventToInvites(state);
   const addingInvitees = getAddingInvitees(state);
+  const User = getUser(state);
   
-  return {addingInvitees, focusEventInvitees, focusEventToInvites};
+  return {addingInvitees, focusEventInvitees, focusEventToInvites, User};
 };
 
 export default connect(mapStateToProps, {setFocusEventInvitees, setAddingInvitees, setRightMenu, logOut, setFocusEventToInvites})(InviteePage);

@@ -192,7 +192,7 @@ export const setFocusEventToInvites = (focusEventToInvites=[]) => ({
     }
 });
 
-export const setAddingInvitees = (addingInvitees=null) => ({
+export const setAddingInvitees = (addingInvitees={invitees: []}) => ({
     type: SET_ADDING_INVITEES,
     payload: {
         addingInvitees

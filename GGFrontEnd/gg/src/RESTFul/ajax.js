@@ -286,4 +286,13 @@ export const sendInvitesToFriends = (callback, errcallback, event_id, data) => {
     .catch(err =>  {errcallback(err); console.log(err)})
 }
 
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const recallInvites = (callback, errcallback, event_id, invitee_id) => {
+    axios.delete(baseURL + "/event/group/decline/"+event_id+"/"+invitee_id, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
 

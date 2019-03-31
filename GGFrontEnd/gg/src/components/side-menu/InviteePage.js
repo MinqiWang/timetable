@@ -4,10 +4,10 @@ import Invitees from './Invitees';
 import Button from 'react-bootstrap/Button';
 import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
-import {setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees} from '../../redux/actions';
+import {setFocusEventInvitees, setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
-import { toInviteByEventID, sendInvitesToFriends} from '../../RESTFul/ajax'
+import { inviteesByEventID, toInviteByEventID, sendInvitesToFriends} from '../../RESTFul/ajax'
 
 
 export class InviteePage extends Component {
@@ -35,6 +35,8 @@ export class InviteePage extends Component {
     }
 
     cancelInvite = (e) => {
+      this.props.setAddingInvitees();
+      console.warn("wtf");
       this.setState({isInviting: false});
       this.setState({searchQuery: ""})
       document.getElementById("invite-SearchBar").value = "";
@@ -43,7 +45,6 @@ export class InviteePage extends Component {
     search = (e) => {
       e.preventDefault();
       e.stopPropagation();
-      console.warn(this.state.displayControl);
       let searchQuery = document.getElementById("invite-SearchBar").value;
       this.setState({searchQuery})
     }
@@ -56,24 +57,26 @@ export class InviteePage extends Component {
     }
 
     sendInvites = (e) => {
-      const {addingInvitees, setAddingInvitees, focused_event, logOut} = this.props;
+      const {setFocusEventInvitees, addingInvitees, setAddingInvitees, focused_event, logOut} = this.props;
       if (addingInvitees.invitees.length == 0) {
         console.log("no selection");
       } else {
         sendInvitesToFriends(function(res) {
           setAddingInvitees();
-          this.setState({isInviting: false});
-          this.setState({searchQuery: ""})
-          document.getElementById("invite-SearchBar").value = "";
-        }.bind(this), logOut, focused_event.detail.id, addingInvitees);
-      }
-      
+          inviteesByEventID(function(res) {
+            setFocusEventInvitees(res.data);
+          }, logOut, focused_event.detail.id);
+        }, logOut, focused_event.detail.id, addingInvitees);
+
+        this.setState({isInviting: false});
+        this.setState({searchQuery: ""});
+        document.getElementById("invite-SearchBar").value = "";
+      }  
     }
     
   render() {
     const {isInviting, searchQuery} = this.state;
-    const {Friends, focusEventInvitees, focusEventToInvites} = this.props;
-    let friends = isInviting? focusEventToInvites : focusEventInvitees;
+    const {focused_event, focusEventInvitees, focusEventToInvites} = this.props;
     let placeholder= isInviting? "To Invite": "Invited"
     return (
       <div>
@@ -111,13 +114,13 @@ export class InviteePage extends Component {
         <div className="FriendList">
         
         {isInviting? 
-          friends.filter(friend => 
+          focusEventToInvites.filter(friend => 
             {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend => 
               <ToInvite key={friend.id} friend={friend}/>)
               :
-          friends.filter(friend => 
+          focusEventInvitees.filter(friend => 
             {return (searchQuery == "" || friend.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(friend =>   
-              <Invitees key={friend.id} friend={friend}/>)}
+              <Invitees key={friend.id} friend={friend} event_id={focused_event.detail.id}/>)}
       </div>
       </div>
     )
@@ -127,12 +130,11 @@ export class InviteePage extends Component {
 const mapStateToProps = state => {
   console.log("Invitee");
   console.log(state);
-  const Friends = getFriends(state);
   const focusEventInvitees = getFocusEventInvitees(state);
   const focusEventToInvites = getFocusEventToInvites(state);
   const addingInvitees = getAddingInvitees(state);
   
-  return {addingInvitees, Friends, focusEventInvitees, focusEventToInvites};
+  return {addingInvitees, focusEventInvitees, focusEventToInvites};
 };
 
-export default connect(mapStateToProps, {setAddingInvitees, setRightMenu, logOut, setFocusEventToInvites})(InviteePage);
+export default connect(mapStateToProps, {setFocusEventInvitees, setAddingInvitees, setRightMenu, logOut, setFocusEventToInvites})(InviteePage);

@@ -1,6 +1,6 @@
 import {SET_OTHER_GROUPS, SET_MY_GROUPS, LOGOUT, SET_FOCUS_EVENT_INVITEE, SET_FOCUS_EVENT_TOINVITE, SET_ADDING_INVITEES} from '../actionTypes';
 
-const defaultAddingInvitees= {invitees: []};
+const defaultAddingInvitees = {invitees: []};
 const initialState = {
     myGroupEvents: {},
     otherGroupEvents: {},
@@ -41,12 +41,12 @@ export default function(state = initialState, action) {
         }
         case SET_ADDING_INVITEES: {
             const {addingInvitees} = action.payload;
-            return (addingInvitees? {
+            return addingInvitees? {
                 ...state,
                 addingInvitees
             } : {...state,
                 addingInvitees: defaultAddingInvitees
-            })
+            }
         }
         case LOGOUT: {
             return initialState;

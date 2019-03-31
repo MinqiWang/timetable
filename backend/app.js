@@ -266,7 +266,7 @@ app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 		}
 	}
 
-	pool.query("select name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
+	pool.query("select id, name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
 		if (error) {
 			logAPIerror("/auth/retrieveUserInfo/:id", error);
 			res.status(500).end(error);

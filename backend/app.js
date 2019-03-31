@@ -861,7 +861,8 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 	let week_of = validator.escape(req.params.week_of);
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event where event_id in (select event_id from event_ownership where author_id=?) \
+	pool.query("select *, case when event_id in (select distinct event_id from group_event_invitation) then true else false end as isGroupEvent \
+		from timetable_event where event_id in (select event_id from event_ownership where author_id=?) \
 		and (week_of=? or (week_of<? and is_repeating=true))", [author_id, week_of, week_of], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);

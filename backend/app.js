@@ -1130,7 +1130,7 @@ app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
-	if (!(validator.isNumeric(req.params.id) && Array.isArray(invitees))) {
+	if (!(validator.isNumeric(req.params.id) && Array.isArray(req.body.invitees))) {
 		return res.status(422).end("URL param: id must an integer");
 	}
 	let event_id = req.params.id;
@@ -1245,11 +1245,12 @@ app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
-app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
-	if (!validator.isNumeric(req.params.id)) {
-		return res.status(422).end("URL param: id must an integer");
+app.delete("/event/group/decline/:id/:invitee_id", isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && validator.isNumeric(req.params.invitee_id))) {
+		return res.status(422).end("URL param: id must be an integer, invitee_id must be an integer");
 	}
 	let event_id = req.params.id;
+	let invitee_id = req.params.invitee_id;
 	let user_id = req.session.inAppId;
 
 	// Check the ownership
@@ -1262,7 +1263,7 @@ app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("delete from group_event_invitation where event_id=? and has_accepted is null", [event_id], function (error2, results2, fields2){
+			pool.query("delete from group_event_invitation where event_id=? and invitee=? and has_accepted is null", [event_id, invitee_id], function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/group/decline", error2);
 					res.status(500).end(error2);

@@ -16,7 +16,10 @@ import {SETLOG,
     SET_PENDING_REQUESTS,
     SET_MY_GROUPS,
     SET_OTHER_GROUPS,
-    WATCHING_INFO
+    WATCHING_INFO,
+    SET_FOCUS_EVENT_INVITEE,
+    SET_FOCUS_EVENT_TOINVITE,
+    SET_ADDING_INVITEES
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -172,6 +175,27 @@ export const setPendingRequests = (pendingRequests={}) => ({
     type: SET_PENDING_REQUESTS,
     payload: {
         pendingRequests
+    }
+});
+
+export const setFocusEventInvitees = (focusEventInvitees=[]) => ({
+    type: SET_FOCUS_EVENT_INVITEE,
+    payload: {
+        focusEventInvitees
+    }
+});
+
+export const setFocusEventToInvites = (focusEventToInvites=[]) => ({
+    type: SET_FOCUS_EVENT_TOINVITE,
+    payload: {
+        focusEventToInvites
+    }
+});
+
+export const setAddingInvitees = (addingInvitees={invitees: []}) => ({
+    type: SET_ADDING_INVITEES,
+    payload: {
+        addingInvitees
     }
 });
 

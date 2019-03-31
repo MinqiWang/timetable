@@ -1307,9 +1307,9 @@ app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, funct
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 
-	pool.query("select timetable_event.event_id, event_name, name, avatarURL from timetable_event join user_info join event_ownership on timetable_event.event_id=event_ownership.event_id and event_ownership.author_id=user_info.id \
-		where timetable_event.event_id in (select t.event_id from (select event_id from group_event_invitation where invitee=? order by ts desc limit ?,?) as t) group by timetable_event.event_id, event_name, name, \
-		avatarURL", [author_id, 10 * parseInt(n), 10 * (parseInt(n)+1)], function (error, results, fields){
+	pool.query("select timetable_event.event_id, event_name, name, avatarURL, has_accepted from timetable_event join user_info join event_ownership on timetable_event.event_id=event_ownership.event_id and event_ownership.author_id=user_info.id \
+		join (select t.event_id, t.has_accepted from (select event_id, has_accepted from group_event_invitation where invitee=? order by ts desc limit ?,?) as t) A on timetable_event.event_id=A.event_id group by timetable_event.event_id, event_name, name, \
+		avatarURL, has_accepted", [author_id, 10 * parseInt(n), 10 * (parseInt(n)+1)], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);

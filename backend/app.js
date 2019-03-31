@@ -1,6 +1,7 @@
 const EYE_CATCHER = "***********************************************************";
 const fs = require("fs");
 const validator = require('validator');
+const path = require('path')
 
 const express = require('express');
 const app = express();
@@ -20,9 +21,9 @@ const pool = mysql.createPool({
 	database: 'CSCC09'
 });  // TODO: Change user and password on deployment
 
-const REACT_HOMEPAGE = "https://localhost:3000";
+const REACT_HOMEPAGE = "https://localhost:8000";
 
-/* ---- LOGGING ---- */
+/* ---- LOGGING && STATIC FILES---- */
 
 /*
  * Request LOG
@@ -90,7 +91,13 @@ app.use(function(req, res, next) {
   }
 });
 
-/* ---- LOGGING done ---- */
+/* Serve react files */
+app.use(express.static(__dirname + '/build'));
+app.get('/', function (request, response){
+  response.sendFile(path.resolve(__dirname, 'build', 'index.html'))
+});
+
+/* ---- LOGGING && STATIC FILES done ---- */
 
 /* ---- Authentication and User Management ---- */
 
@@ -861,8 +868,8 @@ app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function 
 	let week_of = validator.escape(req.params.week_of);
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event where week_of=? and id not in (select slot_id from obscured_event where week_of=?) \
-		and event_id in (select event_id from event_ownership where author_id=?) or week_of>? and is_repeating=true", [week_of, week_of, week_of, author_id], function (error, results, fields){
+	pool.query("select * from timetable_event where event_id in (select event_id from event_ownership where author_id=?) \
+	and (week_of=? or (week_of<? and is_repeating=true))", [author_id, week_of, week_of], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
 			res.status(500).end(error);

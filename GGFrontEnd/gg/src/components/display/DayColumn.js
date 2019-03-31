@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Event from './Event'
 import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
+import { getTargetSlot,getWatching, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
 import { undecorate, opacity10, decorate } from '../../utils';
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 import { updateTimeslot, retrieveAllSlotsInAWeek, retrieveAllForEvent } from '../../RESTFul/ajax';
@@ -30,6 +30,10 @@ export class DayColumn extends Component {
     createNewEvent = (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
+        if (this.props.Watching) {
+            // this.props.setShowMessage(onWatchMessage);
+            return;
+        }
         if (this.props.rightMenu == "Edit") {
             console.log("hhh");
             this.props.setShowMessage(onEditMessage);
@@ -184,7 +188,7 @@ export class DayColumn extends Component {
     }
 
     render() {
-        const {col_id, default_slots, slots, accept_slots, targetSlot} = this.props;
+        const {col_id, default_slots, slots, Watching, accept_slots, targetSlot} = this.props;
         
         const eventStyle = {
             top: targetSlot.fake_top + "px",
@@ -206,7 +210,6 @@ export class DayColumn extends Component {
             <div className="resizer"></div>
         </div>) : null
 
-
         return (
         <div id={col_id} onDoubleClick={this.createNewEvent}
         onMouseEnter={(e) => this.eventRecreation(e, targetSlot, col_id)} 
@@ -214,10 +217,10 @@ export class DayColumn extends Component {
         onMouseMove={(e) => this.eventMove(e, targetSlot)} 
         onMouseUp={(e) => this.solidifyEvent(e, targetSlot)} className="scroll-slots-col">
             {slots.map((slot) => 
-            <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} Watching={Watching}></Event>)}
 
             {accept_slots.map((slot) => 
-            <Event key={slot.id} col_id={col_id} slot={slot} readOnly={true}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} Watching={Watching} readOnly={true}></Event>)}
             
             {default_slots.map((slot) =>  
             <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true} isGroup={true}></Event>)}
@@ -237,7 +240,8 @@ const mapStateToProps = state => {
     const rightMenu = getRightMenu(state);
     const focused_event = getFocusEvent(state);
     const week_of = getWeekOf(state);
-    return {targetSlot, rightMenu, week_of, focused_event};
+    const Watching = getWatching(state);
+    return {targetSlot, rightMenu, week_of, focused_event, Watching};
 };
 
 export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage, setSlots, logOut})(DayColumn);

@@ -17,6 +17,7 @@ export class FriendList extends Component {
 
     timetable = (e, watching) => {
       this.props.setWatching(watching);
+      //retrieve
     }
     
     

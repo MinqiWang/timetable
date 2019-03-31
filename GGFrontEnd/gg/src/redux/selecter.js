@@ -29,7 +29,7 @@ export const getFocusEventInvitees = state => state.group.focusEventInvitees;
 export const getFocusEventToInvites = state => state.group.focusEventToInvites;
 export const getAddingInvitees = state => state.group.addingInvitees;
 
-
+export const accessType = state => state.event.accessType;
 
 
 

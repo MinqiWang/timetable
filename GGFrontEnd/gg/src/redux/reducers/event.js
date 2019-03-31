@@ -5,7 +5,8 @@ import {SET_SLOTS,
     IS_NOTDEFAULT, 
     IS_DEFAULT,
     SET_TARGET_SLOT, 
-    LOGOUT} from '../actionTypes';
+    LOGOUT,
+    READ_ONLY} from '../actionTypes';
 import {weekOf} from '../actions'
 
 let EVENT_NAME = "default_event";
@@ -39,7 +40,8 @@ const initialState = {
     weekOf: weekOf(new Date()),
     focusedEvent: default_focused,
     isDefault: false,
-    targetSlot: default_targetSlot
+    targetSlot: default_targetSlot,
+    accessType: "FullAccess"
 }
 
 export default function(state = initialState, action) {
@@ -95,6 +97,12 @@ export default function(state = initialState, action) {
             } : {
                 ...state,
                 targetSlot: default_targetSlot
+            }
+        }
+        case READ_ONLY: {
+            return {
+                ...state,
+                accessType: "ReadOnly"
             }
         }
         case LOGOUT: {

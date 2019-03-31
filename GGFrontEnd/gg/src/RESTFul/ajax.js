@@ -248,16 +248,26 @@ export const createGroupEvent = (callback, errcallback, data) => {
 /*
  * Accept a group event.
  *
- * URL params:
- * Request body: {id: EVENT_ID} 
+ * URL params: 
  * Response body: Success/Failure messages
  */
-export const acceptGroupEvent = (callback, errcallback, data) => {
-    axios.post(baseURL + "/event/group/accept", data)
+export const acceptGroupEvent = (callback, errcallback, event_id) => {
+    axios.patch(baseURL + "/event/group/accept/" + event_id, {}, config)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
 
+/*
+ * Reject a group event.
+ *
+ * URL params:
+ * Response body: Success/Failure messages
+ */
+export const rejectGroupEvent = (callback, errcallback, event_id) => {
+    axios.patch(baseURL + "/event/group/reject/" + event_id, {}, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
 
 /*
  * Retrieve the current invitees of my group event.
@@ -295,4 +305,20 @@ export const recallInvites = (callback, errcallback, event_id, invitee_id) => {
     .catch(err =>  {errcallback(err); console.log(err)})
 }
 
+/*
+ *  Retrieve next 10 received group event invitation, start at the n'th page of events where n is given as a param.
+ */
+export const retrieveOthersGroupEvents = (callback, errcallback, page_num) => {
+    axios.get(baseURL + "/event/group/timetable_slot/retrieveInvited/"+page_num, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
 
+/*
+ *  Retrieve next 10 received group event invitation, start at the n'th page of events where n is given as a param.
+ */
+export const retrieveMyGroupEvents = (callback, errcallback, page_num) => {
+    axios.get(baseURL + "/event/group/event/retrieveSent/"+page_num, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}

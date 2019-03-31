@@ -1,22 +1,85 @@
 import React, { Component } from 'react'
+import Pagination from 'react-bootstrap/Pagination'
+import { setMyGroupEvents, setRightMenu, setFocusEvent, logOut } from '../../redux/actions';
+import {retrieveMyGroupEvents, retrieveAllForEvent} from '../../RESTFul/ajax'
+import {connect} from 'react-redux';
+import '../../style/GroupEvents.css'
+import Badge from 'react-bootstrap/Badge'
 
 export class MyGroups extends Component {
+  constructor(props) {
+    super(props)
+  
+    this.state = {
+      curr_page: 0,
+    }
+  }
+
+  prev =(e) => {
+    const {setMyGroupEvents} = this.props;
+    if (this.state.curr_page == 0) {
+      //do nothing
+    } else {
+      let page_num = this.state.curr_page - 1;
+
+      this.setState(prevState => 
+        ({ curr_page: prevState.curr_page - 1}));
+      retrieveMyGroupEvents(function(res) {
+        setMyGroupEvents(res.data);
+      }, logOut, page_num);
+    }
+  }
+
+  next = (e) => {
+    const {setMyGroupEvents} = this.props;
+    if (this.props.my_groups.length < 10) {
+      //do nothing
+    } else {
+      let page_num = this.state.curr_page + 1;
+      this.setState(prevState => 
+        ({ curr_page: prevState.curr_page + 1}));
+
+      retrieveMyGroupEvents(function(res) {
+        setMyGroupEvents(res.data);
+      }, logOut, page_num);
+    }
+  }
+
+  openInfoOfMyGroup = (e, event_id) => {
+    const {logOut, setFocusEvent, setRightMenu} = this.props;
+        retrieveAllForEvent(function(res) {
+            console.warn(res);
+            setFocusEvent(res);
+            setRightMenu("Info");
+        }, logOut, event_id);
+  }
+  
   render() {
     const {my_groups, searchQuery} = this.props;
-
+    const {curr_page} = this.state;
     return (
-        <div className="FriendList">
-            {/*Search_Result sort by alphabetical order*/}
-            {my_groups.filter(group => {return (searchQuery == "" || group.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(group => 
-            <div className="resultUser" key={group.id}>
-              {/* <Image src={friend.avatarURL} roundedCircle />
-              <div>{friend.name}</div>
-              <Button onClick={this.timetable}>Timetable</Button> */}
+      <>
+      <div className="Pagination">
+        <Pagination>
+          <Pagination.Prev onClick={this.prev}/>
+          <Pagination.Item active>{curr_page}</Pagination.Item>
+          <Pagination.Next onClick={this.next}/>
+        </Pagination>
+      </div>
+      <div className="GroupList">
+          {/*Search_Result sort by alphabetical order*/}
+          {my_groups.filter(group => {return (searchQuery == "" || group.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(group => 
+          // <GroupInvite key={group.event_id} group={group}></GroupInvite>
+          <div className="resultGroup" onDoubleClick={(e) => this.openInfoOfMyGroup(e, group.event_id)}>
+                <Badge variant="success" className="wordBreak">
+                  {"Event Name: " + group.event_name}
+                </Badge>
             </div>
-            )}
-        </div>
+          )}
+      </div>
+    </>
     )
   }
 }
 
-export default MyGroups
+export default connect(null, {setMyGroupEvents, logOut, setFocusEvent, setRightMenu})(MyGroups);

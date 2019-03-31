@@ -16,7 +16,7 @@ class App extends Component {
   componentDidMount() {
     
     // call the auto login
-    document.addEventListener("contextmenu", (e)=> e.preventDefault());
+    // document.addEventListener("contextmenu", (e)=> e.preventDefault());
     retrieveUserInfo(
       this.props.setUser,
       this.props.setDisplay, 

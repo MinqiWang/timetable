@@ -39,7 +39,7 @@ export class Header extends Component {
     let nav = User? (<>
     <Navbar.Collapse id="basic-navbar-nav">
       <Nav className="mr-auto">
-        <Nav.Link onClick={() => {this.props.setWatching(); this.props.setDisplay("Timetable");}}>Timetable</Nav.Link>
+        <Nav.Link onClick={() => {this.props.setWatching(); this.props.setDisplay("Timetable");}}>MyTimetable</Nav.Link>
         <Nav.Link onClick={() => this.props.setDisplay("Map")}>Map</Nav.Link>
         <Nav.Link onClick={() => this.props.setDisplay("Search")}>Search</Nav.Link>
         <Dropdown onSelect={(key, e) => this.itemSelectionHandler(key, e)}>

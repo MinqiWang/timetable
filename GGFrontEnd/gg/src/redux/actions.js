@@ -19,7 +19,8 @@ import {SETLOG,
     WATCHING_INFO,
     SET_FOCUS_EVENT_INVITEE,
     SET_FOCUS_EVENT_TOINVITE,
-    SET_ADDING_INVITEES
+    SET_ADDING_INVITEES,
+    READ_ONLY,
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -199,7 +200,11 @@ export const setAddingInvitees = (addingInvitees={invitees: []}) => ({
     }
 });
 
-
+export const readOnly = () => ({
+    type: READ_ONLY,
+    payload: {
+    }
+});
 
 
 

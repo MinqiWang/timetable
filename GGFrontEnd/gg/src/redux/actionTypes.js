@@ -10,6 +10,9 @@ export const IS_DEFAULT = 'IS_DEFAULT';
 export const USER_INFO = 'USER_INFO';
 export const FRIEND_LIST = 'FRIEND_LIST';
 export const SET_SLOTS = 'SET_SLOTS';
+export const SET_ACCEPT_SLOTS = 'SET_ACCEPT_SLOTS';
+
+
 export const DETAIL_EVENT = 'DETAIL_EVENT';
 export const WEEK_OF = 'WEEK_OF';
 export const SET_TARGET_SLOT = 'SET_TARGET_SLOT';

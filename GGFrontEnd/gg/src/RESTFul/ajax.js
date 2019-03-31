@@ -195,6 +195,12 @@ export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of) => {
     .catch(err => {errcallback(err); console.log(err)})
 }
 
+export const retrieveAcceptedInAWeek = (callback, errcallback, week_of) => {
+    axios.get(baseURL + "/event/group/timetable_slot/retrieveAllInvited/" + week_of, config)
+    .then(res => {console.log(res.data); callback(res.data)})
+    .catch(err => {errcallback(err); console.log(err)})
+}
+
 /*
  * Retrieve the detailed information for a given event.
  *

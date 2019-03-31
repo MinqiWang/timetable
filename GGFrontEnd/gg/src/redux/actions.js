@@ -6,6 +6,7 @@ import {SETLOG,
     WEEK_OF,
     LOGOUT,
     SET_SLOTS,
+    SET_ACCEPT_SLOTS,
     SET_FOCUS_EVENT,
     IS_NOTDEFAULT,
     IS_DEFAULT,
@@ -106,6 +107,14 @@ export const setSlots = (slotsInAWeek = []) => {
     type: SET_SLOTS,
     payload: {
         slotsInAWeek
+    }
+}};
+
+export const setAcceptSlots = (acceptSlotsInAWeek = []) => {
+    return {
+    type: SET_ACCEPT_SLOTS,
+    payload: {
+        acceptSlotsInAWeek
     }
 }};
 

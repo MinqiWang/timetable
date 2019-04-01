@@ -109,7 +109,7 @@ app.get('/', function (request, response){
  *		1: Client should call all non-group event info get-APIs
  *		2: Clinet should call all group event status get-APIs
  */
-longpoll.create("/poll");
+longpoll.create("/poll", { maxListeners: 100 });
 
 /* ---- Long Polling API done---- */
 

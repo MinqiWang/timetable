@@ -62,6 +62,7 @@ export class InfoMode extends Component {
             
             <h1>{focused_event.detail.event_name}</h1>
             <div>{focused_event.detail.text_content}</div>
+            <div className="GroupList">
             {days.map(day => 
                 <Fragment key={day}>{focused_event.timetable_slots[day].map(slot=>
                     <div className="resultGroup" key={slot.id}>
@@ -70,6 +71,8 @@ export class InfoMode extends Component {
                     )
                 }</Fragment>
                 )}
+            </div>
+
         {/* {curr_event.id} */}
         </div>
     )

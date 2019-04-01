@@ -84,18 +84,58 @@ export class Timetable extends Component {
   render() {
     const {time_tag, days} = this.state;
     const {focused_event, week_of, slots, isDefault, accept_slots} = this.props;
+    const eventTypeStyle1 = {
+      background: "red",
+      display: "inline-block"
+  };
+    const eventTypeStyle2 = {
+      background: "white",
+      display: "inline-block"
+
+    };
+    const eventTypeStyle3 = {
+      background: "yellow",
+      display: "inline-block"
+    };
+
+    const textStyle4 = {
+      display: "inline-block",
+      width: "50px",
+      fontSize: "10px",
+      wordWrap: "break-word",
+      marginLeft: "5px",
+      marginRight: "5px"
+    };
+
+    const btnStyle = {
+      width: "34px",
+    };
+
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
       <div className="Timetable">
         <div className="Timetable-header">
           <div className="Timetable-navbtn">
-            <button onClick={this.prev}>prev week</button>
-            <button onClick={this.next}>next week</button>
-            <button onClick={this.today}>Today</button>
+            <button onClick={this.prev} style={btnStyle}>prev week</button>
+            <button onClick={this.next} style={btnStyle}>next week</button>
+            <button onClick={this.today} style={btnStyle}>this week</button>
           </div>
           
-          <div className="Timetable-week">{week_of}</div>
+          <div className="Timetable-week">
+            <div className="badgeEvent">
+              <div className = "event-badge" style={eventTypeStyle1}></div>
+                <div style={textStyle4} >Accpeted Event</div>
+                <div className = "event-badge" style={eventTypeStyle2}></div>
+                <div style={textStyle4} >Private Event</div>
+
+                <div className = "event-badge" style={eventTypeStyle3}></div>
+                <div style={textStyle4} >My Group Event</div>
+            </div>
+            
+
+          {week_of}
+          </div>
         </div>
         <div className="Timetable-scroll">
           <ul className="time-tag">

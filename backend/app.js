@@ -857,7 +857,7 @@ function formatSlotsInfo(results) {
     }
 ]
  */
-app.get("/event/timetable_slot/retrieveAll/:week_of/:user_id", isAuthenticated, function (req, res, next){
+app.get("/event/timetable_slot/retrieveAll/:week_of/:user_id?", isAuthenticated, function (req, res, next){
 	if (req.params.user_id && !validator.isNumeric(req.params.user_id)) {
 		return res.status(422).end("URL param: user_id must be an integer");
 	}
@@ -870,6 +870,7 @@ app.get("/event/timetable_slot/retrieveAll/:week_of/:user_id", isAuthenticated, 
 		pool.query("select *, case when event_id in (select distinct event_id from group_event_invitation) then true else false end as isGroupEvent \
 			from timetable_event where event_id in (select event_id from event_ownership where author_id=?) \
 			and (week_of=? or (week_of<? and is_repeating=true))", [owner_id, week_of, week_of], function (error, results, fields){
+			console.log(results);
 			if (error) {
 				logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
 				res.status(500).end(error);
@@ -1303,20 +1304,50 @@ app.delete("/event/group/decline/:id/:invitee_id", isAuthenticated, function (re
 /*
  * Retrieve all received group event invitation for a given week.
  */
-app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticated, function (req, res, next){
+app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of/:user_id?", isAuthenticated, function (req, res, next){
+	if (req.params.user_id && !validator.isNumeric(req.params.user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
 	let week_of = validator.escape(req.params.week_of);
-	let author_id = req.session.inAppId;
+	let your_id = req.session.inAppId;
+	let user_id = req.params.user_id;
+	let owner_id = your_id;
 
-	pool.query("select * from timetable_event where event_id in (select event_id from group_event_invitation where invitee=? and has_accepted=true) and week_of=?", [author_id, week_of], function (error, results, fields){
-		if (error) {
-			logAPIerror("/event/timetable_slot/retrieveAllInvited/:week_of", error);
-			res.status(500).end(error);
-		}
-		else {
-			let formatted_results = formatSlotsInfo(results)[0];
-			res.json(formatted_results);
-		}
-	});
+	let retrieveInvited = function () {
+		pool.query("select * from timetable_event where event_id in (select event_id from \
+			group_event_invitation where invitee=? and has_accepted=true) and week_of=?", [owner_id, week_of], function (error, results, fields){
+			if (error) {
+				logAPIerror("/event/group/timetable_slot/retrieveAllInvited/:week_of", error);
+				res.status(500).end(error);
+			}
+			else {
+				let formatted_results = formatSlotsInfo(results)[0];
+				res.json(formatted_results);
+			}
+		});
+	}
+	if (user_id) {
+		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_to=? and id_from=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
+			if (error) {
+				logAPIerror("/event/group/timetable_slot/retrieveAllInvited/:week_of", error);				
+				res.status(500).end(error);
+			}
+			else {
+				if (results.length === 0) {
+					res.status(401).end("You can only see your friends' timetable!");
+				}
+				else {
+					// Retrieve your friend's timetable (invited)
+					owner_id = user_id;
+					retrieveInvited();
+				}
+			}
+		});
+	}
+	else {
+		// Retrieve your timetable (invited)
+		retrieveInvited();
+	}
 	next();
 });
 

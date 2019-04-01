@@ -189,14 +189,14 @@ export const deleteEvent = (callback, errcallback, event_id) => {
  * OBSCURED_BY, IS_EMPTY_OBSCURE], [...], ...]
  * Response body example: [["1", 1", "event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...], ...]
  */
-export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of) => {
-    axios.get(baseURL + "/event/timetable_slot/retrieveAll/" + week_of, config)
+export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of, user_id="") => {
+    axios.get(baseURL + "/event/timetable_slot/retrieveAll/" + week_of + "/" + user_id, config)
     .then(res => {console.log(res.data); callback(res.data)})
     .catch(err => {errcallback(err); console.log(err)})
 }
 
-export const retrieveAcceptedInAWeek = (callback, errcallback, week_of) => {
-    axios.get(baseURL + "/event/group/timetable_slot/retrieveAllInvited/" + week_of, config)
+export const retrieveAcceptedInAWeek = (callback, errcallback, week_of, user_id="") => {
+    axios.get(baseURL + "/event/group/timetable_slot/retrieveAllInvited/" + week_of + "/" + user_id, config)
     .then(res => {console.log(res.data); callback(res.data)})
     .catch(err => {errcallback(err); console.log(err)})
 }

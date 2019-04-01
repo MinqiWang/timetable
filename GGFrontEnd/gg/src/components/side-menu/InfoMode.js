@@ -1,9 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import {setFocusEvent, setRightMenu, logOut, setSlots, setFocusEventInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getFocusEvent, getWeekOf, getUser } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import {deleteEvent, retrieveAllSlotsInAWeek, inviteesByEventID} from '../../RESTFul/ajax'
+import TimeslotDetailInfo from './TimeslotDetailInfo';
+import '../../style/GroupEvents.css'
 
 export class InfoMode extends Component {
 
@@ -11,6 +13,7 @@ export class InfoMode extends Component {
       super(props)
     
       this.state = {
+        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       }
     }
 
@@ -43,6 +46,7 @@ export class InfoMode extends Component {
 
   render() {
     const { focused_event, User } = this.props;
+    const {days} = this.state;
     return (
         <div className="App-rightmenu">
             <div className="Nav-Btns">
@@ -57,8 +61,14 @@ export class InfoMode extends Component {
             
             <h1>{focused_event.detail.event_name}</h1>
             <div>{focused_event.detail.text_content}</div>
-            {/* {focused_event.timetable_slots[].map(slot => {<TimeslotDetail slot={slot}></TimeslotDetail>})} */}
-
+            {days.map(day => 
+                <Fragment key={day}>{focused_event.timetable_slots[day].map(slot=>
+                    <div className="resultGroup" key={slot.id}>
+                        <TimeslotDetailInfo slot={slot}></TimeslotDetailInfo>
+                    </div>
+                    )
+                }</Fragment>
+                )}
         {/* {curr_event.id} */}
         </div>
     )

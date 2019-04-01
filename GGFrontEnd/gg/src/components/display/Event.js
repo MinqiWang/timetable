@@ -5,6 +5,7 @@ import { getFocusEvent, getIsDefault, getTargetSlot, getRightMenu } from '../../
 import {decorate, undecorate, opacity05} from '../../utils'
 import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
 import {retrieveAllForEvent} from '../../RESTFul/ajax'
+import {getEventColor} from '../../utils'
 
 export class Event extends Component {
 
@@ -32,6 +33,10 @@ export class Event extends Component {
             console.warn("hhh");
             if (this.props.readOnly) {
                 // this.props.setShowMessage(onReadOnlyMessage);
+                return;
+            }
+            if (this.props.Watching) {
+                // this.props.setShowMessage(onWatchMessage);
                 return;
             }
             let element = e.currentTarget;
@@ -159,6 +164,8 @@ export class Event extends Component {
     const eventStyle = {
         top: top + "px",
         height: height + "px",
+        background: getEventColor(slot.event_id),
+        color: "white"
     };
 
     if (shouldDecorate) {

@@ -38,9 +38,16 @@
 }
 
 .Timetable-week {
+    position: relative;
     flex: 1 0 auto;
     color: white;
     text-align: center;
+}
+
+.badgeEvent{
+    display: inline;
+    position: absolute;
+    left: 20px;
 }
 
 .Timetable-scroll {

@@ -1,11 +1,9 @@
 import React, { Component } from 'react'
 import Image from 'react-bootstrap/Image'
-import userImage from '../../fake-data/user-image.png'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import { getUser } from '../../redux/selecter';
 import {connect} from 'react-redux'
-
 
 export class UserImage extends Component {
   constructor(props, context) {

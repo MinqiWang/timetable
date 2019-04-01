@@ -113,6 +113,7 @@ app.use(session({
     secret: "1234@bnmv!", // TODO: Change this on deployment
     resave: false,
     saveUninitialized: true,
+    /*cookie: {httpOnly: true, secure: true, sameSite: true}*/
 }));
 
 const passport = require('passport');

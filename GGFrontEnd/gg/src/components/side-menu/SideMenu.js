@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import '../../style/SideMenu.css';
-import {setFriends, setMyGroupEvents, setOthersGroupEvents, logOut} from '../../redux/actions'
+import {setFriends, setMyGroupEvents, setOthersGroupEvents, setShowMessage, logOut} from '../../redux/actions'
 import {connect} from 'react-redux';
 import { getFriends, getMyGroupEvents, getOthersGroupEvents} from '../../redux/selecter';
 import FriendList from './FriendList';
@@ -12,25 +12,26 @@ import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
 import Form from 'react-bootstrap/FormControl';
 import {retrieveFriendlist, retrieveOthersGroupEvents, retrieveMyGroupEvents} from '../../RESTFul/ajax'
+import {ErrorMessage} from '../../redux/reducers/message'
 
 
 export class SideMenu extends Component {
   constructor(props) {
     super(props)
 
-    const {setFriends, logOut, setMyGroupEvents, setOthersGroupEvents} = this.props;
+    const {setFriends, logOut, setMyGroupEvents, setOthersGroupEvents, setShowMessage} = this.props;
     retrieveFriendlist(function(res) {
       setFriends(res.data);
-    }, logOut);
+    }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
 
     
     retrieveMyGroupEvents(function(res) {
       setMyGroupEvents(res.data);
-    }, logOut, 0);
+    }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 0);
 
     retrieveOthersGroupEvents(function(res) {
       setOthersGroupEvents(res.data);
-    }, logOut, 0);
+    }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 0);
     
     this.state = {
       show: false,
@@ -157,4 +158,4 @@ const mapStateToProps = state => {
   const OthersGroupEvents = getOthersGroupEvents(state);
   return {Friends, MyGroupEvents, OthersGroupEvents};
 };
-export default connect(mapStateToProps, {logOut, setFriends, setMyGroupEvents, setOthersGroupEvents})(SideMenu);
+export default connect(mapStateToProps, {logOut, setFriends, setMyGroupEvents, setOthersGroupEvents, setShowMessage})(SideMenu);

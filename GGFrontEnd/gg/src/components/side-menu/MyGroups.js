@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
 import Pagination from 'react-bootstrap/Pagination'
-import { setMyGroupEvents, setRightMenu, setFocusEvent, logOut } from '../../redux/actions';
+import { setMyGroupEvents, setRightMenu, setFocusEvent, logOut, setShowMessage} from '../../redux/actions';
 import {retrieveMyGroupEvents, retrieveAllForEvent} from '../../RESTFul/ajax'
 import {connect} from 'react-redux';
 import '../../style/GroupEvents.css'
+import {ErrorMessage} from '../../redux/reducers/message'
 import Badge from 'react-bootstrap/Badge'
 
 export class MyGroups extends Component {
@@ -16,7 +17,7 @@ export class MyGroups extends Component {
   }
 
   prev =(e) => {
-    const {setMyGroupEvents} = this.props;
+    const {setMyGroupEvents, setShowMessage} = this.props;
     if (this.state.curr_page == 0) {
       //do nothing
     } else {
@@ -26,12 +27,12 @@ export class MyGroups extends Component {
         ({ curr_page: prevState.curr_page - 1}));
       retrieveMyGroupEvents(function(res) {
         setMyGroupEvents(res.data);
-      }, logOut, page_num);
+      }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, page_num);
     }
   }
 
   next = (e) => {
-    const {setMyGroupEvents} = this.props;
+    const {setMyGroupEvents, setShowMessage} = this.props;
     if (this.props.my_groups.length < 10) {
       //do nothing
     } else {
@@ -41,17 +42,17 @@ export class MyGroups extends Component {
 
       retrieveMyGroupEvents(function(res) {
         setMyGroupEvents(res.data);
-      }, logOut, page_num);
+      }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, page_num);
     }
   }
 
   openInfoOfMyGroup = (e, event_id) => {
-    const {logOut, setFocusEvent, setRightMenu} = this.props;
+    const {logOut, setFocusEvent, setRightMenu, setShowMessage} = this.props;
         retrieveAllForEvent(function(res) {
             console.warn(res);
             setFocusEvent(res);
             setRightMenu("Info");
-        }, logOut, event_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, event_id);
   }
   
   render() {
@@ -82,4 +83,4 @@ export class MyGroups extends Component {
   }
 }
 
-export default connect(null, {setMyGroupEvents, logOut, setFocusEvent, setRightMenu})(MyGroups);
+export default connect(null, {setMyGroupEvents, logOut, setFocusEvent, setRightMenu, setShowMessage})(MyGroups);

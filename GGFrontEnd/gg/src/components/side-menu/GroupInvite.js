@@ -5,35 +5,37 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import Image from 'react-bootstrap/Image'
 import '../../style/GroupEvents.css'
 import '../../style/Timetable.css'
+import {ErrorMessage} from '../../redux/reducers/message'
+
 
 import {rejectGroupEvent, acceptGroupEvent, retrieveAllForEvent} from '../../RESTFul/ajax'
-import {readOnly, setOthersGroupEvents, setFocusEvent, logOut, setRightMenu, isNotDefault } from '../../redux/actions';
+import {readOnly, setOthersGroupEvents, setFocusEvent, logOut, setRightMenu, isNotDefault, setShowMessage } from '../../redux/actions';
 import {connect} from 'react-redux';
 
 export class GroupInvite extends Component {
 
     openInfoOfInviteGroup = (e) => {
-        const {logOut, group, setFocusEvent, setRightMenu, isNotDefault} = this.props;
+        const {logOut, group, setFocusEvent, setRightMenu, isNotDefault, setShowMessage} = this.props;
         retrieveAllForEvent(function(res) {
             console.warn(res);
             setFocusEvent(res);
             readOnly();
             setRightMenu("Info");
-        }, logOut, group.event_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, group.event_id);
     }
 
     accept = (e) => {
-        const {logOut, group} = this.props;
+        const {logOut, group, setShowMessage} = this.props;
         acceptGroupEvent(function(res) {
             console.log("accept");
-        }, logOut, group.event_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, group.event_id);
     }
 
     reject = (e) => {
-        const {logOut, group} = this.props;
+        const {logOut, group, setShowMessage} = this.props;
         rejectGroupEvent(function(res) {
             console.log("reject");
-        }, logOut, group.event_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, group.event_id);
     }
 
     render() {
@@ -90,4 +92,4 @@ export class GroupInvite extends Component {
     }
 }
 
-export default connect(null, {logOut, setFocusEvent, isNotDefault, setRightMenu})(GroupInvite);
+export default connect(null, {logOut, setFocusEvent, isNotDefault, setRightMenu, setShowMessage})(GroupInvite);

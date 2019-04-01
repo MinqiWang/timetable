@@ -4,7 +4,7 @@ import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, set
 import { connect } from 'react-redux';
 import { getTargetSlot,getWatching, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
 import { undecorate, opacity10, decorate } from '../../utils';
-import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import {onEditMessage, onSaveMessage, ErrorMessage, onWatchMessage} from '../../redux/reducers/message'
 import { updateTimeslot, retrieveAllSlotsInAWeek, retrieveAllForEvent } from '../../RESTFul/ajax';
 import {
     FAKE_SLOT_ID, 
@@ -31,7 +31,7 @@ export class DayColumn extends Component {
         ev.preventDefault();
         ev.stopPropagation();
         if (this.props.Watching) {
-            // this.props.setShowMessage(onWatchMessage);
+            this.props.setShowMessage(onWatchMessage);
             return;
         }
         if (this.props.rightMenu == "Edit") {
@@ -177,14 +177,14 @@ export class DayColumn extends Component {
         updateTimeslot(function(res) {
             opacity10([original_element]);
             
-            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
+            retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
             retrieveAllForEvent(function(res) {
                 undecorate(Array.from(document.getElementsByClassName(focused_event.detail.id)));
                 decorate([original_element]);
                 setFocusEvent(res);
                 
-                }, logOut, event_id);
-        }, logOut, data);
+                }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, event_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, data);
     }
 
     render() {

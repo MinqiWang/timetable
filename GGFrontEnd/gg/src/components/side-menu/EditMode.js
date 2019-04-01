@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, dayOfWeek, setSlots, setCreateList, resetToDoList, isNotDefault} from '../../redux/actions';
+import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, dayOfWeek, setSlots, setCreateList, resetToDoList, isNotDefault, setShowMessage} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getIsDefault, getCreateList, getDeleteList, getUpdateList, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import Form from 'react-bootstrap/Form';
 import TimeslotDetail from './TimeslotDetail';
 import {createEvent, saveEvent, retrieveAllSlotsInAWeek} from '../../RESTFul/ajax'
+import {ErrorMessage} from '../../redux/reducers/message'
 
 export class EditMode extends Component {
     constructor(props) {
@@ -28,7 +29,8 @@ export class EditMode extends Component {
         const {toCreateList, toUpdateList, toDeleteList, 
             setSlots, logOut, focused_event, week_of, is_Default, 
             setFocusEvent, isNotDefault,
-            resetToDoList, setRightMenu} = this.props;
+            resetToDoList, setRightMenu,
+            setShowMessage} = this.props;
 
         //pre-work to fit the data
         let to_create = [];
@@ -94,8 +96,8 @@ export class EditMode extends Component {
                 isNotDefault();
                 resetToDoList();
                 setRightMenu("Close");
-                retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
-            }, logOut, data);
+                retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+            }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, data);
         } else {
             // need to reset focus event, set RightMenu to Close, reset isDefault, reset toDolist
             saveEvent(function(res) {
@@ -103,8 +105,8 @@ export class EditMode extends Component {
                 isNotDefault();
                 setRightMenu("Close");
                 resetToDoList();
-                retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
-            }.bind(this), logOut, focused_event.detail.id, toSend);
+                retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+            }.bind(this), function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id, toSend);
             console.log(toSend);
        }
     }
@@ -201,4 +203,4 @@ const mapStateToProps = state => {
 };
 
 
-export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots, resetToDoList, isNotDefault})(EditMode);
+export default connect(mapStateToProps, {setFocusEvent, setRightMenu, logOut, setSlots, resetToDoList, isNotDefault, setShowMessage})(EditMode);

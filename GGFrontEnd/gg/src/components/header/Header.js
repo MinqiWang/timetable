@@ -10,9 +10,10 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Dropdown from 'react-bootstrap/Dropdown'
 import UserMenu from './UserMenu';
 import logo from '../../logo.svg';
-import { logOut, setDisplay, setUser, setWatching, setSlots, setAcceptSlots } from '../../redux/actions'
+import { logOut, setDisplay, setUser, setWatching, setSlots, setAcceptSlots, setShowMessage } from '../../redux/actions'
 import { getUser, getWatching, getWeekOf} from '../../redux/selecter';
 import { logout, retrieveAllSlotsInAWeek, retrieveAcceptedInAWeek } from '../../RESTFul/ajax';
+import {ErrorMessage} from '../../redux/reducers/message'
 
 /* This is the component responsible for Main Nav like User Home, Info, Control SignIn/Out UX (not Display Nav)*/
 export class Header extends Component {
@@ -35,8 +36,9 @@ export class Header extends Component {
   GoBackHome = (e) => {
     this.props.setWatching();
     this.props.setDisplay("Timetable");
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, this.props.week_of);
-    retrieveAcceptedInAWeek(this.props.setAcceptSlots, this.props.logOut, this.props.week_of);
+    const {setShowMessage} = this.props;
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of);
+    retrieveAcceptedInAWeek(this.props.setAcceptSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of);
   }
 
   render() {
@@ -122,4 +124,4 @@ const mapStateToProps = state => {
   return { User, Watching, week_of };
 };
 
-export default connect(mapStateToProps, { logOut, setDisplay, setUser, setWatching, setSlots, setAcceptSlots })(Header);
+export default connect(mapStateToProps, { logOut, setDisplay, setUser, setWatching, setSlots, setAcceptSlots, setShowMessage })(Header);

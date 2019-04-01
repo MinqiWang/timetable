@@ -6,15 +6,15 @@ import { connect } from 'react-redux';
 import { getDefaultEvent, getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek, retrieveAcceptedInAWeek } from '../../RESTFul/ajax';
 import {weekOf} from '../../redux/actions'
-import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import {onEditMessage, onSaveMessage, ErrorMessage} from '../../redux/reducers/message'
 
 
 export class Timetable extends Component {
   constructor(props) {
     super(props)
-    
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, this.props.week_of);
-    retrieveAcceptedInAWeek(this.props.setAcceptSlots, this.props.logOut, this.props.week_of);
+    const {setShowMessage} = this.props;
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of);
+    retrieveAcceptedInAWeek(this.props.setAcceptSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of);
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -40,43 +40,46 @@ export class Timetable extends Component {
   }
 
   prev = (ev) => {
+    const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
       console.log("hhh");
 
-      this.props.setShowMessage(onEditMessage);
+      setShowMessage(onEditMessage);
       return;
-  }
+    }
     let week_num = this.state.week_num - 1;
     let week_of = weekOf(new Date(), week_num);
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
     
   }
   
   next = (ev) => {
+    const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
       console.log("hhh");
 
-      this.props.setShowMessage(onEditMessage);
+      setShowMessage(onEditMessage);
       return;
     }
     let week_num = this.state.week_num + 1;
     let week_of = weekOf(new Date(), week_num);
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
   }
 
   today = (ev) => {
+    const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
       console.log("hhh");
 
-      this.props.setShowMessage(onEditMessage);
+      setShowMessage(onEditMessage);
       return;
     }
     let week_of = weekOf(new Date());
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: 0});
   }

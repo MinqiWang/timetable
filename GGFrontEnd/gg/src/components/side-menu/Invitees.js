@@ -4,18 +4,18 @@ import '../../style/FriendList.css';
 import Button from 'react-bootstrap/Button';
 import Badge from 'react-bootstrap/Badge';
 import {recallInvites, inviteesByEventID} from '../../RESTFul/ajax'
-import {setFocusEventInvitees, logOut, setRightMenu} from '../../redux/actions';
+import {setFocusEventInvitees, logOut, setRightMenu, setShowMessage} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
-
+import {ErrorMessage} from '../../redux/reducers/message'
 export class Invitees extends Component {
   recall = (e, invitee_id, event_id) => {
-    const {setFocusEventInvitees, logOut, setRightMenu} = this.props;
+    const {setFocusEventInvitees, logOut, setRightMenu, setShowMessage} = this.props;
     recallInvites(function(res) {
       inviteesByEventID(function(res) {
         setFocusEventInvitees(res.data);
-    }, logOut, event_id)
-    }, logOut, event_id, invitee_id)
+    }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, event_id)
+    }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, event_id, invitee_id)
   }
   
   render() {
@@ -56,4 +56,4 @@ export class Invitees extends Component {
   }
 }
 
-export default connect(null, {logOut, setFocusEventInvitees, setRightMenu})(Invitees);
+export default connect(null, {logOut, setFocusEventInvitees, setRightMenu, setShowMessage})(Invitees);

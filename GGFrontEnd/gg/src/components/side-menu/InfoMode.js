@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
-import {setFocusEvent, setRightMenu, logOut, setSlots, setFocusEventInvitees} from '../../redux/actions';
+import {setFocusEvent, setRightMenu, logOut, setSlots, setFocusEventInvitees, setShowMessage} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getFocusEvent, getWeekOf, getUser } from '../../redux/selecter';
 import '../../style/RightMenu.css';
 import {deleteEvent, retrieveAllSlotsInAWeek, inviteesByEventID} from '../../RESTFul/ajax'
 import TimeslotDetailInfo from './TimeslotDetailInfo';
 import '../../style/GroupEvents.css'
+import {ErrorMessage} from '../../redux/reducers/message'
 
 export class InfoMode extends Component {
 
@@ -27,21 +28,21 @@ export class InfoMode extends Component {
     }
 
     addInvitees = (e) => {
-        const {logOut, focused_event, setFocusEventInvitees, setRightMenu} = this.props;
+        const {logOut, focused_event, setFocusEventInvitees, setRightMenu, setShowMessage} = this.props;
         inviteesByEventID(function(res) {
             console.warn(res.data)
             setFocusEventInvitees(res.data);
             setRightMenu("Invitee");
-        }, logOut, focused_event.detail.id)
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id)
     }
 
     delete = (ev) => {
-        const { focused_event, logOut, setSlots, week_of, setRightMenu} = this.props;
+        const { focused_event, logOut, setSlots, week_of, setRightMenu, setShowMessage} = this.props;
         deleteEvent(function(res) {
             setRightMenu("Close");
             setFocusEvent();
-            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
-        }, logOut, focused_event.detail.id);
+            retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id);
     }
 
   render() {
@@ -81,4 +82,4 @@ const mapStateToProps = state => {
     return {week_of, User};
 };
 
-export default connect(mapStateToProps, {setFocusEvent, setFocusEventInvitees, setRightMenu, logOut, setSlots})(InfoMode);
+export default connect(mapStateToProps, {setFocusEvent, setFocusEventInvitees, setRightMenu, logOut, setSlots, setShowMessage})(InfoMode);

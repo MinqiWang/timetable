@@ -1,10 +1,11 @@
 import React, { Component } from 'react'
 import Pagination from 'react-bootstrap/Pagination'
-import { setOthersGroupEvents, setFocusEvent, logOut } from '../../redux/actions';
+import { setOthersGroupEvents, setFocusEvent, logOut, setShowMessage } from '../../redux/actions';
 import {retrieveOthersGroupEvents} from '../../RESTFul/ajax'
 import {connect} from 'react-redux';
 import '../../style/GroupEvents.css'
 import GroupInvite from './GroupInvite';
+import {ErrorMessage} from '../../redux/reducers/message'
 
 export class GroupInvites extends Component {
   constructor(props) {
@@ -16,7 +17,7 @@ export class GroupInvites extends Component {
   }
 
   prev =(e) => {
-    const {setOthersGroupEvents} = this.props;
+    const {setOthersGroupEvents, setShowMessage} = this.props;
     if (this.state.curr_page == 0) {
       //do nothing
     } else {
@@ -26,12 +27,12 @@ export class GroupInvites extends Component {
         ({ curr_page: prevState.curr_page - 1}));
       retrieveOthersGroupEvents(function(res) {
         setOthersGroupEvents(res.data);
-      }, logOut, page_num);
+      }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, page_num);
     }
   }
 
   next = (e) => {
-    const {setOthersGroupEvents} = this.props;
+    const {setOthersGroupEvents, setShowMessage} = this.props;
     if (this.props.invite_groups.length < 10) {
       //do nothing
     } else {
@@ -41,7 +42,7 @@ export class GroupInvites extends Component {
 
       retrieveOthersGroupEvents(function(res) {
         setOthersGroupEvents(res.data);
-      }, logOut, page_num);
+      }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, page_num);
     }
   }
   
@@ -69,5 +70,5 @@ export class GroupInvites extends Component {
   }
 }
 
-export default connect(null, {setOthersGroupEvents})(GroupInvites);
+export default connect(null, {setOthersGroupEvents, setShowMessage})(GroupInvites);
 

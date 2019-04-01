@@ -3,7 +3,7 @@ import {logOut, setFocusEvent, setRightMenu, isNotDefault, setTargetSlot, setSho
 import { connect } from 'react-redux';
 import { getFocusEvent, getIsDefault, getTargetSlot, getRightMenu } from '../../redux/selecter';
 import {decorate, undecorate, opacity05} from '../../utils'
-import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import {onEditMessage, onReadOnlyMessage, onSaveMessage, ErrorMessage, onWatchMessage} from '../../redux/reducers/message'
 import {retrieveAllForEvent} from '../../RESTFul/ajax'
 import {getEventColor} from '../../utils'
 
@@ -32,11 +32,11 @@ export class Event extends Component {
         if (e.button == 0) {
             console.warn("hhh");
             if (this.props.readOnly) {
-                // this.props.setShowMessage(onReadOnlyMessage);
+                this.props.setShowMessage(onReadOnlyMessage);
                 return;
             }
             if (this.props.Watching) {
-                // this.props.setShowMessage(onWatchMessage);
+                this.props.setShowMessage(onWatchMessage);
                 return;
             }
             let element = e.currentTarget;
@@ -75,8 +75,9 @@ export class Event extends Component {
     openInfo = (e, slot, isDefault, focused_event) => {
         e.preventDefault();
         e.stopPropagation();
+        const {setShowMessage} = this.props;
         if (this.props.rightMenu === "Edit") {
-            this.props.setShowMessage(onEditMessage);
+            setShowMessage(onEditMessage);
             return;
         }
         
@@ -96,7 +97,7 @@ export class Event extends Component {
         //set the elmt to be the current focused event for the right menu
         // axios get detail, make the structual for current event
         
-        retrieveAllForEvent(this.props.setFocusEvent, this.props.logOut, slot.event_id);
+        retrieveAllForEvent(this.props.setFocusEvent, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, slot.event_id);
         this.props.setRightMenu("Info");
     }
 
@@ -104,11 +105,11 @@ export class Event extends Component {
         e.preventDefault();
         e.stopPropagation();
         if (this.props.Watching) {
-            // this.props.setShowMessage(onWatchMessage);
+            this.props.setShowMessage(onWatchMessage);
             return;
         }
         if (this.props.readOnly) {
-            // this.props.setShowMessage(onReadOnlyMessage);
+            this.props.setShowMessage(onReadOnlyMessage);
             return;
         }
         if (this.props.rightMenu === "Edit") {

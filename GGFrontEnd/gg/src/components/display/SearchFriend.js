@@ -4,20 +4,21 @@ import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup'
 import FormControl from 'react-bootstrap/FormControl'
 import '../../style/SearchFriend.css'
-import { logOut, setSearchFriend, setPendingRequests } from '../../redux/actions';
+import { logOut, setSearchFriend, setPendingRequests, setShowMessage } from '../../redux/actions';
 import {retrieveSearchFriendById, invite, retrievePendingFriendlist, accept, reject} from '../../RESTFul/ajax';
 import { getSearchFriend, getPendingRequests } from '../../redux/selecter';
 import {connect} from 'react-redux';
 import AvatarAndName from '../AvatarAndName'
+import {ErrorMessage} from '../../redux/reducers/message'
 
 
 export class SearchFriend extends Component {
     constructor(props) {
       super(props)
-      const {setPendingRequests} = this.props;
+      const {setPendingRequests, setShowMessage} = this.props;
       retrievePendingFriendlist(function(res) {
         setPendingRequests(res.data);
-      }, this.props.logOut);
+      }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
       
       this.state = {
          firstTime: true
@@ -29,47 +30,47 @@ export class SearchFriend extends Component {
         e.preventDefault();
         e.stopPropagation();
         this.setState({firstTime: false})
-        const {setSearchFriend} = this.props;
+        const {setSearchFriend, setShowMessage} = this.props;
         let friend_id = document.getElementById("searchBar").value;
         retrieveSearchFriendById(function(res) {
             
             if (res.data != 'This is you!') setSearchFriend(res.data);
             else setSearchFriend();
-        }, this.props.logOut, friend_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, friend_id);
     }
 
     add = (e, user_id) => {
         e.preventDefault();
         e.stopPropagation();
-        const {logOut, setSearchFriend} = this.props;
+        const {logOut, setSearchFriend, setShowMessage} = this.props;
         invite(function(res1) {
             retrieveSearchFriendById(function(res) {
                 if (res.data != 'This is you!') setSearchFriend(res.data);
                 else setSearchFriend();
-            }, logOut, user_id);
-        }, logOut, user_id);
+            }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, user_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, user_id);
     }
 
     acceptInvitation = (e, user_id) => {
         e.preventDefault();
         e.stopPropagation();
-        let {setPendingRequests, logOut} = this.props;
+        let {setPendingRequests, logOut, setShowMessage} = this.props;
         accept(function(res) {
             retrievePendingFriendlist(function(res) {
                 setPendingRequests(res.data);
-            }, logOut);
-        }, logOut, user_id);
+            }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, user_id);
     }
 
     rejectInvitation = (e, user_id) => {
         e.preventDefault();
         e.stopPropagation();
-        let {setPendingRequests, logOut} = this.props;
+        let {setPendingRequests, logOut, setShowMessage} = this.props;
         reject(function(res) {
             retrievePendingFriendlist(function(res) {
                 setPendingRequests(res.data);
-            }, logOut);
-        }, logOut, user_id);
+            }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, user_id);
     }
 
   render() {
@@ -139,4 +140,4 @@ const mapStateToProps = state => {
 
     return {searchFriend, pendingRequests};
 };
-export default connect(mapStateToProps, {logOut, setSearchFriend, setPendingRequests})(SearchFriend);
+export default connect(mapStateToProps, {logOut, setSearchFriend, setPendingRequests, setShowMessage})(SearchFriend);

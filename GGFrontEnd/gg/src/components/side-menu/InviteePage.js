@@ -4,10 +4,11 @@ import Invitees from './Invitees';
 import Button from 'react-bootstrap/Button';
 import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
-import {setFocusEventInvitees, setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees} from '../../redux/actions';
+import {setFocusEventInvitees, setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees, setShowMessage} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getUser, getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
 import { inviteesByEventID, toInviteByEventID, sendInvitesToFriends} from '../../RESTFul/ajax'
+import {ErrorMessage} from '../../redux/reducers/message'
 
 
 export class InviteePage extends Component {
@@ -27,10 +28,10 @@ export class InviteePage extends Component {
     }
 
     addInvitee = (e) => {
-      const {setFocusEventToInvites, logOut, focused_event} = this.props;
+      const {setFocusEventToInvites, logOut, focused_event, setShowMessage} = this.props;
       toInviteByEventID(function(res){
         setFocusEventToInvites(res.data);
-      }, logOut, focused_event.detail.id)
+      }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id)
       this.setState({isInviting: true});
     }
 
@@ -57,7 +58,7 @@ export class InviteePage extends Component {
     }
 
     sendInvites = (e) => {
-      const {setFocusEventInvitees, addingInvitees, setAddingInvitees, focused_event, logOut} = this.props;
+      const {setFocusEventInvitees, addingInvitees, setAddingInvitees, focused_event, logOut, setShowMessage} = this.props;
       if (addingInvitees.invitees.length == 0) {
         console.log("no selection");
       } else {
@@ -65,8 +66,8 @@ export class InviteePage extends Component {
           setAddingInvitees();
           inviteesByEventID(function(res) {
             setFocusEventInvitees(res.data);
-          }, logOut, focused_event.detail.id);
-        }, logOut, focused_event.detail.id, addingInvitees);
+          }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id, addingInvitees);
 
         this.setState({isInviting: false});
         this.setState({searchQuery: ""});
@@ -140,4 +141,4 @@ const mapStateToProps = state => {
   return {addingInvitees, focusEventInvitees, focusEventToInvites, User};
 };
 
-export default connect(mapStateToProps, {setFocusEventInvitees, setAddingInvitees, setRightMenu, logOut, setFocusEventToInvites})(InviteePage);
+export default connect(mapStateToProps, {setFocusEventInvitees, setAddingInvitees, setRightMenu, logOut, setFocusEventToInvites, setShowMessage})(InviteePage);

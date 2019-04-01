@@ -6,6 +6,7 @@ import {SETLOG,
     WEEK_OF,
     LOGOUT,
     SET_SLOTS,
+    SET_ACCEPT_SLOTS,
     SET_FOCUS_EVENT,
     IS_NOTDEFAULT,
     IS_DEFAULT,
@@ -13,7 +14,16 @@ import {SETLOG,
     SET_SHOW_MESSAGE,
     SET_UPDATE_LIST, SET_DELETE_LIST, SET_CREATE_LIST, RESET_TODO_LIST,
     SET_SEARCH_FRIEND,
-    SET_PENDING_REQUESTS
+    SET_PENDING_REQUESTS,
+    SET_MY_GROUPS,
+    SET_OTHER_GROUPS,
+    WATCHING_INFO,
+    SET_FOCUS_EVENT_INVITEE,
+    SET_FOCUS_EVENT_TOINVITE,
+    SET_ADDING_INVITEES,
+    READ_ONLY,
+    SET_PAGE1,
+    SET_PAGE2
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -66,10 +76,31 @@ export const setUser = (User=null) => ({
     }
 });
 
+export const setWatching = (Watching=null) => ({
+    type: WATCHING_INFO,
+    payload: {
+        Watching
+    }
+});
+
 export const setFriends = (Friends = []) => ({
     type: FRIEND_LIST,
     payload: {
         Friends
+    }
+});
+
+export const setMyGroupEvents = (myGroupEvents = {}) => ({
+    type: SET_MY_GROUPS,
+    payload: {
+        myGroupEvents
+    }
+});
+
+export const setOthersGroupEvents = (otherGroupEvents = {}) => ({
+    type: SET_OTHER_GROUPS,
+    payload: {
+        otherGroupEvents
     }
 });
 
@@ -78,6 +109,14 @@ export const setSlots = (slotsInAWeek = []) => {
     type: SET_SLOTS,
     payload: {
         slotsInAWeek
+    }
+}};
+
+export const setAcceptSlots = (acceptSlotsInAWeek = []) => {
+    return {
+    type: SET_ACCEPT_SLOTS,
+    payload: {
+        acceptSlotsInAWeek
     }
 }};
 
@@ -151,7 +190,46 @@ export const setPendingRequests = (pendingRequests={}) => ({
     }
 });
 
+export const setFocusEventInvitees = (focusEventInvitees=[]) => ({
+    type: SET_FOCUS_EVENT_INVITEE,
+    payload: {
+        focusEventInvitees
+    }
+});
 
+export const setFocusEventToInvites = (focusEventToInvites=[]) => ({
+    type: SET_FOCUS_EVENT_TOINVITE,
+    payload: {
+        focusEventToInvites
+    }
+});
+
+export const setAddingInvitees = (addingInvitees={invitees: []}) => ({
+    type: SET_ADDING_INVITEES,
+    payload: {
+        addingInvitees
+    }
+});
+
+export const readOnly = () => ({
+    type: READ_ONLY,
+    payload: {
+    }
+});
+
+export const setPage1 = (page_num1=0) => ({
+    type: SET_PAGE1,
+    payload: {
+        page_num1
+    }
+});
+
+export const setPage2 = (page_num2=0) => ({
+    type: SET_PAGE2,
+    payload: {
+        page_num2
+    }
+});
 
 
 

@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import Event from './Event'
 import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getTargetSlot, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
-import { undecorate, opacity10 } from '../../utils';
-import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
-import { updateTimeslot, retrieveAllSlotsInAWeek } from '../../RESTFul/ajax';
+import { getTargetSlot,getWatching, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
+import { undecorate, opacity10, decorate } from '../../utils';
+import {onEditMessage, onSaveMessage, ErrorMessage, onWatchMessage} from '../../redux/reducers/message'
+import { updateTimeslot, retrieveAllSlotsInAWeek, retrieveAllForEvent } from '../../RESTFul/ajax';
 import {
     FAKE_SLOT_ID, 
     FAKE_SLOT_EVENT_NAME_ID, 
@@ -24,19 +24,22 @@ export class DayColumn extends Component {
 
     startTimeFromY = (y) => {
         let hour = Math.floor(y/40);
-        return +hour+":00:00";
+        return +hour+":00";
     }
 
     createNewEvent = (ev) => {
         ev.preventDefault();
         ev.stopPropagation();
+        if (this.props.Watching) {
+            this.props.setShowMessage(onWatchMessage);
+            return;
+        }
         if (this.props.rightMenu == "Edit") {
-            console.log("hhh");
             this.props.setShowMessage(onEditMessage);
             return;
         }
         
-        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.event_id)));
+        undecorate(Array.from(document.getElementsByClassName(this.props.focused_event.detail.id)));
         var rect = ev.target.getBoundingClientRect();
 
         let EVENT_NAME = "default_event";
@@ -93,7 +96,6 @@ export class DayColumn extends Component {
         e.preventDefault();
         e.stopPropagation();
         
-        // console.log(targetSlot);
         let element = document.getElementById(FAKE_SLOT_ID);
         let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
         let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
@@ -143,18 +145,18 @@ export class DayColumn extends Component {
     solidifyEvent = (e, targetSlot) => {
         e.preventDefault();
         e.stopPropagation();
-        const {setSlots, logOut, week_of} = this.props;
+        const {setFocusEvent, setSlots, logOut, week_of, focused_event} = this.props;
         let element = document.getElementById(FAKE_SLOT_ID);
         let original_element = document.getElementById(targetSlot.id);
         
         let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
         let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
         if (element == null) return;
-
-        let start_time = eventTime.innerHTML+":00";
+        console.warn(eventTime.innerHTML);
+        let start_time = eventTime.innerHTML;
         let length = eventLength.innerHTML.split(" ")[0];
         
-        let day_of_week = this.state.days.indexOf(e.currentTarget.id);
+        let day_of_week = this.state.days.indexOf(targetSlot.col_id);
         let id = +targetSlot.id;
         let event_id = targetSlot.event_id;
         let timetable_slot = [];
@@ -172,12 +174,19 @@ export class DayColumn extends Component {
         //axios, after saving, get all slots in a week
         updateTimeslot(function(res) {
             opacity10([original_element]);
-            retrieveAllSlotsInAWeek(setSlots, logOut, week_of);
-        }, logOut, data);
+            
+            retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+            retrieveAllForEvent(function(res) {
+                undecorate(Array.from(document.getElementsByClassName(focused_event.detail.id)));
+                decorate([original_element]);
+                setFocusEvent(res);
+                
+                }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, event_id);
+        }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, data);
     }
 
     render() {
-        const {col_id, default_slots, slots, targetSlot} = this.props;
+        const {col_id, default_slots, slots, Watching, accept_slots, targetSlot} = this.props;
         
         const eventStyle = {
             top: targetSlot.fake_top + "px",
@@ -199,7 +208,6 @@ export class DayColumn extends Component {
             <div className="resizer"></div>
         </div>) : null
 
-
         return (
         <div id={col_id} onDoubleClick={this.createNewEvent}
         onMouseEnter={(e) => this.eventRecreation(e, targetSlot, col_id)} 
@@ -207,9 +215,15 @@ export class DayColumn extends Component {
         onMouseMove={(e) => this.eventMove(e, targetSlot)} 
         onMouseUp={(e) => this.solidifyEvent(e, targetSlot)} className="scroll-slots-col">
             {slots.map((slot) => 
-            <Event key={slot.id} col_id={col_id} slot={slot}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} Watching={Watching}></Event>)}
+
+            {accept_slots.map((slot) => 
+            <Event key={slot.id} col_id={col_id} slot={slot} Watching={Watching} readOnly={true}></Event>)}
+            
             {default_slots.map((slot) =>  
-            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true}></Event>)}
+            <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true} isGroup={true}></Event>)}
+            {/* {groupslots.map((slot) => 
+            <Event key={slot.id} col_id={col_id} slot={slot} isGroup={true}></Event>)} */}
             {fake_event}
         </div>
         )
@@ -217,14 +231,13 @@ export class DayColumn extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("DayCol");
-    console.log(state);
     // const focused_event = getFocusEvent(state);
     const targetSlot = getTargetSlot(state);
     const rightMenu = getRightMenu(state);
     const focused_event = getFocusEvent(state);
     const week_of = getWeekOf(state);
-    return {targetSlot, rightMenu, week_of, focused_event};
+    const Watching = getWatching(state);
+    return {targetSlot, rightMenu, week_of, focused_event, Watching};
 };
 
 export default connect(mapStateToProps, {isDefault, setRightMenu, setFocusEvent, setTargetSlot, setShowMessage, setSlots, logOut})(DayColumn);

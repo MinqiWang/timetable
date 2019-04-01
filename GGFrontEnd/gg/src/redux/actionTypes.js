@@ -10,6 +10,9 @@ export const IS_DEFAULT = 'IS_DEFAULT';
 export const USER_INFO = 'USER_INFO';
 export const FRIEND_LIST = 'FRIEND_LIST';
 export const SET_SLOTS = 'SET_SLOTS';
+export const SET_ACCEPT_SLOTS = 'SET_ACCEPT_SLOTS';
+
+
 export const DETAIL_EVENT = 'DETAIL_EVENT';
 export const WEEK_OF = 'WEEK_OF';
 export const SET_TARGET_SLOT = 'SET_TARGET_SLOT';
@@ -20,7 +23,17 @@ export const SET_CREATE_LIST = 'SET_CREATE_LIST';
 export const RESET_TODO_LIST = 'RESET_TODO_LIST';
 export const SET_SEARCH_FRIEND = 'SET_SEARCH_FRIEND';
 export const SET_PENDING_REQUESTS = 'SET_PENDING_REQUESTS';
+export const READ_ONLY = 'READ_ONLY'
 
+export const SET_MY_GROUPS = 'SET_MY_GROUPS';
+export const SET_OTHER_GROUPS = 'SET_OTHER_GROUPS';
+
+export const WATCHING_INFO = 'WATCHING_INFO';
+export const SET_FOCUS_EVENT_INVITEE = 'SET_FOCUS_EVENT_INVITEE';
+export const SET_FOCUS_EVENT_TOINVITE = 'SET_FOCUS_EVENT_TOINVITE';
+export const SET_ADDING_INVITEES = 'SET_ADDING_INVITEES';
+export const SET_PAGE1 = 'SET_PAGE1';
+export const SET_PAGE2 = 'SET_PAGE2';
 
 
 

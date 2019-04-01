@@ -4,6 +4,13 @@ import baseURL from './config'
 import {config} from './config'
 import { weekOf } from '../redux/actions';
 
+
+export const longPoll = (callback, errcallback) => {
+    axios.get(baseURL + "/poll", config)
+    .then(res => {callback(res)})
+    .catch(err => {errcallback(err); console.log(err)})
+}
+
 export const logout = (callback) => {
     axios.get(baseURL + "/logout", config)
     .then(res => {callback(res)})
@@ -189,8 +196,14 @@ export const deleteEvent = (callback, errcallback, event_id) => {
  * OBSCURED_BY, IS_EMPTY_OBSCURE], [...], ...]
  * Response body example: [["1", 1", "event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...], ...]
  */
-export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of) => {
-    axios.get(baseURL + "/event/timetable_slot/retrieveAll/" + week_of, config)
+export const retrieveAllSlotsInAWeek = (callback, errcallback, week_of, user_id="") => {
+    axios.get(baseURL + "/event/timetable_slot/retrieveAll/" + week_of + "/" + user_id, config)
+    .then(res => {console.log(res.data); callback(res.data)})
+    .catch(err => {errcallback(err); console.log(err)})
+}
+
+export const retrieveAcceptedInAWeek = (callback, errcallback, week_of, user_id="") => {
+    axios.get(baseURL + "/event/group/timetable_slot/retrieveAllInvited/" + week_of + "/" + user_id, config)
     .then(res => {console.log(res.data); callback(res.data)})
     .catch(err => {errcallback(err); console.log(err)})
 }
@@ -248,16 +261,77 @@ export const createGroupEvent = (callback, errcallback, data) => {
 /*
  * Accept a group event.
  *
- * URL params:
- * Request body: {id: EVENT_ID} 
+ * URL params: 
  * Response body: Success/Failure messages
  */
-export const acceptGroupEvent = (callback, errcallback, data) => {
-    axios.post(baseURL + "/event/group/accept", data)
+export const acceptGroupEvent = (callback, errcallback, event_id) => {
+    axios.patch(baseURL + "/event/group/accept/" + event_id, {}, config)
     .then(res => callback(res))
     .catch(err =>  {errcallback(err); console.log(err)})
 }
 
+/*
+ * Reject a group event.
+ *
+ * URL params:
+ * Response body: Success/Failure messages
+ */
+export const rejectGroupEvent = (callback, errcallback, event_id) => {
+    axios.patch(baseURL + "/event/group/reject/" + event_id, {}, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
 
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const inviteesByEventID = (callback, errcallback, event_id) => {
+    axios.get(baseURL + "/event/group/invited/"+event_id, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
 
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const toInviteByEventID = (callback, errcallback, event_id) => {
+    axios.get(baseURL + "/event/group/toInvite/"+event_id, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
 
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const sendInvitesToFriends = (callback, errcallback, event_id, data) => {
+    axios.post(baseURL + "/event/group/create/"+event_id, data, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ * Retrieve the current invitees of my group event.
+ */
+export const recallInvites = (callback, errcallback, event_id, invitee_id) => {
+    axios.delete(baseURL + "/event/group/decline/"+event_id+"/"+invitee_id, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ *  Retrieve next 10 received group event invitation, start at the n'th page of events where n is given as a param.
+ */
+export const retrieveOthersGroupEvents = (callback, errcallback, page_num) => {
+    axios.get(baseURL + "/event/group/timetable_slot/retrieveInvited/"+page_num, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}
+
+/*
+ *  Retrieve next 10 received group event invitation, start at the n'th page of events where n is given as a param.
+ */
+export const retrieveMyGroupEvents = (callback, errcallback, page_num) => {
+    axios.get(baseURL + "/event/group/event/retrieveSent/"+page_num, config)
+    .then(res => callback(res))
+    .catch(err =>  {errcallback(err); console.log(err)})
+}

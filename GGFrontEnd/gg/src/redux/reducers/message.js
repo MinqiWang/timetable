@@ -14,6 +14,27 @@ export const onEditMessage = {
     body: "You have unsaved event opened on the right side menu. Please save/cancel before performing other actions."
 }
 
+export const onWatchMessage = {
+    show: true,
+    canUserClose: true,
+    header: "On Watching",
+    body: "You can not perform this action when watching friend's timetable. Please go back to MyTimetable"
+}
+
+export const onReadOnlyMessage = {
+    show: true,
+    canUserClose: true,
+    header: "On ReadOnly",
+    body: "You can not perform this action. You are not the owner of this."
+}
+
+export const ErrorMessage = {
+    show: true,
+    canUserClose: true,
+    header: "Error",
+    body: "Please try again later"
+}
+
 export const onSaveMessage = {
     show: true,
     canUserClose: false,

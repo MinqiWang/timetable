@@ -1,10 +1,11 @@
-.SearchExistFriend {
-    flex: 1 1 auto;
+.MainSideDisplay {
+    flex: 0 0 auto;
     display: flex;
     flex-flow: nowrap column;
     border-style: solid;
     border-width: 0px 1px 0px 0px;
     border-color: rgb(200, 200, 200);
+    width: 280px;
 }
 
 .SearchBar {
@@ -16,8 +17,8 @@
     margin-top: 20px;
 }
 
-.SearchResult {
+.SearchBar-Button {
     display: flex;
-    flex-flow: wrap row;
-    width: 100%;
+    flex-flow: nowrap row;
+    justify-content: center;
 }

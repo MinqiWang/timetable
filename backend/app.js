@@ -1,8 +1,10 @@
 const EYE_CATCHER = "***********************************************************";
 const fs = require("fs");
+const validator = require('validator');
 
 const express = require('express');
 const app = express();
+const longpoll = require("express-longpoll")(app);
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -19,7 +21,7 @@ const pool = mysql.createPool({
 	database: 'CSCC09'
 });  // TODO: Change user and password on deployment
 
-const REACT_HOMEPAGE = "http://localhost:3000";
+const REACT_HOMEPAGE = "https://localhost:3000";
 
 /* ---- LOGGING ---- */
 
@@ -78,7 +80,7 @@ let corsOptions = {
 }
 app.use(cors(corsOptions));*/
 app.use(function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header("Access-Control-Allow-Origin", REACT_HOMEPAGE);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   res.header("Access-Control-Allow-Credentials", true);
   res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS, PATCH");
@@ -91,6 +93,19 @@ app.use(function(req, res, next) {
 
 /* ---- LOGGING done ---- */
 
+/* ---- Long Polling API ---- */
+
+/*
+ * Response data: { indicator: <INDICATOR> }
+ * <INDICATOR> = 0 | 1 | 2 
+ *		0: Client should call all friends get-APIs
+ *		1: Client should call all non-group event info get-APIs
+ *		2: Clinet should call all group event status get-APIs
+ */
+longpoll.create("/poll");
+
+/* ---- Long Polling API done---- */
+
 /* ---- Authentication and User Management ---- */
 
 const session = require('express-session');
@@ -98,6 +113,7 @@ app.use(session({
     secret: "1234@bnmv!", // TODO: Change this on deployment
     resave: false,
     saveUninitialized: true,
+    /*cookie: {httpOnly: true, secure: true, sameSite: true}*/
 }));
 
 const passport = require('passport');
@@ -128,7 +144,7 @@ app.get('/logout', isAuthenticated, function(req, res, next){
 });
 
 /*
- * Twitter authentication
+ * TODO: Twitter authentication
  */
 
 /*
@@ -259,9 +275,13 @@ app.get('/retrieveUserInfo/:id?', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	if (!user_id) {
 		user_id = req.session.inAppId;
+	} else {
+		if (!validator.isNumeric(user_id)) {
+			return res.status(422).end("URL param: id must be an integer");
+		}
 	}
 
-	pool.query("select name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
+	pool.query("select id, name, avatarURL from user_info where id=?", [user_id], function (error, results, fields) {
 		if (error) {
 			logAPIerror("/auth/retrieveUserInfo/:id", error);
 			res.status(500).end(error);
@@ -293,6 +313,10 @@ app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
+
 	if (user_id == your_id) {
 		res.json("This is yourself");
 	}
@@ -303,7 +327,7 @@ app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 				res.status(500).end(error);
 			}
 			else {
-				if (results === []) {
+				if (results.length === 0) {
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
@@ -324,6 +348,7 @@ app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 										res.status(500).end(error3);
 									}
 									else {
+										longpoll.publish("/poll", {indicator:0});
 										res.json("Friend request is sent!");
 									}
 								});
@@ -348,6 +373,10 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
+
 	if (user_id == your_id) {
 		return res.json("This is yourself!");
 	}
@@ -358,7 +387,7 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 				res.status(500).end(error);
 			}
 			else {
-				if (results === []) {
+				if (results.length === 0) {
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
@@ -369,6 +398,7 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 							res.status(500).end(error2);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:0});
 							res.json("Friend invitation is accepted");
 						}
 					});
@@ -390,6 +420,10 @@ app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res
 	let your_id = req.session.inAppId;
 	let user_id = req.params.user_id;
 
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
+
 	if (user_id == your_id) {
 		return res.json("This is yourself!");
 	}
@@ -400,7 +434,7 @@ app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res
 				res.status(500).end(error);
 			}
 			else {
-				if (results === []) {
+				if (results.length === 0) {
 					res.status(422).end("Cannot find user with id: " + user_id);
 				}
 				else {
@@ -411,6 +445,7 @@ app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res
 							res.status(500).end(error2);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:0});
 							res.json("Friend invitation is rejected");
 						}
 					});
@@ -439,7 +474,7 @@ app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 		queryStr = "select * from friendship join user_info on id_from=id where id_to=? and id_to=? and id_to=? and has_accepted=false";
 	}
 	else {
-		return res.status(400).end("Unexpected URL params");
+		return res.status(422).end("URL param: opt must be one of ('friendlist', 'pendingRequests')");
 	}
 
 	pool.query(queryStr, [your_id, your_id, your_id], function (error, results, fields){
@@ -460,6 +495,10 @@ app.get("/friend/retrieveAll/:opt", isAuthenticated, function (req, res, next){
 app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, res, next){
 	let user_id = req.params.id;
 	let your_id = req.session.inAppId;
+
+	if (!validator.isNumeric(user_id)) {
+		return res.status(422).end("URL param: id must be an integer");
+	}
 
 	if (user_id == your_id) return res.json("This is you!");
 	pool.query("select * from (select * from user_info left join friendship on id=id_from or id=id_to where id=?) A where id_from=? or id_to=? or id_from is null limit 1", [user_id, your_id, your_id], function (error, results, fields){
@@ -489,8 +528,12 @@ app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, 
  * Response body: Success/Failure messages 
  */
 app.post('/event/create', isAuthenticated, function(req, res, next){
-	let event_detail = req.body.detail;
-	let timetable_slots = req.body.timetable_slots; // Does not contain an event id
+	if (!(Array.isArray(req.body.timetable_slots) && Array.isArray(req.body.detail))) {
+		return res.status(422).end("Body: timetable_slots must be an array, detail must be an array");
+	}
+
+	let event_detail = req.body.detail.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
+	let timetable_slots = req.body.timetable_slots.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x))); // Does not contain an event id
 	let author_id = req.session.inAppId;
 
 	let num_slots = timetable_slots.length;
@@ -507,6 +550,7 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 			pool.query("insert into event_detail values (?,?,?,?)", [results.insertId].concat(event_detail), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/create", error2);
+					longpoll.publish("/poll", {indicator:1});
 					res.status(500).end(error2);
 				}
 				else {
@@ -515,11 +559,13 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 						pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, results.insertId].concat(timetable_slots[i]), function (error3, results3, fields3) {
 							if (error3) {
 								logAPIerror("/event/create", error3);
+								longpoll.publish("/poll", {indicator:1});
 								res.status(500).end(error3);
 							}
 							else {
 								num_finished += 1;
 								if (num_finished == num_slots) {
+									longpoll.publish("/poll", {indicator:1});
 									res.json("Event is created!");
 								}
 							}
@@ -543,10 +589,13 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
  * Response body: Success/Failure messages 
  */
  app.post('/event/timetable_slot/create', isAuthenticated, function (req, res, next){
- 	let timetable_slot = req.body.timetable_slot; // Does not contain an event id
+ 	if (!(Array.isArray(req.body.timetable_slots))) {
+		return res.status(422).end("Body: timetable_slot must be an array");
+	}
+ 	let timetable_slot = req.body.timetable_slot.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x); // Does not contain an event id
  	let event_id = req.body.event_id;
  	let obscure_id = req.body.obscure; // Slot id
- 	let week_of = req.body.week_of;
+ 	let week_of = validator.escape(req.body.week_of);
  	let author_id = req.session.inAppId;
 
 	// Verify event ownership first
@@ -555,7 +604,7 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 			logAPIerror("/event/timetable_slot/create", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -570,14 +619,17 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 		 				pool.query("insert into obscured_event values(?,?)", [obscure_id, week_of], function(error3, results3, fields3){
 		 					if (error3) {
 		 						logAPIerror("/event/timetable_slot/create", error3);
+		 						longpoll.publish("/poll", {indicator:1});
 		 						res.status(500).end(error3);
 		 					}
 		 					else {
+		 						longpoll.publish("/poll", {indicator:1});
 		 						res.json("Timetable slot is created!");
 		 					}
 		 				});
 		 			}
 		 			else {
+		 				longpoll.publish("/poll", {indicator:1});
 		 				res.json("Timetable slot is created!");
 		 			}
 		 		}
@@ -596,9 +648,13 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
  * Response body: Success/Failure messages 
  */
 app.patch('/event/update', isAuthenticated, function (req, res, next){
-	let event_detail = req.body.detail;
+	if (!(Array.isArray(req.body.timetable_slots) && Array.isArray(req.body.event_detail))) {
+		return res.status(422).end("Body: event_id must be an integer");
+	}
+
+	let event_detail = req.body.detail.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
  	let event_id = req.body.event_id;
- 	let event_name = req.body.event_name;
+ 	let event_name = validator.escape(req.body.event_name);
 	let author_id = req.session.inAppId;
 
 
@@ -607,7 +663,7 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
 			logAPIerror("/event/update", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -621,9 +677,11 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
 					pool.query("update timetable_event set event_name=? where event_id=?", [event_name, event_id], function (error3, results3, fields3){
 						if (error3) {
 							logAPIerror("/event/update", error3);
+							longpoll.publish("/poll", {indicator:1});
 							res.status(500).end(error3);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:1});
 							res.json("Event is updated!");
 						}
 					});
@@ -643,7 +701,11 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages 
  */
 app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, next){
-	let timetable_slot = req.body.timetable_slot;
+	if (!(Array.isArray(req.body.timetable_slot))) {
+		return res.status(422).end("Body: timetable_slot must be an array");
+	}
+
+	let timetable_slot = req.body.timetable_slot.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
  	let event_id = req.body.event_id;
  	let author_id = req.session.inAppId;
 	let slot_id = req.body.id;
@@ -653,16 +715,18 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
 			logAPIerror("/event/timetable_slot/update", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
 			pool.query("update timetable_event set start_time=?, length=?, week_of=?, day_of_the_week=? where id=?", timetable_slot.concat(slot_id), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/timetable_slot/update", error2);
+					longpoll.publish("/poll", {indicator:1});
 					res.status(500).end(error2);
 				}
 				else {
+					longpoll.publish("/poll", {indicator:1});
 					res.json("Timetable slot is updated!");
 				}
 			});
@@ -679,6 +743,9 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
  * Response body: Success/Failure messages
  */
 app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && validator.isNumeric(req.params.event_id))) {
+		return res.status(422).end("URL param: id must an integer, event_id must be an integer");
+	}
 	let slot_id = req.params.id;
 	let event_id = req.params.event_id;
 	let author_id = req.session.inAppId;
@@ -688,16 +755,18 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, functi
 			logAPIerror("/event/timetable_slot/delete", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
-			pool.query("delete from timetable_event where id=?", [slot_id], function (error, results, fields){
-				if (error) {
-					logAPIerror("/event/timetable_slot/delete", error);
-					res.status(500).end(error);
+			pool.query("delete from timetable_event where id=?", [slot_id], function (error2, results2, fields2){
+				if (error2) {
+					logAPIerror("/event/timetable_slot/delete", error2);
+					longpoll.publish("/poll", {indicator:1});
+					res.status(500).end(error2);
 				}
 				else {
+					longpoll.publish("/poll", {indicator:1});
 					res.json("Timetable slot is deleted!");
 				}
 			});
@@ -714,6 +783,9 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, functi
  * Response body: Success/Failure messages
  */
 app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
@@ -722,7 +794,7 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 			logAPIerror("/event/delete", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -742,6 +814,8 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 							res.json("Event is deleted!");
 						}
 					});*/
+					longpoll.publish("/poll", {indicator:1});
+					longpoll.publish("/poll", {indicator:2});
 					res.json("Event is deleted!");
 				}
 			});
@@ -815,57 +889,84 @@ function formatSlotsInfo(results) {
     }
 ]
  */
-app.get("/event/timetable_slot/retrieveAll/:week_of", isAuthenticated, function (req, res, next){
-	let week_of = req.params.week_of;
-	let author_id = req.session.inAppId;
+app.get("/event/timetable_slot/retrieveAll/:week_of/:user_id?", isAuthenticated, function (req, res, next){
+	if (req.params.user_id && !validator.isNumeric(req.params.user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
+	let week_of = validator.escape(req.params.week_of);
+	let user_id = req.params.user_id;
+	let your_id = req.session.inAppId;
+	let owner_id = your_id;
 
-	pool.query("select * from timetable_event where week_of=? and id not in (select slot_id from obscured_event where week_of=?) \
-		and event_id in (select event_id from event_ownership where author_id=?)", [week_of, week_of, author_id], function (error, results, fields){
-		if (error) {
-			logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
-			res.status(500).end(error);
-		}
-		else {
-			// Format the data
-			let formatted_results = formatSlotsInfo(results)[0];
-			res.json(formatted_results);
-		}
-	});
-	next(); // Correct?
+	let retrieveTimetable = function () {
+		pool.query("select *, case when event_id in (select distinct event_id from group_event_invitation) then true else false end as isGroupEvent \
+			from timetable_event where event_id in (select event_id from event_ownership where author_id=?) \
+			and (week_of=? or (week_of<? and is_repeating=true))", [owner_id, week_of, week_of], function (error, results, fields){
+			console.log(results);
+			if (error) {
+				logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
+				res.status(500).end(error);
+			}
+			else {
+				// Format the data
+				let formatted_results = formatSlotsInfo(results)[0];
+				res.json(formatted_results);
+			}
+		});
+	}
+
+	if (user_id) {
+		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_to=? and id_from=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
+			if (error) {
+				logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
+				res.status(500).end(error);
+			}
+			else {
+				if (results.length === 0) {
+					res.status(401).end("You can only see your friends' timetable!");
+				}
+				else {
+					// Retrieve your friend's timetable
+					owner_id = user_id;
+					retrieveTimetable();
+				}
+			}
+		});
+	}
+	else {
+		// Retrieve your timetable
+		retrieveTimetable();
+	}
+	next();
 });
 
 /*
  * Retrieve all timetable slots + detail info for a given event
  */
 app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
-		if (error) {
-			logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error);
-			res.status(500).end(error);
+	pool.query("select * from timetable_event where timetable_event.event_id=?", [event_id], function (error2, results2, fields2){
+		if (error2) {
+			logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
+			res.status(500).end(error2);
 		}
 		else {
-			pool.query("select * from timetable_event left join obscured_event on obscured_event.slot_id=timetable_event.id where timetable_event.event_id=?", [event_id], function (error2, results2, fields2){
-				if (error2) {
-					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error2);
-					res.status(500).end(error2);
+			// Format the data
+			let formatted_slots_results = formatSlotsInfo(results2);
+			pool.query("select * from event_detail join event_ownership on id=event_id where id=?", [event_id], function (error3, results3, fields3) {
+				if (error3) {
+					logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error3);
+					res.status(500).end(error3);
 				}
 				else {
-					// Format the data
-					let formatted_slots_results = formatSlotsInfo(results2);
-					pool.query("select * from event_detail where id=?", [event_id], function (error3, results3, fields3) {
-						if (error3) {
-							logAPIerror("/event/timetable_slot/retrieveAllForEvent/:id", error3);
-							res.status(500).end(error3);
-						}
-						else {
-							let event_detail = results3[0];
-							event_detail.event_name = formatted_slots_results[1];
-							res.json({"detail": event_detail, "timetable_slots": formatted_slots_results[0]});
-						}
-					});
+					let event_detail = results3[0];
+					event_detail.event_name = formatted_slots_results[1];
+					res.json({"detail": event_detail, "timetable_slots": formatted_slots_results[0]});
 				}
 			});
 		}
@@ -894,12 +995,15 @@ app.get("/event/timetable_slot/retrieveAllForEvent/:id", isAuthenticated, functi
  }
  */
 app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && Array.isArray(req.body.detail_info) && Array.isArray(req.body.to_create) && Array.isArray(req.body.to_update) && Array.isArray(req.body.to_delete))) {
+		return res.status(422).end("URL param: id must an integer; Body: detail_info must be an array, to_create must be an array, to_update must be an array, to_delete must be an array");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	let detail_info = req.body.detail_info;
-	let to_create = req.body.to_create;
-	let to_update = req.body.to_update;
-	let to_delete = req.body.to_delete;
+	let detail_info = req.body.detail_info.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
+	let to_create = req.body.to_create.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
+	let to_update = req.body.to_update.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
+	let to_delete = req.body.to_delete.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
 
 	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
@@ -922,6 +1026,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 						else {
 							num_processed_creates += 1;
 							if (num_processed_creates == to_create.length) {
+								longpoll.publish("/poll", {indicator:1});
 								res.json("MISC updates for event " + event_id + " succeeded!");
 							}
 						}
@@ -943,6 +1048,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 						else {
 							num_processed_updates += 1;
 							if (num_processed_updates === to_update.length) {
+								longpoll.publish("/poll", {indicator:1});
 								create_slots();
 							}
 						}
@@ -964,13 +1070,31 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 						else {
 							num_processed_deletes += 1;
 							if (num_processed_deletes === to_delete.length) {
+								longpoll.publish("/poll", {indicator:1});
 								update_slots();
 							}
 						}
 					});
 				}
 			};
-			delete_slots();
+			let update_detail = function () {
+				if (detail_info.length === 0) {
+					delete_slots();
+				}
+				else {
+					pool.query("update event_detail set text_content=?, media_content_urls=?, place=? where id=?", detail_info.concat(event_id), function(error, results, fileds){
+						if (error) {
+							logAPIerror("/event/MISC/:id", error);
+							res.status(500).end(error);
+						}
+						else {
+							longpoll.publish("/poll", {indicator:1});
+							delete_slots();
+						}
+					});
+				}
+			}
+			update_detail();
 		}
 	});
 	next();
@@ -993,6 +1117,9 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
  ]
  */
 app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
 
@@ -1014,6 +1141,48 @@ app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
 /* ---- Group Event APIs ---- */
 
 /*
+ * Get all users which can be invited to the given event.
+ */
+app.get("/event/group/toInvite/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("select * from user_info where id not in (select invitee from group_event_invitation where event_id=?) and id!=?", [event_id, user_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/toInvite/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+});
+
+/*
+ * Get all users which are already invited to the given event.
+ */
+app.get("/event/group/invited/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
+	let event_id = req.params.id;
+	let user_id = req.session.inAppId;
+
+	pool.query("select * from user_info join group_event_invitation on id=invitee where event_id=?", [event_id], function (error, results, fields){
+		if (error) {
+			logAPIerror("/event/group/invited/:id", error);
+			res.status(500).end(error);
+		}
+		else {
+			res.json(results);
+		}
+	});
+});
+
+/*
  * Create a group event. (Add a list of invitees)
  *
  * URL params: id -- The id of the group event
@@ -1021,16 +1190,19 @@ app.get("/event/retrieve/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && Array.isArray(req.body.invitees))) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let author_id = req.session.inAppId;
-	let invitees = req.body.invitees;
+	let invitees = req.body.invitees.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
 
 	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/group/create", error);
 			res.status(500).end(error);
 		}
-		else if (results === []) {
+		else if (results.length === 0) {
 			res.status(401).end("Access Denied");
 		}
 		else {
@@ -1038,15 +1210,33 @@ app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
 			let num_finished = 0;
 
 			for (let i = 0; i < num_invitees; i++) {
-				pool.query("insert into group_event_invitation values(?,?,?)", [event_id, invitees[i], null], function (error2, results2, fields2){
+				if (invitees[i] == author_id) {
+					num_finished += 1;
+					continue;
+				}
+				pool.query("select * from user where id=?", [invitees[i]], function (error2, results2, fields2){
 					if (error2) {
 						logAPIerror("/event/group/create", error2);
 						res.status(500).end(error2);
 					}
 					else {
-						num_finished += 1;
-						if (num_finished == num_invitees) {
-							res.json("Group event is created! / Invitees are added!");
+						if (results2.length === 0) {
+							res.status(422).end("Cannot find user with id: " + invitees[i]);
+						}
+						else {
+							pool.query("insert ignore into group_event_invitation values(?,?,?,now())", [event_id, invitees[i], null], function (error3, results3, fields3){
+								if (error3) {
+									logAPIerror("/event/group/create", error3);
+									res.status(500).end(error3);
+								}
+								else {
+									num_finished += 1;
+									if (num_finished == num_invitees) {
+										longpoll.publish("/poll", {indicator:2});
+										res.json("Group event is created! / Invitees are added!");
+									}
+								}
+							});
 						}
 					}
 				});
@@ -1064,6 +1254,9 @@ app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1073,6 +1266,7 @@ app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
 			res.status(500).end(error);
 		}
 		else {
+			longpoll.publish("/poll", {indicator:2});
 			res.json("Group event is accepted!");
 		}
 	});
@@ -1087,6 +1281,9 @@ app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
  * Response body: Success/Failure messages
  */
 app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.id)) {
+		return res.status(422).end("URL param: id must an integer");
+	}
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
@@ -1096,6 +1293,7 @@ app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
 			res.status(500).end(error);
 		}
 		else {
+			longpoll.publish("/poll", {indicator:2});
 			res.json("Group event is rejected!");
 		}
 	});
@@ -1104,23 +1302,40 @@ app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
 
 /*
  * Decline a group event invitation sent by yourself.
+ * Can only decline an inviation which is not accepted or rejected.
  *
  * URL params: id -- The id of the group event
  * Request body: {id: EVENT_ID} 
  * Response body: Success/Failure messages
  */
-app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next){
-	let event_id = req.body.id;
+app.delete("/event/group/decline/:id/:invitee_id", isAuthenticated, function (req, res, next){
+	if (!(validator.isNumeric(req.params.id) && validator.isNumeric(req.params.invitee_id))) {
+		return res.status(422).end("URL param: id must be an integer, invitee_id must be an integer");
+	}
+	let event_id = req.params.id;
+	let invitee_id = req.params.invitee_id;
 	let user_id = req.session.inAppId;
 
 	// Check the ownership
-	pool.query("delete from group_event_invitation where event_id=?", [event_id, user_id], function (error, results, fields){
+	pool.query("select event_id from event_ownership where author_id=? and event_id=?", [user_id, event_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/group/decline", error);
 			res.status(500).end(error);
 		}
+		else if (results.length === 0){
+			res.status(401).end("Access Denied");
+		}
 		else {
-			res.json("Group event is declined!");
+			pool.query("delete from group_event_invitation where event_id=? and invitee=? and has_accepted is null", [event_id, invitee_id], function (error2, results2, fields2){
+				if (error2) {
+					logAPIerror("/event/group/decline", error2);
+					res.status(500).end(error2);
+				}
+				else {
+					longpoll.publish("/poll", {indicator:2});
+					res.json("Group event is declined!");
+				}
+			});
 		}
 	});
 	next();
@@ -1129,21 +1344,50 @@ app.delete("/event/group/decline/:id", isAuthenticated, function (req, res, next
 /*
  * Retrieve all received group event invitation for a given week.
  */
-app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticated, function (req, res, next){
-	let week_of = req.params.week_of;
-	let author_id = req.session.inAppId;
+app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of/:user_id?", isAuthenticated, function (req, res, next){
+	if (req.params.user_id && !validator.isNumeric(req.params.user_id)) {
+		return res.status(422).end("URL param: user_id must be an integer");
+	}
+	let week_of = validator.escape(req.params.week_of);
+	let your_id = req.session.inAppId;
+	let user_id = req.params.user_id;
+	let owner_id = your_id;
 
-	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where week_of=? and invitee=?", [week_of, author_id], function (error, results, fields){
-		if (error) {
-			logAPIerror("/event/timetable_slot/retrieveAllInvited/:week_of", error);
-			res.status(500).end(error);
-		}
-		else {
-			// Format the data
-			let formatted_results = formatSlotsInfo(results)[0];
-			res.json(formatted_results);
-		}
-	});
+	let retrieveInvited = function () {
+		pool.query("select * from timetable_event where event_id in (select event_id from \
+			group_event_invitation where invitee=? and has_accepted=true) and week_of=?", [owner_id, week_of], function (error, results, fields){
+			if (error) {
+				logAPIerror("/event/group/timetable_slot/retrieveAllInvited/:week_of", error);
+				res.status(500).end(error);
+			}
+			else {
+				let formatted_results = formatSlotsInfo(results)[0];
+				res.json(formatted_results);
+			}
+		});
+	}
+	if (user_id) {
+		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_to=? and id_from=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
+			if (error) {
+				logAPIerror("/event/group/timetable_slot/retrieveAllInvited/:week_of", error);				
+				res.status(500).end(error);
+			}
+			else {
+				if (results.length === 0) {
+					res.status(401).end("You can only see your friends' timetable!");
+				}
+				else {
+					// Retrieve your friend's timetable (invited)
+					owner_id = user_id;
+					retrieveInvited();
+				}
+			}
+		});
+	}
+	else {
+		// Retrieve your timetable (invited)
+		retrieveInvited();
+	}
 	next();
 });
 
@@ -1151,10 +1395,15 @@ app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of", isAuthenticat
  * Retrieve next 10 received group event invitation, start at the n'th event where n is given as a param.
  */
 app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.n)) {
+		return res.status(422).end("URL param: n must an integer");
+	}
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where invitee=? limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+	pool.query("select timetable_event.event_id, event_name, name, avatarURL, has_accepted from timetable_event join user_info join event_ownership on timetable_event.event_id=event_ownership.event_id and event_ownership.author_id=user_info.id \
+		join (select t.event_id, t.has_accepted from (select event_id, has_accepted from group_event_invitation where invitee=? order by ts desc limit ?,?) as t) A on timetable_event.event_id=A.event_id group by timetable_event.event_id, event_name, name, \
+		avatarURL, has_accepted", [author_id, 10 * parseInt(n), 10 * (parseInt(n)+1)], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);
@@ -1169,13 +1418,20 @@ app.get("/event/group/timetable_slot/retrieveInvited/:n", isAuthenticated, funct
 /*
  * Retrieve next 10 group event initialized by you, start at the n'th event where n is given as a param.
  */
-app.get("/event/group/timetable_slot/retrieveSent/:n", isAuthenticated, function (req, res, next){
+app.get("/event/group/event/retrieveSent/:n", isAuthenticated, function (req, res, next){
+	if (!validator.isNumeric(req.params.n)) {
+		return res.status(422).end("URL param: n must an integer");
+	}
 	let n = req.params.n;
 	let author_id = req.session.inAppId;
 
-	pool.query("select * from timetable_event join group_event_invitation on timetable_event.event_id=group_event_invitation.event_id where timetable_event.event_id in (select event_id from event_ownership where author_id=?) limit ?,? order by week_of desc, day_of_the_week desc, start_time desc", [author_id, n, 10], function (error, results, fields){
+
+	pool.query("select event_id, event_name from timetable_event where event_id in (select t2.event_id \
+		from (select distinct t.event_id from (select event_ownership.event_id from group_event_invitation \
+		join event_ownership on group_event_invitation.event_id=event_ownership.event_id where author_id=? \
+		order by ts desc) as t limit ?,?) as t2) group by event_id, event_name", [author_id, 10 * parseInt(n), 10 * (parseInt(n)+1)], function (error, results, fields){
 		if (error) {
-			logAPIerror("/event/group/timetable_slot/retrieveSent/:n", error);
+			logAPIerror("/event/timetable_slot/retrieveInvited/:n", error);
 			res.status(500).end(error);
 		}
 		else {

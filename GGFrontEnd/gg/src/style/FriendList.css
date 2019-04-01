@@ -1,0 +1,11 @@
+.FriendList {
+    display: flex;
+    flex-flow: nowrap column;
+    overflow: scroll;
+}
+.resultUser {
+    display: flex;
+    flex-flow: nowrap row;
+    justify-content: space-between;
+    align-items: center;
+}

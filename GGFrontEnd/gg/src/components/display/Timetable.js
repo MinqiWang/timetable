@@ -1,19 +1,20 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setRightMenu, setSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
+import {setRightMenu, setSlots, setAcceptSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
-import { retrieveAllSlotsInAWeek } from '../../RESTFul/ajax';
+import { getDefaultEvent, getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
+import { retrieveAllSlotsInAWeek, retrieveAcceptedInAWeek } from '../../RESTFul/ajax';
 import {weekOf} from '../../redux/actions'
-import {onEditMessage, onSaveMessage} from '../../redux/reducers/message'
+import {onEditMessage, onSaveMessage, ErrorMessage} from '../../redux/reducers/message'
 
 
 export class Timetable extends Component {
   constructor(props) {
     super(props)
-    
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, this.props.week_of);
+    const {setShowMessage} = this.props;
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of);
+    retrieveAcceptedInAWeek(this.props.setAcceptSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of);
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
@@ -39,62 +40,99 @@ export class Timetable extends Component {
   }
 
   prev = (ev) => {
+    const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
-      console.log("hhh");
-
-      this.props.setShowMessage(onEditMessage);
+      setShowMessage(onEditMessage);
       return;
-  }
+    }
     let week_num = this.state.week_num - 1;
     let week_of = weekOf(new Date(), week_num);
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
     
   }
   
   next = (ev) => {
+    const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
-      console.log("hhh");
-
-      this.props.setShowMessage(onEditMessage);
+      setShowMessage(onEditMessage);
       return;
     }
     let week_num = this.state.week_num + 1;
     let week_of = weekOf(new Date(), week_num);
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
   }
 
   today = (ev) => {
+    const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
-      console.log("hhh");
-
-      this.props.setShowMessage(onEditMessage);
+      setShowMessage(onEditMessage);
       return;
     }
     let week_of = weekOf(new Date());
-    retrieveAllSlotsInAWeek(this.props.setSlots, this.props.logOut, week_of);
+    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: 0});
   }
 
   render() {
     const {time_tag, days} = this.state;
-    const {focused_event, week_of, slots, isDefault} = this.props;
+    const {focused_event, week_of, slots, isDefault, accept_slots} = this.props;
+    const eventTypeStyle1 = {
+      background: "red",
+      display: "inline-block"
+  };
+    const eventTypeStyle2 = {
+      background: "white",
+      display: "inline-block"
+
+    };
+    const eventTypeStyle3 = {
+      background: "yellow",
+      display: "inline-block"
+    };
+
+    const textStyle4 = {
+      display: "inline-block",
+      width: "50px",
+      fontSize: "10px",
+      wordWrap: "break-word",
+      marginLeft: "5px",
+      marginRight: "5px"
+    };
+
+    const btnStyle = {
+      width: "34px",
+    };
+
     return (
       <div className="Timetable-top-wrapper">
       <div className="Timetable-wrapper">
       <div className="Timetable">
         <div className="Timetable-header">
           <div className="Timetable-navbtn">
-            <button onClick={this.prev}>prev week</button>
-            <button onClick={this.next}>next week</button>
-            <button onClick={this.today}>Today</button>
+            <button onClick={this.prev} style={btnStyle}>prev week</button>
+            <button onClick={this.next} style={btnStyle}>next week</button>
+            <button onClick={this.today} style={btnStyle}>this week</button>
           </div>
           
-          <div className="Timetable-week">{week_of}</div>
+          <div className="Timetable-week">
+            <div className="badgeEvent">
+              <div className = "event-badge" style={eventTypeStyle1}></div>
+                <div style={textStyle4} >Accpeted Event</div>
+                <div className = "event-badge" style={eventTypeStyle2}></div>
+                <div style={textStyle4} >Private Event</div>
+
+                <div className = "event-badge" style={eventTypeStyle3}></div>
+                <div style={textStyle4} >My Group Event</div>
+            </div>
+            
+
+          {week_of}
+          </div>
         </div>
         <div className="Timetable-scroll">
           <ul className="time-tag">
@@ -103,13 +141,7 @@ export class Timetable extends Component {
           </ul>
           <div className="scroll-slots" onMouseLeave={this.solidifyEvent}>
               <div className="scroll-slots-col1"></div>
-                {days.map((day, index)=> <DayColumn week_of={week_of} key={day} indice={index} col_id={day} slots={slots[day]} default_slots={isDefault? focused_event.timetable_slots[day]: []}></DayColumn>)}
-              {/* <div id="col3" className="scroll-slots-col">Mon</div>
-              <div id="col4" className="scroll-slots-col">Tue</div>
-              <div id="col5" className="scroll-slots-col">Wed</div>
-              <div id="col6" className="scroll-slots-col">Thu</div>
-              <div id="col7" className="scroll-slots-col">Fri</div>
-              <div id="col8" className="scroll-slots-col">Sat</div> */}
+                {days.map((day, index)=> <DayColumn week_of={week_of} key={day} indice={index} col_id={day} slots={slots[day]} accept_slots={accept_slots[day]} default_slots={isDefault? focused_event.timetable_slots[day]: []}></DayColumn>)}
               <div className="scroll-slots-col scroll-slots-col1"></div>
           </div>
         </div>
@@ -121,15 +153,15 @@ export class Timetable extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("Timetable");
-    console.log(state);
   const focused_event = getFocusEvent(state);
   const week_of = getWeekOf(state);
   const slots = getSlots(state);
+  const accept_slots = getAcceptSlots(state);
+
   const isDefault = getIsDefault(state);
   const rightMenu = getRightMenu(state);
 
-  return {focused_event, week_of, slots, isDefault, rightMenu};
+  return {focused_event, week_of, slots, isDefault, rightMenu, accept_slots};
 };
 
-export default connect(mapStateToProps, {setWeekOf, logOut, setSlots,setShowMessage})(Timetable);
+export default connect(mapStateToProps, {setWeekOf, setAcceptSlots, logOut, setSlots,setShowMessage})(Timetable);

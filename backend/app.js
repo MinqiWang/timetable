@@ -1157,7 +1157,7 @@ app.get("/event/group/toInvite/:id", isAuthenticated, function (req, res, next){
 	let event_id = req.params.id;
 	let user_id = req.session.inAppId;
 
-	pool.query("select * from user_info where id not in (select invitee from group_event_invitation where event_id=?) and id!=?", [event_id, user_id], function (error, results, fields){
+	pool.query("select * from user_info join (select id_from, id_to from friendship where has_accepted=true) A on (A.id_from=id and A.id_to=?) or (A.id_to=id and A.id_from=?) where id not in (select invitee from group_event_invitation where event_id=?) and id!=?", [user_id, user_id, event_id, user_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/event/group/toInvite/:id", error);
 			res.status(500).end(error);

@@ -1,3 +1,6 @@
+## public URL
+https://gogoapp.website
+
 ## Project Title
 
 The project title is "Go?Go!", which is abbreviated to "GG".
@@ -76,5 +79,3 @@ Extend the basic functionalities and optionally implement other features
 ### challenge 5
 * AI assistant to help user creating their timetable, send group invitation etc.
 
-## public URL
-https://gogoapp.website

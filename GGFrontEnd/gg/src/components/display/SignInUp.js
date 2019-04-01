@@ -10,7 +10,7 @@ export class SignInUp extends Component {
 
   // Using AJAX doesn't work, have to do a full page request instead
   // https://www.freecodecamp.org/forum/t/react-with-backend-passport-twitter-cors-issue/152837
-  fblogin = () => {window.open("https://localhost:8000/auth/facebook");
+  fblogin = () => {window.open("https://gogoapp.website:443/auth/facebook");
   window.close();}
 
   //<div className="fb-button login-button" onClick={this.fblogin}>

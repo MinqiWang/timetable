@@ -1,6 +1,7 @@
 const EYE_CATCHER = "***********************************************************";
 const fs = require("fs");
 const validator = require('validator');
+const path = require('path');
 
 const express = require('express');
 const app = express();
@@ -21,9 +22,9 @@ const pool = mysql.createPool({
 	database: 'CSCC09'
 });  // TODO: Change user and password on deployment
 
-const REACT_HOMEPAGE = "https://localhost:3000";
+const REACT_HOMEPAGE = "https://gogoapp.website:443";
 
-/* ---- LOGGING ---- */
+/* ---- LOGGING && SERVE STATIC FILES ---- */
 
 /*
  * Request LOG
@@ -91,7 +92,13 @@ app.use(function(req, res, next) {
   }
 });
 
-/* ---- LOGGING done ---- */
+/* Serve react files */
+app.use(express.static(__dirname + '/build'));
+app.get('/', function (request, response){
+  response.sendFile(path.resolve(__dirname, 'build', 'index.html'))
+});
+
+/* ---- LOGGING && STATIC FILES done ---- */
 
 /* ---- Long Polling API ---- */
 
@@ -102,7 +109,7 @@ app.use(function(req, res, next) {
  *		1: Client should call all non-group event info get-APIs
  *		2: Clinet should call all group event status get-APIs
  */
-longpoll.create("/poll");
+longpoll.create("/poll", { maxListeners: 100 });
 
 /* ---- Long Polling API done---- */
 
@@ -113,7 +120,7 @@ app.use(session({
     secret: "1234@bnmv!", // TODO: Change this on deployment
     resave: false,
     saveUninitialized: true,
-    /*cookie: {httpOnly: true, secure: true, sameSite: true}*/
+    cookie: {httpOnly: true, secure: true, sameSite: true}
 }));
 
 const passport = require('passport');
@@ -1451,10 +1458,10 @@ app.use(function (req, res, next){
 });
 
 const https = require('https');
-const PORT = 8000;
+const PORT = 443;
 
-let privateKey = fs.readFileSync( 'server.key.test' ); // TODO: Change this on deployment
-let certificate = fs.readFileSync( 'server.crt.test' ); // TODO: Change this on deployment
+let privateKey = fs.readFileSync( 'server.key' ); // TODO: Change this on deployment
+let certificate = fs.readFileSync( 'server.crt' ); // TODO: Change this on deployment
 let config = {
     key: privateKey,
     cert: certificate

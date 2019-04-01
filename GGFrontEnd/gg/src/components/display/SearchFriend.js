@@ -90,7 +90,6 @@ export class SearchFriend extends Component {
         result = (firstTime? null: <div>no result/is yourself</div>)
     }
 
-    console.log(pendingRequests);
     return (
     <div className="SearchFriend">
         <div className="SearchBar">
@@ -133,8 +132,6 @@ export class SearchFriend extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("SearchFriend");
-    console.log(state);
     const searchFriend = getSearchFriend(state);
     const pendingRequests = getPendingRequests(state);
 

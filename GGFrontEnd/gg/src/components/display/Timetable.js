@@ -42,8 +42,6 @@ export class Timetable extends Component {
   prev = (ev) => {
     const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
-      console.log("hhh");
-
       setShowMessage(onEditMessage);
       return;
     }
@@ -58,8 +56,6 @@ export class Timetable extends Component {
   next = (ev) => {
     const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
-      console.log("hhh");
-
       setShowMessage(onEditMessage);
       return;
     }
@@ -73,8 +69,6 @@ export class Timetable extends Component {
   today = (ev) => {
     const {setShowMessage} = this.props;
     if (this.props.rightMenu === "Edit") {
-      console.log("hhh");
-
       setShowMessage(onEditMessage);
       return;
     }
@@ -159,8 +153,6 @@ export class Timetable extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("Timetable");
-    console.log(state);
   const focused_event = getFocusEvent(state);
   const week_of = getWeekOf(state);
   const slots = getSlots(state);

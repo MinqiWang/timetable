@@ -114,8 +114,6 @@ export class Header extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("Header");
-  console.log(state);
   const User = getUser(state);
   const Watching = getWatching(state);
   const week_of = getWeekOf(state);

@@ -35,7 +35,6 @@ export class DayColumn extends Component {
             return;
         }
         if (this.props.rightMenu == "Edit") {
-            console.log("hhh");
             this.props.setShowMessage(onEditMessage);
             return;
         }
@@ -97,7 +96,6 @@ export class DayColumn extends Component {
         e.preventDefault();
         e.stopPropagation();
         
-        // console.log(targetSlot);
         let element = document.getElementById(FAKE_SLOT_ID);
         let eventTime = document.getElementById(FAKE_SLOT_EVENT_TIME_ID);
         let eventLength = document.getElementById(FAKE_SLOT_EVENT_LENGTH_ID);
@@ -233,8 +231,6 @@ export class DayColumn extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("DayCol");
-    console.log(state);
     // const focused_event = getFocusEvent(state);
     const targetSlot = getTargetSlot(state);
     const rightMenu = getRightMenu(state);

@@ -4,6 +4,13 @@ import baseURL from './config'
 import {config} from './config'
 import { weekOf } from '../redux/actions';
 
+
+export const longPoll = (callback, errcallback) => {
+    axios.get(baseURL + "/poll", config)
+    .then(res => {callback(res)})
+    .catch(err => {errcallback(err); console.log(err)})
+}
+
 export const logout = (callback) => {
     axios.get(baseURL + "/logout", config)
     .then(res => {callback(res)})

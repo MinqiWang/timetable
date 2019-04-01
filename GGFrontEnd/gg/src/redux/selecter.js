@@ -33,5 +33,8 @@ export const getAddingInvitees = state => state.group.addingInvitees;
 
 export const accessType = state => state.event.accessType;
 
+export const getPage1 = state => state.group.page_num1;
+export const getPage2 = state => state.group.page_num2;
+
 
 

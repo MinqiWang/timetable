@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
 import Pagination from 'react-bootstrap/Pagination'
-import { setOthersGroupEvents, setFocusEvent, logOut, setShowMessage } from '../../redux/actions';
+import { setOthersGroupEvents, setFocusEvent, logOut, setShowMessage, setPage2 } from '../../redux/actions';
 import {retrieveOthersGroupEvents} from '../../RESTFul/ajax'
 import {connect} from 'react-redux';
 import '../../style/GroupEvents.css'
 import GroupInvite from './GroupInvite';
 import {ErrorMessage} from '../../redux/reducers/message'
+import { getPage2 } from '../../redux/selecter';
 
 export class GroupInvites extends Component {
   constructor(props) {
@@ -18,13 +19,12 @@ export class GroupInvites extends Component {
 
   prev =(e) => {
     const {setOthersGroupEvents, setShowMessage} = this.props;
-    if (this.state.curr_page == 0) {
+    if (this.props.curr_page == 0) {
       //do nothing
     } else {
-      let page_num = this.state.curr_page - 1;
+      let page_num = this.props.curr_page - 1;
+      this.props.setPage2(page_num);
 
-      this.setState(prevState => 
-        ({ curr_page: prevState.curr_page - 1}));
       retrieveOthersGroupEvents(function(res) {
         setOthersGroupEvents(res.data);
       }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, page_num);
@@ -36,9 +36,8 @@ export class GroupInvites extends Component {
     if (this.props.invite_groups.length < 10) {
       //do nothing
     } else {
-      let page_num = this.state.curr_page + 1;
-      this.setState(prevState => 
-        ({ curr_page: prevState.curr_page + 1}));
+      let page_num = this.props.curr_page + 1;
+      this.props.setPage2(page_num);
 
       retrieveOthersGroupEvents(function(res) {
         setOthersGroupEvents(res.data);
@@ -47,8 +46,7 @@ export class GroupInvites extends Component {
   }
   
   render() {
-    const {invite_groups, searchQuery} = this.props;
-    const {curr_page} = this.state;
+    const {invite_groups, searchQuery, curr_page} = this.props;
 
     return (
       <>
@@ -70,5 +68,14 @@ export class GroupInvites extends Component {
   }
 }
 
-export default connect(null, {setOthersGroupEvents, setShowMessage})(GroupInvites);
+const mapStateToProps = state => {
+  console.log("GroupInvites");
+  console.log(state);
+
+  const curr_page = getPage2(state);
+  return { curr_page };
+};
+
+
+export default connect(mapStateToProps, {setOthersGroupEvents, setShowMessage, setPage2})(GroupInvites);
 

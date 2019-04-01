@@ -25,12 +25,10 @@ export class Event extends Component {
         e.stopPropagation();
         
         if (this.props.rightMenu === "Edit") {
-            console.log("hhh");
             this.props.setShowMessage(onEditMessage);
             return;
         }
         if (e.button == 0) {
-            console.warn("hhh");
             if (this.props.readOnly) {
                 this.props.setShowMessage(onReadOnlyMessage);
                 return;
@@ -204,8 +202,6 @@ export class Event extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("Event");
-    console.log(state);
     const focused_event = getFocusEvent(state);
     const hasDefault = getIsDefault(state);
     const targetSlot = getTargetSlot(state);

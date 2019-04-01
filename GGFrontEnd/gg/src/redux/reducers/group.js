@@ -1,4 +1,4 @@
-import {SET_OTHER_GROUPS, SET_MY_GROUPS, LOGOUT, SET_FOCUS_EVENT_INVITEE, SET_FOCUS_EVENT_TOINVITE, SET_ADDING_INVITEES} from '../actionTypes';
+import {SET_PAGE1, SET_PAGE2, SET_OTHER_GROUPS, SET_MY_GROUPS, LOGOUT, SET_FOCUS_EVENT_INVITEE, SET_FOCUS_EVENT_TOINVITE, SET_ADDING_INVITEES} from '../actionTypes';
 
 const defaultAddingInvitees = {invitees: []};
 const initialState = {
@@ -7,6 +7,8 @@ const initialState = {
     focusEventInvitees: [],
     focusEventToInvites: [],
     addingInvitees: defaultAddingInvitees,
+    page_num1: 0,
+    page_num2: 0,
 }
 
 export default function(state = initialState, action) {
@@ -46,6 +48,20 @@ export default function(state = initialState, action) {
                 addingInvitees
             } : {...state,
                 addingInvitees: defaultAddingInvitees
+            }
+        }
+        case SET_PAGE1: {
+            const {page_num1} = action.payload;
+            return {
+                ...state,
+                page_num1
+            }
+        }
+        case SET_PAGE2: {
+            const {page_num2} = action.payload;
+            return {
+                ...state,
+                page_num2
             }
         }
         case LOGOUT: {

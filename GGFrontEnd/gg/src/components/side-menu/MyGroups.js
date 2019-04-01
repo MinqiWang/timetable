@@ -1,30 +1,27 @@
 import React, { Component } from 'react'
 import Pagination from 'react-bootstrap/Pagination'
-import { setMyGroupEvents, setRightMenu, setFocusEvent, logOut, setShowMessage} from '../../redux/actions';
+import {setPage1, setMyGroupEvents, setRightMenu, setFocusEvent, logOut, setShowMessage} from '../../redux/actions';
 import {retrieveMyGroupEvents, retrieveAllForEvent} from '../../RESTFul/ajax'
 import {connect} from 'react-redux';
 import '../../style/GroupEvents.css'
 import {ErrorMessage} from '../../redux/reducers/message'
 import Badge from 'react-bootstrap/Badge'
+import { getPage1 } from '../../redux/selecter';
 
 export class MyGroups extends Component {
   constructor(props) {
     super(props)
-  
-    this.state = {
-      curr_page: 0,
-    }
   }
 
   prev =(e) => {
     const {setMyGroupEvents, setShowMessage} = this.props;
-    if (this.state.curr_page == 0) {
+    if (this.props.curr_page == 0) {
       //do nothing
     } else {
-      let page_num = this.state.curr_page - 1;
+      let page_num = this.props.curr_page - 1;
 
-      this.setState(prevState => 
-        ({ curr_page: prevState.curr_page - 1}));
+      this.props.setPage1(page_num);
+
       retrieveMyGroupEvents(function(res) {
         setMyGroupEvents(res.data);
       }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, page_num);
@@ -36,9 +33,9 @@ export class MyGroups extends Component {
     if (this.props.my_groups.length < 10) {
       //do nothing
     } else {
-      let page_num = this.state.curr_page + 1;
-      this.setState(prevState => 
-        ({ curr_page: prevState.curr_page + 1}));
+      let page_num = this.props.curr_page + 1;
+      this.props.setPage1(page_num);
+
 
       retrieveMyGroupEvents(function(res) {
         setMyGroupEvents(res.data);
@@ -56,8 +53,7 @@ export class MyGroups extends Component {
   }
   
   render() {
-    const {my_groups, searchQuery} = this.props;
-    const {curr_page} = this.state;
+    const {my_groups, searchQuery,curr_page} = this.props;
     return (
       <>
       <div className="Pagination">
@@ -83,4 +79,12 @@ export class MyGroups extends Component {
   }
 }
 
-export default connect(null, {setMyGroupEvents, logOut, setFocusEvent, setRightMenu, setShowMessage})(MyGroups);
+const mapStateToProps = state => {
+  console.log("MyGroups");
+  console.log(state);
+
+  const curr_page = getPage1(state);
+  return { curr_page };
+};
+
+export default connect(mapStateToProps, {setMyGroupEvents, logOut, setFocusEvent, setRightMenu, setShowMessage, setPage1})(MyGroups);

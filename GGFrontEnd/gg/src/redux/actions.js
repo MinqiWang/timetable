@@ -22,6 +22,8 @@ import {SETLOG,
     SET_FOCUS_EVENT_TOINVITE,
     SET_ADDING_INVITEES,
     READ_ONLY,
+    SET_PAGE1,
+    SET_PAGE2
     } from './actionTypes';
 
 import rightMenu from './reducers/rightMenu';
@@ -212,6 +214,20 @@ export const setAddingInvitees = (addingInvitees={invitees: []}) => ({
 export const readOnly = () => ({
     type: READ_ONLY,
     payload: {
+    }
+});
+
+export const setPage1 = (page_num1=0) => ({
+    type: SET_PAGE1,
+    payload: {
+        page_num1
+    }
+});
+
+export const setPage2 = (page_num2=0) => ({
+    type: SET_PAGE2,
+    payload: {
+        page_num2
     }
 });
 

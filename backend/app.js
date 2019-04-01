@@ -1010,7 +1010,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 	let detail_info = req.body.detail_info.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
 	let to_create = req.body.to_create.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
 	let to_update = req.body.to_update.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
-	let to_delete = req.body.to_delete.map(a => (a.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x)));
+	let to_delete = req.body.to_delete.map(x => (typeof x === 'string' || x instanceof String) ? validator.escape(x) : x);
 
 	pool.query("select * from event_ownership where author_id=? and event_id=?", [author_id, event_id], function (error, results, fields){
 		if (error) {

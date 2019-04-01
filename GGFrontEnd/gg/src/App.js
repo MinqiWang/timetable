@@ -23,6 +23,14 @@ import {longPoll,
   retrieveOthersGroupEvents,} from './RESTFul/ajax';
 
 class App extends Component {
+  constructor(props) {
+    super(props)
+    document.addEventListener("contextmenu", (e)=>e.preventDefault());
+    this.state = {
+       
+    }
+  }
+  
 
   componentDidMount() {
     const {setShowMessage} = this.props;

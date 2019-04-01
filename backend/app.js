@@ -923,7 +923,7 @@ app.get("/event/timetable_slot/retrieveAll/:week_of/:user_id?", isAuthenticated,
 	}
 
 	if (user_id) {
-		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_to=? and id_from=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
+		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_from=? and id_to=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
 			if (error) {
 				logAPIerror("/event/timetable_slot/retrieveAll:week_of", error);
 				res.status(500).end(error);
@@ -1374,7 +1374,7 @@ app.get("/event/group/timetable_slot/retrieveAllInvited/:week_of/:user_id?", isA
 		});
 	}
 	if (user_id) {
-		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_to=? and id_from=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
+		pool.query("select * from friendship where ((id_from=? and id_to=?) or (id_from=? and id_to=?)) and has_accepted=true", [your_id, user_id, user_id, your_id], function (error, results, fields){
 			if (error) {
 				logAPIerror("/event/group/timetable_slot/retrieveAllInvited/:week_of", error);				
 				res.status(500).end(error);

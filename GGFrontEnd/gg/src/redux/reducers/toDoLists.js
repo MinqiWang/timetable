@@ -30,7 +30,6 @@ export default function(state = initialState, action) {
             }
         }
         case RESET_TODO_LIST: {
-            console.log(initialState);
             return {
                 ...state,
                 toCreateList: {},

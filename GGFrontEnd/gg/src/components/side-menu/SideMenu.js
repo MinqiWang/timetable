@@ -151,8 +151,6 @@ export class SideMenu extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("SideMenu");
-  console.log(state);
   const Friends = getFriends(state);
   const MyGroupEvents = getMyGroupEvents(state);
   const OthersGroupEvents = getOthersGroupEvents(state);

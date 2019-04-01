@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import Advertisement from './Advertisement';
 import Timetable from './Timetable';
 import SignInUp from './SignInUp';
 import Map from './Map';

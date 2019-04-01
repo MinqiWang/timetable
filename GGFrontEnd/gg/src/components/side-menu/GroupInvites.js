@@ -69,9 +69,6 @@ export class GroupInvites extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("GroupInvites");
-  console.log(state);
-
   const curr_page = getPage2(state);
   return { curr_page };
 };

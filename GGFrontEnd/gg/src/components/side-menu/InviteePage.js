@@ -131,8 +131,6 @@ export class InviteePage extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("Invitee");
-  console.log(state);
   const focusEventInvitees = getFocusEventInvitees(state);
   const focusEventToInvites = getFocusEventToInvites(state);
   const addingInvitees = getAddingInvitees(state);

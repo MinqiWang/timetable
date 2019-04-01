@@ -172,14 +172,6 @@ li {
     white-space: nowrap;
     overflow: hidden;
 }
-.event-time {
-    /* overflow: hidden; */
-}
-.event-length {
-    /* overflow: hidden; */
-}
-
-
 
 .resizer {
     height: 5px;

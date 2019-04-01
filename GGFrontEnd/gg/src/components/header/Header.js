@@ -56,7 +56,7 @@ export class Header extends Component {
             Custom toggle
           </Dropdown.Toggle>
           <Dropdown.Menu className="dropdown-menu-right" as={UserMenu}>
-            <Dropdown.Item eventKey="1" active>User Info</Dropdown.Item>
+            <Dropdown.Item eventKey="1" active>User Info (TODO)</Dropdown.Item>
             <Dropdown.Item eventKey="2">Sign Out</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
@@ -70,8 +70,6 @@ export class Header extends Component {
             overlay={
                 <Tooltip id={`usertooltip-left`}>
                     {Watching.name}
-                    {/* should be the signin Name 
-                    from state, and use username in cookie to set the state */}
                 </Tooltip>
             }
         >
@@ -98,14 +96,7 @@ export class Header extends Component {
             </Navbar.Brand>
             <Navbar.Toggle aria-controls="basic-navbar-nav" />
             
-                  {nav}
-                  {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-                      <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-                      <NavDropdown.Item href="#action/3.2">Another action</NavDropdown.Item>
-                      <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-                      <NavDropdown.Divider />
-                      <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
-                  </NavDropdown> */}
+            {nav}
                 
         </Navbar>
       </>
@@ -118,7 +109,6 @@ const mapStateToProps = state => {
   const Watching = getWatching(state);
   const week_of = getWeekOf(state);
 
-  console.log(User);
   return { User, Watching, week_of };
 };
 

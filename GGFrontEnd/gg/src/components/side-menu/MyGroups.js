@@ -64,9 +64,7 @@ export class MyGroups extends Component {
         </Pagination>
       </div>
       <div className="GroupList">
-          {/*Search_Result sort by alphabetical order*/}
           {my_groups.filter(group => {return (searchQuery == "" || group.name.toLowerCase().includes(searchQuery.toLowerCase()))}).map(group => 
-          // <GroupInvite key={group.event_id} group={group}></GroupInvite>
           <div className="resultGroup" onDoubleClick={(e) => this.openInfoOfMyGroup(e, group.event_id)}>
                 <Badge variant="success" className="wordBreak">
                   {"Event Name: " + group.event_name}
@@ -80,9 +78,6 @@ export class MyGroups extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("MyGroups");
-  console.log(state);
-
   const curr_page = getPage1(state);
   return { curr_page };
 };

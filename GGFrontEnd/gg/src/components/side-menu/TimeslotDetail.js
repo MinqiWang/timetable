@@ -34,7 +34,6 @@ export class TimeslotDetail extends Component {
       date: date
     }
 
-    console.log(data);
     this.toUpdateCreateInit(uniqueKey, data);
   }
 
@@ -73,11 +72,9 @@ toDelete = (e, uniqueKey) => {
         delete this.props.toCreateList[uniqueKey];
         this.props.setCreateList(this.props.toCreateList);
     }
-    // let slot_hold = Object.assign(this.state.slot_hold);
 }
 
   change = (ev, property, control_id) => {
-    // ev.preventDefault();
     let value = (property === "repeat")? document.getElementById(control_id).checked : document.getElementById(control_id).value;
     this.toUpdateCreate(ev, this.props.uniqueKey, property, value);
   }
@@ -134,7 +131,6 @@ toDelete = (e, uniqueKey) => {
               placeholder="Hour"
               defaultValue={hour}
               onChange={(e) => {this.change(e, "hour", "select-hour"+uniqueKey);}}
-              // onChange={(e) => console.log("changed")}
               >
               <option value="0">0</option>
               <option value="1">1</option>
@@ -161,9 +157,6 @@ toDelete = (e, uniqueKey) => {
               <option value="22">22</option>
               <option value="23">23</option>
               </Form.Control>
-              {/* <Form.Control.Feedback type="invalid">
-                  {errors.time}
-              </Form.Control.Feedback> */}
           </Form.Group>
   
           <Form.Group as={Col} md="2" controlId="formEventTime">
@@ -171,14 +164,9 @@ toDelete = (e, uniqueKey) => {
               <Form.Control as="select" id={"select-min"+uniqueKey} placeholder="Min"
               defaultValue={min}
               onChange={(e) => {this.change(e, "mins", "select-min"+uniqueKey);}}
-              // onChange={(e) => console.log("changed")}              
               >
               {mins.map(min => <option key={min} value={+min}>{min}</option>)}
               </Form.Control>
-  
-              {/* <Form.Control.Feedback type="invalid">
-                  {errors.time}
-              </Form.Control.Feedback> */}
           </Form.Group>
   
           <Form.Group as={Col} md="2" controlId="formEventTime">
@@ -186,19 +174,11 @@ toDelete = (e, uniqueKey) => {
               <Form.Control id={"select-length"+uniqueKey} type="text" placeholder="Mins"
               defaultValue={length} 
               onChange={(e) => {this.change(e, "length", "select-length"+uniqueKey);}}
-              // onChange={(e) => console.log("changed")}
               />
-  
-              {/* <Form.Control.Feedback type="invalid">
-                  {errors.time}
-              </Form.Control.Feedback> */}
           </Form.Group>
   
           <Form.Group as={Col} md="2" controlId="validationFormik04">
               {repeat_check}
-              {/* <Form.Control.Feedback type="invalid">
-                  {errors.repeat}
-              </Form.Control.Feedback> */}
           </Form.Group>
           <Form.Group as={Col} md="4" controlId="validationFormik05">
               <Form.Label>Date</Form.Label>
@@ -209,15 +189,7 @@ toDelete = (e, uniqueKey) => {
                   name="date"
                   defaultValue={date_string}
                   onChange={(e) => {this.change(e, "date", "select-date"+uniqueKey);}}
-                  // onChange={(e) => console.log("changed")}
-
-                  // onChange={handleChange}
-                  // isInvalid={!!errors.zip}
               />
-  
-              {/* <Form.Control.Feedback type="invalid">
-                  {errors.zip}
-              </Form.Control.Feedback> */}
           </Form.Group>
       </Form.Row>
       {deleteButton}
@@ -231,8 +203,6 @@ toDelete = (e, uniqueKey) => {
 }
 
 const mapStateToProps = state => {
-  console.log("TimeslotDetail");
-  console.log(state);
   const toCreateList = getCreateList(state);
   const toDeleteList = getDeleteList(state);
   const toUpdateList = getUpdateList(state);

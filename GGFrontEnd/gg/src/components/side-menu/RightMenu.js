@@ -38,13 +38,8 @@ export class RightMenu extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("RightMenu");
-  console.log(state);
   const focused_event = getFocusEvent(state);
   const rightMenu = getRightMenu(state);
-  console.log(rightMenu);
-  console.log(focused_event);
-
   return {rightMenu, focused_event};
 };
 

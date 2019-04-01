@@ -20,7 +20,6 @@ export class EditMode extends Component {
 
     save = (ev) => {
         ev.preventDefault();
-        console.log("save");
         let event_name = document.getElementById("edit-event-name").value;
         let event_desc = document.getElementById("edit-event-text").value;
         let event_place = document.getElementById("edit-event-place").value;
@@ -36,11 +35,6 @@ export class EditMode extends Component {
         let to_create = [];
         let to_update = [];
         for (let [key, value] of Object.entries(toCreateList)) {
-            console.log(key, value);
-
-            // validationChecking
-
-            // data looks fine
             let create_slot = [];
             create_slot.push(event_name);
             create_slot.push(true);
@@ -56,8 +50,6 @@ export class EditMode extends Component {
             to_create.push(create_slot);
         }
         for (let [key, value] of Object.entries(toUpdateList)) {
-            // validationChecking
-
             // data looks fine
             let update_slot = [];
             update_slot.push(event_name);
@@ -107,7 +99,6 @@ export class EditMode extends Component {
                 resetToDoList();
                 retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
             }.bind(this), function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id, toSend);
-            console.log(toSend);
        }
     }
 
@@ -126,10 +117,7 @@ export class EditMode extends Component {
 
     addSlot = (ev) => {
         ev.preventDefault();
-        // let slot_hold = Object.assign(this.state.slot_hold);
         this.state.slot_hold.push(1);
-        // slot_hold.push(1);
-        // console.log(slot_hold.length);
         this.setState(this.state.slot_hold);
     }
 
@@ -192,8 +180,6 @@ export class EditMode extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("Edit");
-    console.log(state);
     const is_Default = getIsDefault(state);
     const toCreateList = getCreateList(state);
     const toDeleteList = getDeleteList(state);

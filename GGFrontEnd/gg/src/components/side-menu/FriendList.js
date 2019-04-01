@@ -25,7 +25,6 @@ export class FriendList extends Component {
       const {setShowMessage} = this.props;
       retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of, watching.id);
       retrieveAcceptedInAWeek(this.props.setAcceptSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, this.props.week_of, watching.id);
-      //retrieve
     }
     
     
@@ -47,8 +46,6 @@ export class FriendList extends Component {
 }
 
 const mapStateToProps = state => {
-  console.log("FriendList");
-    console.log(state);
   const week_of = getWeekOf(state);
   return {week_of};
 };

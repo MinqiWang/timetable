@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import Event from './Event'
-import {setRightMenu, setFocusEvent, isDefault, isNotDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
+import {setRightMenu, setFocusEvent, isDefault, setTargetSlot, setShowMessage, logOut, setSlots} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getTargetSlot,getWatching, getCurrentEvent, getDefaultEvent_Slots_byDay, getDefaultEvent, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
+import { getTargetSlot,getWatching, getWeekOf, getFocusEvent, getRightMenu } from '../../redux/selecter';
 import { undecorate, opacity10, decorate } from '../../utils';
 import {onEditMessage, onSaveMessage, ErrorMessage, onWatchMessage} from '../../redux/reducers/message'
 import { updateTimeslot, retrieveAllSlotsInAWeek, retrieveAllForEvent } from '../../RESTFul/ajax';
@@ -65,14 +65,10 @@ export class DayColumn extends Component {
             event_name: EVENT_NAME, event_has_detail: false, start_time: START_TIME, 
             length: LENGTH, week_of: WEEK_OF, day_of_the_week: DAY_OF_THE_WEEK_num, 
             is_repeating: false, obscured_by: null, is_empty_obscure: null}];
-        /* {detail: ["Hello World", "IMAGE_URL1, VIDEO_URL1, VIDEO_URL2, ...", "UTSC"], timetable_slots: 
- * [["event1", true, "8:45:00", "15", "2019-03-17", 1, false, null, null], [...] ...]} */
-        // new View with Default value, setDefaultEvent, setCurrentEvent, setRightMenu="Edit"
+       
         this.props.setFocusEvent(event);
         this.props.isDefault();
         this.props.setRightMenu("Edit");
-        // open up the edit right menu with default value
-        // if cancel or clicked else where, cancel the view, setDefaultEvent=null, setCurrentEvent=null, setRightMenu="Close"
     }
 
     eventRecreation = (e, targetSlot, colId) => {
@@ -84,7 +80,6 @@ export class DayColumn extends Component {
             newTargetSlot.col_id = colId;
             this.props.setTargetSlot(newTargetSlot);
         }
-        //is not dragging, do nothing
     }
 
     onLeave = (e, targetSlot) => {
@@ -222,8 +217,7 @@ export class DayColumn extends Component {
             
             {default_slots.map((slot) =>  
             <Event key={slot.id} col_id={col_id} slot={slot} shouldDecorate={true} isGroup={true}></Event>)}
-            {/* {groupslots.map((slot) => 
-            <Event key={slot.id} col_id={col_id} slot={slot} isGroup={true}></Event>)} */}
+
             {fake_event}
         </div>
         )
@@ -231,7 +225,6 @@ export class DayColumn extends Component {
 }
 
 const mapStateToProps = state => {
-    // const focused_event = getFocusEvent(state);
     const targetSlot = getTargetSlot(state);
     const rightMenu = getRightMenu(state);
     const focused_event = getFocusEvent(state);

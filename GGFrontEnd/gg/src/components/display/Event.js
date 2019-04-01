@@ -120,7 +120,6 @@ export class Event extends Component {
         opacity05([element]);
         let original_height = parseFloat(getComputedStyle(element, null).getPropertyValue('height').replace('px', ''));
         let original_y = parseFloat(getComputedStyle(element, null).getPropertyValue('top').replace('px', ''));
-        // height_in_progress = original_height_resizer;
         let original_mouse_y = e.clientY;
         let targetSlot = {
             isDragging: false,

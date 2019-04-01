@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
-import {setRightMenu, setSlots, setAcceptSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
+import { setSlots, setAcceptSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getDefaultEvent, getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getShowMessage, getRightMenu } from '../../redux/selecter';
+import { getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getRightMenu } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek, retrieveAcceptedInAWeek } from '../../RESTFul/ajax';
 import {weekOf} from '../../redux/actions'
 import {onEditMessage, onSaveMessage, ErrorMessage} from '../../redux/reducers/message'
@@ -18,9 +18,6 @@ export class Timetable extends Component {
     this.state = {
        time_tag: [],
        days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-      //  slots: {"Sun": [{SLOT_ID: "slot_a", EVENT_ID: "a", EVENT_NAME: "hello world", EVENT_HAS_DETAIL: false, START_TIME: "18:45:00", LENGTH: "120", WEEK_OF: "2019-03-17", DAY_OF_THE_WEEK: 0, IS_REPEATING: false, 
-      //  OBSCURED_BY: null, IS_EMPTY_OBSCURE: null}], "Mon": [], 
-      //  "Tue": [], "Wed": [], "Thu": [], "Fri":[], "Sat":[]},
        week_num: 0
     }
   }

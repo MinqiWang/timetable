@@ -8,7 +8,7 @@ import { setAcceptSlots, setSlots, setLogState, setDisplay, setUser, logOut, set
   setPendingRequests,
   setMyGroupEvents,
   setOthersGroupEvents } from './redux/actions';
-import { getLogState, getDisplay, getUser, getWeekOf, getPage1, getPage2, getWatching } from './redux/selecter';
+import { getDisplay, getUser, getWeekOf, getPage1, getPage2, getWatching } from './redux/selecter';
 import RightMenu from './components/side-menu/RightMenu';
 import Message from './Message'
 import {ErrorMessage} from './redux/reducers/message'
@@ -31,7 +31,6 @@ class App extends Component {
     }
   }
   
-
   componentDidMount() {
     const {setShowMessage} = this.props;
     let callback = function(longPollRes) {
@@ -47,9 +46,6 @@ class App extends Component {
           }.bind(this), function(res) {console.warn(res);});
           break;
         case 1:
-          // watching panduan
-          console.warn("enter 1");
-          console.warn(this.props.Watching);
           if (this.props.Watching) {
             retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {
               console.warn(res);}, 
@@ -83,9 +79,6 @@ class App extends Component {
       longPoll(callback, err_callback);
     }
     longPoll(callback, err_callback);
-
-    // call the auto login
-    // document.addEventListener("contextmenu", (e)=> e.preventDefault());
     retrieveUserInfo(
       this.props.setUser,
       this.props.setDisplay, 

@@ -22,9 +22,6 @@ class Message extends Component {
         let footer = (
             showMessage.canUserClose?
         <Modal.Footer>
-              {/* <Button variant="secondary" onClick={this.handleClose}>
-                Close
-              </Button> */}
               <Button variant="primary" onClick={this.handleClose}>
                 Got it
               </Button>
@@ -44,9 +41,6 @@ class Message extends Component {
   }
 
   const mapStateToProps = state => {
-    console.log("Example");
-    console.log(state);
-    // const focused_event = getFocusEvent(state);
     const showMessage = getShowMessage(state);
     return {showMessage};
 };

@@ -1,4 +1,4 @@
-import {SETLOG, 
+import { 
     SET_DISPLAY,
     SET_RIGHT_MENU,
     USER_INFO, 
@@ -26,16 +26,12 @@ import {SETLOG,
     SET_PAGE2
     } from './actionTypes';
 
-import rightMenu from './reducers/rightMenu';
-
-// {console.log(err); return 
 export const logOut = (err) => ({
     type: LOGOUT,
     payload: {
         err
     }
 });
-// }};
 
 export const setDisplay = display => ({
     type: SET_DISPLAY,
@@ -230,22 +226,6 @@ export const setPage2 = (page_num2=0) => ({
         page_num2
     }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -9,7 +9,6 @@ import { toInviteByEventID} from '../../RESTFul/ajax'
 export class ToInvite extends Component {
 
   inviteChange = (e, id) => {
-    console.log(e.target.checked);
 
     const {setAddingInvitees, addingInvitees} = this.props;
     if (e.target.checked) {
@@ -24,9 +23,6 @@ export class ToInvite extends Component {
           setAddingInvitees(addingInvitees);
         }
     }
-    
-    // addingInvitees.invitees.
-    // setAddingInvitees
   }
   
   render() {
@@ -41,11 +37,7 @@ export class ToInvite extends Component {
   }
 }
 const mapStateToProps = state => {
-  console.log("Invitee");
-  console.log(state);
   const addingInvitees = getAddingInvitees(state);
-
-  
   return {addingInvitees};
 };
 

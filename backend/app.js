@@ -508,7 +508,7 @@ app.get('/retrieveUserInfo/withFriendship/:id', isAuthenticated, function (req, 
 	}
 
 	if (user_id == your_id) return res.json("This is you!");
-	pool.query("select * from (select * from user_info left join friendship on id=id_from or id=id_to where id=?) A where id_from=? or id_to=? or id_from is null limit 1", [user_id, your_id, your_id], function (error, results, fields){
+	pool.query("select * from (select * from user_info left join friendship on (id=id_from and id_to=?) or (id=id_to and id_from=?) where id=?) A where id_from=? or id_to=? or id_from is null limit 1", [your_id, your_id, user_id, your_id, your_id], function (error, results, fields){
 		if (error) {
 			logAPIerror("/retrieveUserInfo/withFriendship/:id", error);
 			res.status(500).end(error);

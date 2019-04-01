@@ -4,6 +4,7 @@ const validator = require('validator');
 
 const express = require('express');
 const app = express();
+const longpoll = require("express-longpoll")(app);
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -91,6 +92,19 @@ app.use(function(req, res, next) {
 });
 
 /* ---- LOGGING done ---- */
+
+/* ---- Long Polling API ---- */
+
+/*
+ * Response data: { indicator: <INDICATOR> }
+ * <INDICATOR> = 0 | 1 | 2 
+ *		0: Client should call all friends get-APIs
+ *		1: Client should call all non-group event info get-APIs
+ *		2: Clinet should call all group event status get-APIs
+ */
+longpoll.create("/poll");
+
+/* ---- Long Polling API done---- */
 
 /* ---- Authentication and User Management ---- */
 
@@ -333,6 +347,7 @@ app.post('/friend/invite/:user_id', isAuthenticated, function (req, res, next){
 										res.status(500).end(error3);
 									}
 									else {
+										longpoll.publish("/poll", {indicator:0});
 										res.json("Friend request is sent!");
 									}
 								});
@@ -382,6 +397,7 @@ app.patch('/friend/invite/accept/:user_id', isAuthenticated, function (req, res,
 							res.status(500).end(error2);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:0});
 							res.json("Friend invitation is accepted");
 						}
 					});
@@ -428,6 +444,7 @@ app.delete('/friend/invite/reject/:user_id', isAuthenticated, function (req, res
 							res.status(500).end(error2);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:0});
 							res.json("Friend invitation is rejected");
 						}
 					});
@@ -532,6 +549,7 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 			pool.query("insert into event_detail values (?,?,?,?)", [results.insertId].concat(event_detail), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/create", error2);
+					longpoll.publish("/poll", {indicator:1});
 					res.status(500).end(error2);
 				}
 				else {
@@ -540,11 +558,13 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 						pool.query("insert into timetable_event values (?,?,?,?,?,?,?,?,?)", [null, results.insertId].concat(timetable_slots[i]), function (error3, results3, fields3) {
 							if (error3) {
 								logAPIerror("/event/create", error3);
+								longpoll.publish("/poll", {indicator:1});
 								res.status(500).end(error3);
 							}
 							else {
 								num_finished += 1;
 								if (num_finished == num_slots) {
+									longpoll.publish("/poll", {indicator:1});
 									res.json("Event is created!");
 								}
 							}
@@ -598,14 +618,17 @@ app.post('/event/create', isAuthenticated, function(req, res, next){
 		 				pool.query("insert into obscured_event values(?,?)", [obscure_id, week_of], function(error3, results3, fields3){
 		 					if (error3) {
 		 						logAPIerror("/event/timetable_slot/create", error3);
+		 						longpoll.publish("/poll", {indicator:1});
 		 						res.status(500).end(error3);
 		 					}
 		 					else {
+		 						longpoll.publish("/poll", {indicator:1});
 		 						res.json("Timetable slot is created!");
 		 					}
 		 				});
 		 			}
 		 			else {
+		 				longpoll.publish("/poll", {indicator:1});
 		 				res.json("Timetable slot is created!");
 		 			}
 		 		}
@@ -653,9 +676,11 @@ app.patch('/event/update', isAuthenticated, function (req, res, next){
 					pool.query("update timetable_event set event_name=? where event_id=?", [event_name, event_id], function (error3, results3, fields3){
 						if (error3) {
 							logAPIerror("/event/update", error3);
+							longpoll.publish("/poll", {indicator:1});
 							res.status(500).end(error3);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:1});
 							res.json("Event is updated!");
 						}
 					});
@@ -696,9 +721,11 @@ app.patch('/event/timetable_slot/update', isAuthenticated, function (req, res, n
 			pool.query("update timetable_event set start_time=?, length=?, week_of=?, day_of_the_week=? where id=?", timetable_slot.concat(slot_id), function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/timetable_slot/update", error2);
+					longpoll.publish("/poll", {indicator:1});
 					res.status(500).end(error2);
 				}
 				else {
+					longpoll.publish("/poll", {indicator:1});
 					res.json("Timetable slot is updated!");
 				}
 			});
@@ -734,9 +761,11 @@ app.delete('/event/timetable_slot/delete/:id/:event_id', isAuthenticated, functi
 			pool.query("delete from timetable_event where id=?", [slot_id], function (error2, results2, fields2){
 				if (error2) {
 					logAPIerror("/event/timetable_slot/delete", error2);
+					longpoll.publish("/poll", {indicator:1});
 					res.status(500).end(error2);
 				}
 				else {
+					longpoll.publish("/poll", {indicator:1});
 					res.json("Timetable slot is deleted!");
 				}
 			});
@@ -784,6 +813,8 @@ app.delete("/event/delete/:id", isAuthenticated, function (req, res, next){
 							res.json("Event is deleted!");
 						}
 					});*/
+					longpoll.publish("/poll", {indicator:1});
+					longpoll.publish("/poll", {indicator:2});
 					res.json("Event is deleted!");
 				}
 			});
@@ -994,6 +1025,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 						else {
 							num_processed_creates += 1;
 							if (num_processed_creates == to_create.length) {
+								longpoll.publish("/poll", {indicator:1});
 								res.json("MISC updates for event " + event_id + " succeeded!");
 							}
 						}
@@ -1015,6 +1047,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 						else {
 							num_processed_updates += 1;
 							if (num_processed_updates === to_update.length) {
+								longpoll.publish("/poll", {indicator:1});
 								create_slots();
 							}
 						}
@@ -1036,6 +1069,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 						else {
 							num_processed_deletes += 1;
 							if (num_processed_deletes === to_delete.length) {
+								longpoll.publish("/poll", {indicator:1});
 								update_slots();
 							}
 						}
@@ -1053,6 +1087,7 @@ app.post("/event/MISC/:id", isAuthenticated, function (req, res, next){
 							res.status(500).end(error);
 						}
 						else {
+							longpoll.publish("/poll", {indicator:1});
 							delete_slots();
 						}
 					});
@@ -1196,6 +1231,7 @@ app.post("/event/group/create/:id", isAuthenticated, function (req, res, next){
 								else {
 									num_finished += 1;
 									if (num_finished == num_invitees) {
+										longpoll.publish("/poll", {indicator:2});
 										res.json("Group event is created! / Invitees are added!");
 									}
 								}
@@ -1229,6 +1265,7 @@ app.patch("/event/group/accept/:id", isAuthenticated, function (req, res, next){
 			res.status(500).end(error);
 		}
 		else {
+			longpoll.publish("/poll", {indicator:2});
 			res.json("Group event is accepted!");
 		}
 	});
@@ -1255,6 +1292,7 @@ app.patch("/event/group/reject/:id", isAuthenticated, function (req, res, next){
 			res.status(500).end(error);
 		}
 		else {
+			longpoll.publish("/poll", {indicator:2});
 			res.json("Group event is rejected!");
 		}
 	});
@@ -1293,6 +1331,7 @@ app.delete("/event/group/decline/:id/:invitee_id", isAuthenticated, function (re
 					res.status(500).end(error2);
 				}
 				else {
+					longpoll.publish("/poll", {indicator:2});
 					res.json("Group event is declined!");
 				}
 			});

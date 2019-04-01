@@ -6,7 +6,7 @@ import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
 import {setFocusEventInvitees, setRightMenu, setFocusEventToInvites, logOut, setAddingInvitees, setShowMessage} from '../../redux/actions';
 import { connect } from 'react-redux';
-import { getUser, getAddingInvitees, getFriends, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
+import { getUser, getAddingInvitees, getFocusEventInvitees, getFocusEventToInvites} from '../../redux/selecter';
 import { inviteesByEventID, toInviteByEventID, sendInvitesToFriends} from '../../RESTFul/ajax'
 import {ErrorMessage} from '../../redux/reducers/message'
 

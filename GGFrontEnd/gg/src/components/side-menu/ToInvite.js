@@ -4,7 +4,6 @@ import Form from 'react-bootstrap/Form'
 import {setAddingInvitees} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getAddingInvitees} from '../../redux/selecter';
-import { toInviteByEventID} from '../../RESTFul/ajax'
 
 export class ToInvite extends Component {
 

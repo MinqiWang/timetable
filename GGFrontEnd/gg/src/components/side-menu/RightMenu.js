@@ -5,7 +5,6 @@ import {setFocusEvent, setRightMenu} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getFocusEvent, getRightMenu } from '../../redux/selecter';
 import '../../style/RightMenu.css';
-import {deleteEvent} from '../../RESTFul/ajax'
 import InviteePage from './InviteePage';
 
 export class RightMenu extends Component {

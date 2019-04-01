@@ -9,9 +9,6 @@ import Badge from 'react-bootstrap/Badge'
 import { getPage1 } from '../../redux/selecter';
 
 export class MyGroups extends Component {
-  constructor(props) {
-    super(props)
-  }
 
   prev =(e) => {
     const {setMyGroupEvents, setShowMessage} = this.props;
@@ -44,7 +41,7 @@ export class MyGroups extends Component {
   }
 
   openInfoOfMyGroup = (e, event_id) => {
-    const {logOut, setFocusEvent, setRightMenu, setShowMessage} = this.props;
+    const {setFocusEvent, setRightMenu, setShowMessage} = this.props;
         retrieveAllForEvent(function(res) {
             console.warn(res);
             setFocusEvent(res);

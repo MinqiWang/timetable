@@ -9,13 +9,13 @@ import {ErrorMessage} from '../../redux/reducers/message'
 
 
 import {rejectGroupEvent, acceptGroupEvent, retrieveAllForEvent} from '../../RESTFul/ajax'
-import {readOnly, setOthersGroupEvents, setFocusEvent, logOut, setRightMenu, isNotDefault, setShowMessage } from '../../redux/actions';
+import {readOnly, setFocusEvent, logOut, setRightMenu, isNotDefault, setShowMessage } from '../../redux/actions';
 import {connect} from 'react-redux';
 
 export class GroupInvite extends Component {
 
     openInfoOfInviteGroup = (e) => {
-        const {logOut, group, setFocusEvent, setRightMenu, isNotDefault, setShowMessage} = this.props;
+        const {group, setFocusEvent, setRightMenu, setShowMessage} = this.props;
         retrieveAllForEvent(function(res) {
             console.warn(res);
             setFocusEvent(res);
@@ -25,14 +25,14 @@ export class GroupInvite extends Component {
     }
 
     accept = (e) => {
-        const {logOut, group, setShowMessage} = this.props;
+        const {group, setShowMessage} = this.props;
         acceptGroupEvent(function(res) {
             console.log("accept");
         }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, group.event_id);
     }
 
     reject = (e) => {
-        const {logOut, group, setShowMessage} = this.props;
+        const {group, setShowMessage} = this.props;
         rejectGroupEvent(function(res) {
             console.log("reject");
         }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, group.event_id);

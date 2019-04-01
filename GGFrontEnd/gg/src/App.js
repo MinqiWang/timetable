@@ -4,7 +4,7 @@ import './App.css';
 import Header from './components/header/Header';
 import Display from './components/display/Display';
 import SideMenu from './components/side-menu/SideMenu';
-import { setAcceptSlots, setSlots, setLogState, setDisplay, setUser, logOut, setShowMessage,setFriends,
+import { setAcceptSlots, setSlots, setDisplay, setUser, logOut, setShowMessage,setFriends,
   setPendingRequests,
   setMyGroupEvents,
   setOthersGroupEvents } from './redux/actions';

@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import Button from 'react-bootstrap/Button';
-import Image from 'react-bootstrap/Image';
 import '../../style/FriendList.css';
 import { logOut, setWatching, setSlots, setAcceptSlots, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
@@ -49,4 +48,4 @@ const mapStateToProps = state => {
   const week_of = getWeekOf(state);
   return {week_of};
 };
-export default connect(mapStateToProps, { logOut, setWatching, setSlots, setAcceptSlots, logOut, setShowMessage})(FriendList);
+export default connect(mapStateToProps, { setWatching, setSlots, setAcceptSlots, logOut, setShowMessage})(FriendList);

@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, dayOfWeek, setSlots, setCreateList, resetToDoList, isNotDefault, setShowMessage} from '../../redux/actions';
+import {setRightMenu, logOut, setFocusEvent, weekOf, toDate, setSlots, resetToDoList, isNotDefault, setShowMessage} from '../../redux/actions';
 import { connect } from 'react-redux';
 import { getIsDefault, getCreateList, getDeleteList, getUpdateList, getWeekOf } from '../../redux/selecter';
 import '../../style/RightMenu.css';
@@ -26,7 +26,7 @@ export class EditMode extends Component {
         let event_media = document.getElementById("edit-event-media").value;
 
         const {toCreateList, toUpdateList, toDeleteList, 
-            setSlots, logOut, focused_event, week_of, is_Default, 
+            setSlots, focused_event, week_of, is_Default, 
             setFocusEvent, isNotDefault,
             resetToDoList, setRightMenu,
             setShowMessage} = this.props;
@@ -98,7 +98,7 @@ export class EditMode extends Component {
                 setRightMenu("Close");
                 resetToDoList();
                 retrieveAllSlotsInAWeek(setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
-            }.bind(this), function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id, toSend);
+            }, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, focused_event.detail.id, toSend);
        }
     }
 

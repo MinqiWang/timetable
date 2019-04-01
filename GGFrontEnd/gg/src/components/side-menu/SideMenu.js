@@ -10,7 +10,6 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import InputGroup from'react-bootstrap/InputGroup';
 import FormControl from'react-bootstrap/FormControl';
-import Form from 'react-bootstrap/FormControl';
 import {retrieveFriendlist, retrieveOthersGroupEvents, retrieveMyGroupEvents} from '../../RESTFul/ajax'
 import {ErrorMessage} from '../../redux/reducers/message'
 
@@ -19,7 +18,7 @@ export class SideMenu extends Component {
   constructor(props) {
     super(props)
 
-    const {setFriends, logOut, setMyGroupEvents, setOthersGroupEvents, setShowMessage} = this.props;
+    const {setFriends, setMyGroupEvents, setOthersGroupEvents, setShowMessage} = this.props;
     retrieveFriendlist(function(res) {
       setFriends(res.data);
     }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
@@ -76,6 +75,9 @@ export class SideMenu extends Component {
         break;
       case "GroupInvitesContol":
         displayControl = "GroupInvites"
+        break;
+      default:
+        displayControl = "FriendList"
         break;
     }
     this.setState({

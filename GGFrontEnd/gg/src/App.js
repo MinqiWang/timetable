@@ -41,10 +41,10 @@ class App extends Component {
         case 0:
           retrieveFriendlist(function(res) {
             this.props.setFriends(res.data);
-          }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
+          }.bind(this), function(res) {console.warn(res);});
           retrievePendingFriendlist(function(res) {
             this.props.setPendingRequests(res.data);
-          }, function(res) {console.warn(res); setShowMessage(ErrorMessage);});
+          }.bind(this), function(res) {console.warn(res);});
           break;
         case 1:
           // watching panduan
@@ -52,26 +52,26 @@ class App extends Component {
           console.warn(this.props.Watching);
           if (this.props.Watching) {
             retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {
-              console.warn(res); setShowMessage(ErrorMessage);}, 
+              console.warn(res);}, 
               this.props.week_of, this.props.Watching.id);
             retrieveAcceptedInAWeek(this.props.setAcceptSlots, 
-              function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 
+              function(res) {console.warn(res);}, 
               this.props.week_of, this.props.Watching.id);
           } else {
             retrieveAllSlotsInAWeek(this.props.setSlots, 
-              function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 
+              function(res) {console.warn(res);}, 
               this.props.week_of);
             retrieveAcceptedInAWeek(this.props.setAcceptSlots, 
-              function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 
+              function(res) {console.warn(res);}, 
               this.props.week_of);
           }
           break;
         case 2:
           retrieveMyGroupEvents(function(res) {this.props.setMyGroupEvents(res.data);}.bind(this), 
-          function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 
+          function(res) {console.warn(res);}, 
           this.props.page_num1);
           retrieveOthersGroupEvents(function(res) {this.props.setOthersGroupEvents(res.data);}.bind(this), 
-          function(res) {console.warn(res); setShowMessage(ErrorMessage);}, 
+          function(res) {console.warn(res);}, 
           this.props.page_num2);
           break;
       }

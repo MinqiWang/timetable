@@ -3,7 +3,7 @@ import '../../style/Timetable.css';
 import DayColumn from './DayColumn';
 import { setSlots, setAcceptSlots, setWeekOf, logOut, setShowMessage} from '../../redux/actions'
 import { connect } from 'react-redux';
-import { getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getRightMenu } from '../../redux/selecter';
+import { getWeekOf, getAcceptSlots, getSlots, getFocusEvent, getIsDefault, getRightMenu, getWatching } from '../../redux/selecter';
 import { retrieveAllSlotsInAWeek, retrieveAcceptedInAWeek } from '../../RESTFul/ajax';
 import {weekOf} from '../../redux/actions'
 import {onEditMessage, onSaveMessage, ErrorMessage} from '../../redux/reducers/message'
@@ -44,7 +44,7 @@ export class Timetable extends Component {
     }
     let week_num = this.state.week_num - 1;
     let week_of = weekOf(new Date(), week_num);
-    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+    this.retrieving(week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
     
@@ -58,7 +58,7 @@ export class Timetable extends Component {
     }
     let week_num = this.state.week_num + 1;
     let week_of = weekOf(new Date(), week_num);
-    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+    this.retrieving(week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: week_num});
   }
@@ -70,9 +70,28 @@ export class Timetable extends Component {
       return;
     }
     let week_of = weekOf(new Date());
-    retrieveAllSlotsInAWeek(this.props.setSlots, function(res) {console.warn(res); setShowMessage(ErrorMessage);}, week_of);
+    this.retrieving(week_of);
     this.props.setWeekOf(week_of);
     this.setState({week_num: 0});
+  }
+
+  retrieving = (week_of) => {
+    if (this.props.Watching) {
+      retrieveAllSlotsInAWeek(this.props.setSlots, 
+        function(res) {console.warn(res);}, 
+        week_of, this.props.Watching.id);
+      retrieveAcceptedInAWeek(this.props.setAcceptSlots, 
+        function(res) {console.warn(res);}, 
+        week_of, this.props.Watching.id);
+    } else {
+      retrieveAllSlotsInAWeek(
+        this.props.setSlots, 
+        function(res) {console.warn(res);}, 
+        week_of);
+      retrieveAcceptedInAWeek(this.props.setAcceptSlots, 
+        function(res) {console.warn(res);}, 
+        week_of);
+    }
   }
 
   render() {
@@ -157,8 +176,8 @@ const mapStateToProps = state => {
 
   const isDefault = getIsDefault(state);
   const rightMenu = getRightMenu(state);
-
-  return {focused_event, week_of, slots, isDefault, rightMenu, accept_slots};
+  const Watching = getWatching(state);
+  return {focused_event, week_of, slots, isDefault, rightMenu, accept_slots, Watching};
 };
 
 export default connect(mapStateToProps, {setWeekOf, setAcceptSlots, logOut, setSlots,setShowMessage})(Timetable);

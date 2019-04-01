@@ -24,7 +24,7 @@ const pool = mysql.createPool({
 
 const REACT_HOMEPAGE = "https://gogoapp.website:443";
 
-/* ---- LOGGING ---- */
+/* ---- LOGGING && SERVE STATIC FILES ---- */
 
 /*
  * Request LOG
@@ -92,7 +92,13 @@ app.use(function(req, res, next) {
   }
 });
 
-/* ---- LOGGING done ---- */
+/* Serve react files */
+app.use(express.static(__dirname + '/build'));
+app.get('/', function (request, response){
+  response.sendFile(path.resolve(__dirname, 'build', 'index.html'))
+});
+
+/* ---- LOGGING && STATIC FILES done ---- */
 
 /* ---- Long Polling API ---- */
 

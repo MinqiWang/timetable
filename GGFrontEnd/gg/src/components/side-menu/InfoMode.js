@@ -48,9 +48,6 @@ export class InfoMode extends Component {
   render() {
     const { focused_event, User } = this.props;
     const {days} = this.state;
-    let TimeslotDetailInfoStyle = {
-        padding: "10px"
-    };
     return (
         <div className="App-rightmenu">
             <div className="Nav-Btns">
@@ -68,7 +65,7 @@ export class InfoMode extends Component {
             <div className="GroupList">
             {days.map(day => 
                 <Fragment key={day}>{focused_event.timetable_slots[day].map(slot=>
-                    <div className="resultGroup" key={slot.id} style={TimeslotDetailInfoStyle}>
+                    <div className="resultGroup" key={slot.id}>
                         <TimeslotDetailInfo slot={slot}></TimeslotDetailInfo>
                     </div>
                     )

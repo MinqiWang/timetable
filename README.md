@@ -4,11 +4,11 @@ https://gogoapp.website
 ## Local run instructions (Mainly for CSCC09 grading purpopse):
 To run this app locally, you need to install MySQL 8.0. Here is a reference for how to install MySQL 8.0 on Ubuntu machines: https://www.tecmint.com/install-mysql-8-in-ubuntu/. Once MySQL is successfully, please follow the instructions below to start the app:
 
-* Firstly, do "git clone https://github.com/UTSCC09/project-team-gg.git" to checkout the repository, then go to directory "project-team-gg" (which is what you just cloned from this repo) and do "git checkout 689df10febcf779046735a852dd804afc8143c71". This commit is the last commit on March 31, 2019 and it is also the latest commit which has the correct configuration for local run.
+* Firstly, do ```git clone https://github.com/UTSCC09/project-team-gg.git" to checkout the repository, then go to directory "project-team-gg``` (which is what you just cloned from this repo) and do ```git checkout 689df10febcf779046735a852dd804afc8143c71```. This commit is the last commit on March 31, 2019 and it is also the latest commit which has the correct configuration for local run.
 
-* Now we have to create the database objects and set up database credentials. To set up the credentials, get into your Mysql CLI ($PATH_TO_YOUR_MYSQL_CLI -u $USERNAME -p$PASSWORD -- Note that $PATH_TO_YOUR_MYSQL_CLI can usually just be the shortcut "mysql" and there is no spacee between "-p" and "$PASSWORD") and run commands "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'wang971001'; flush privileges;". Then, to create the databases and tables, also get into the Mysql CLI and firstly do "create database CSCC09" then run all of the "create table ..." commands in file "project-team-gg/backend/database.sql".
+* Now we have to create the database objects and set up database credentials. To set up the credentials, get into your Mysql CLI (```$PATH_TO_YOUR_MYSQL_CLI -u $USERNAME -p$PASSWORD``` -- Note that ```$PATH_TO_YOUR_MYSQL_CLI``` can usually just be the shortcut ```mysql``` and there is no spacee between ```-p``` and ```$PASSWORD```) and run commands ```ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'wang971001'; flush privileges;```. Then, to create the databases and tables, also get into the Mysql CLI and firstly do ```create database CSCC09``` then run all of the ```create table ...``` commands in file ```project-team-gg/backend/database.sql```.
 
-* Since our app requires facebook authentication, you have to also create a file "project-team-gg/backend/facebook.json.nogit " to enable it. The content of this file is the following json:
+* Since our app requires facebook authentication, you have to also create a file ```project-team-gg/backend/facebook.json.nogit``` to enable it. The content of this file is the following json:
 ```json
 {
         "clientID": "373028373287102",
@@ -16,10 +16,11 @@ To run this app locally, you need to install MySQL 8.0. Here is a reference for 
         "callbackURL": "https://localhost:8000/auth/facebook/callback"
 }
 ```
+* You will also need a key pair and a certificate for the backend Nodejs server to run with HTTPS. Go to ```project-team-gg/backend``` and do```openssl req -x509 -nodes -newkey rsa:4096 -keyout server.key.test -out server.crt.test```.
 
-* If the above steps are done successfully, now we should have the correct database setup and can run the app. You need 2 terminal windows to go to 2 directories separately, "project-team-gg/backend/" and "prject-team-gg/GGFrontEnd/gg/". Then in directory "project-team-gg/backend/" do "npm install" followed by "node app.js" to start the backend Nodejs server. Similarly, in directory "prject-team-gg/GGFrontEnd/gg/" do "npm install" followed by "npm start" to start the frontend React dev server. Make sure port 3000 and port 8000 are available for HTTPS.
+* If the above steps are done successfully, now we should have the correct database setup and can run the app. You need 2 terminal windows to go to 2 directories separately, ```project-team-gg/backend/``` and ```prject-team-gg/GGFrontEnd/gg/```. Then in directory ```project-team-gg/backend/``` do ```npm install``` followed by ```node app.js``` to start the backend Nodejs server. Similarly, in directory ```prject-team-gg/GGFrontEnd/gg/``` do ```npm install``` followed by ```npm start``` to start the frontend React dev server. Make sure port 3000 and port 8000 are available for HTTPS.
 
-* Now, you can access the app at "https://localhost:3000".
+* Now, you can access the app at https://localhost:3000.
 
 ## Project Title
 

@@ -8,6 +8,15 @@ To run this app locally, you need to install MySQL 8.0. Here is a reference for 
 
 * Now we have to create the database objects and set up database credentials. To set up the credentials, get into your Mysql CLI ($PATH_TO_YOUR_MYSQL_CLI -u $USERNAME -p$PASSWORD -- Note that $PATH_TO_YOUR_MYSQL_CLI can usually just be the shortcut "mysql" and there is no spacee between "-p" and "$PASSWORD") and run commands "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'wang971001'; flush privileges;". Then, to create the databases and tables, also get into the Mysql CLI and firstly do "create database CSCC09" then run all of the "create table ..." commands in file "project-team-gg/backend/database.sql".
 
+* Since our app requires facebook authentication, you have to also create a file "project-team-gg/backend/facebook.json.nogit " to enable it. The content of this file is the following json:
+```json
+{
+        "clientID": "373028373287102",
+        "clientSecret": "ea971139d2e9f99f948eb7c0d31cd4b1",
+        "callbackURL": "https://localhost:8000/auth/facebook/callback"
+}
+```
+
 * If the above steps are done successfully, now we should have the correct database setup and can run the app. You need 2 terminal windows to go to 2 directories separately, "project-team-gg/backend/" and "prject-team-gg/GGFrontEnd/gg/". Then in directory "project-team-gg/backend/" do "npm install" followed by "node app.js" to start the backend Nodejs server. Similarly, in directory "prject-team-gg/GGFrontEnd/gg/" do "npm install" followed by "npm start" to start the frontend React dev server. Make sure port 3000 and port 8000 are available for HTTPS.
 
 * Now, you can access the app at "https://localhost:3000".
